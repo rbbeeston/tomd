@@ -8,7 +8,7 @@ tomd is a hybrid PDF-and-HTML-to-Markdown converter. It uses deterministic text 
 
 Pipeline execution order:
 
-1. Per-page: dual extract (MuPDF + spatial) + edge items + link collection + ruling-line table candidates + hidden region scan + page 0 color extraction + line drawing collection; then tagged-PDF table candidates
+1. Per-page: dual extract (MuPDF + spatial) + edge items + link collection + ruling-line and poll table candidates + hidden region scan + page 0 color extraction + line drawing collection; then tagged-PDF table candidates
 2. Close document
 3. Slide-deck detection (early exit for landscape small-page presentations)
 4. Standards-draft detection (early exit for documents >= 200 pages)
@@ -19,7 +19,7 @@ Pipeline execution order:
 9. Text cleanup: NBSP, whitespace, dehyphenation, cross-page join (both paths)
 10. Span normalization: snap bold/italic boundaries to word edges (both paths)
 11. WG21 metadata extraction from page 0 blocks
-12. Table detection from MuPDF block positions; select one table per region across the three table sources (tags, ruling lines, text positions) with agreement-based confidence; remove table regions from both paths
+12. Table detection from MuPDF block positions; select one table per region across the table sources (tags, WG21 polls, ruling lines, text positions) with agreement-based confidence; remove table regions from both paths
 13. Dual-path comparison -> Sections (confident or uncertain per page)
 14. Merge table sections into position
 15. Structure: metadata extraction, heading/list/paragraph classification, position-based list detection, paragraph merging, code block detection, wording section detection, language label stripping, nesting validation
@@ -113,8 +113,9 @@ Auto-resolution via `--llm` flag is deferred to v2. For v1, the tool produces a 
 - `lib/pdf/mono.py` - Triple-signal monospace detection. Font name decomposition (strip modifiers, split camelCase, check keywords), glyph width uniformity, glyph spacing uniformity.
 - `lib/pdf/cleanup.py` - Header/footer detection (edge items per page), repeating strip, span whitespace (NBSP, multi-space on non-mono), dehyphenation, cross-page join, hidden region detection.
 - `lib/pdf/spans.py` - Span normalization. Snaps bold/italic style boundaries to word edges. Monospace exempt.
-- `lib/pdf/table.py` - Text-position table detection (two signals: MuPDF block columnar layout, geometric column profile; same-page orphan absorption) plus multi-source selection: `select_tables` groups candidates from tags, ruling lines and text positions, applies rule checks (`table_flags`), picks one version per region (tags > grid > malformed tags > rule-band > text positions), and marks it HIGH on agreement or single-source, UNCERTAIN on disagreement with all versions kept for the prompts file. `stitch_pages` joins ruled tables continued on the next page; `remove_table_regions` drops chosen table lines from both paths.
+- `lib/pdf/table.py` - Text-position table detection (two signals: MuPDF block columnar layout, geometric column profile; same-page orphan absorption) plus multi-source selection: `select_tables` groups candidates from tags, ruling lines and text positions, applies rule checks (`table_flags`), picks one version per region (tags > poll > grid > malformed tags > rule-band > text positions), and marks it HIGH on agreement or single-source, UNCERTAIN on disagreement with all versions kept for the prompts file. `stitch_pages` joins ruled tables continued on the next page; `remove_table_regions` drops chosen table lines from both paths.
 - `lib/pdf/ruled.py` - Tables from vector drawings: `find_tables(strategy="lines")` grids, and rule-band tables (horizontal rules and shaded row boxes) with caption splitting and column detection from uncovered x ranges plus column-start clustering. Cell text rebuilt from the page's character runs.
+- `lib/pdf/poll.py` - WG21 straw-poll tables: a line of exactly `SF F N A SA` plus up to three rows of counts aligned under it, however drawn; header-only for suggested polls.
 - `lib/pdf/tagged.py` - Tables from the PDF structure tree (Table/TR/TH/TD via `TEXT_COLLECT_STRUCTURE`); cross-page joining by structure index; flags all tagged tables `tags-malformed` when MuPDF reports structure-tree errors.
 - `lib/pdf/structure.py` - Dual-path comparison, metadata extraction, heading intelligence (multi-signal, `heading_confidence` public), position-based list detection (x-coordinates), paragraph merging, code block detection (including absorption of all-monospace UNCERTAIN sections to resolve code blocks split across page boundaries), language label detection, nesting validation.
 - `lib/pdf/emit.py` - Markdown generation (headings, paragraphs, code blocks, tables, nested lists) with span-level formatting (inline code, bold, italic, links). Prompts file generation for uncertain regions.

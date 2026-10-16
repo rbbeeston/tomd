@@ -164,12 +164,16 @@ Tables follow the same rule as text: independent extractions are compared and ag
 - Reads Table/TR/TH/TD from the structure tree via `get_text("dict", flags=TEXT_COLLECT_STRUCTURE)`. Tables continued across pages share a structure index and are joined; split rows likewise. Runs on the same baseline are joined into one line. Short rows (empty cells are absent from the per-page data) are re-aligned by x.
 - If MuPDF reports structure-tree errors, every tagged table gets `tags-malformed` and ranks below grid tables.
 
+**T16c. WG21 poll tables**
+- `poll.py:extract_poll_tables` (per page)
+- A text line made of exactly `SF F N A SA` is a poll header; up to three rows of counts directly below, each number under a header column, are its rows. Drawn any way (ruled, unruled, inside a coloured box, tab-aligned, zero-width-space separated). A suggested poll without counts is a header-only table; a header followed by text on its line is inline prose and ignored.
+
 **T16a. Selection and confidence**
 - `table.py:select_tables`
 - Ruled candidates continued on the next page are stitched (`stitch_pages`: same columns and x-extent, no text after the first part or before the second; a repeated header row is dropped).
 - Rule checks (`table_flags`): ragged columns, empty cells, cells that look like split code, constant first column, TOC, bullet list, code-comment column, reference list, single-cell rows. Tags are exempt from the ragged/empty checks.
-- Candidates are grouped by position. The primary is the first candidate without a bad flag in the order tags, grid, malformed tags, rule-band, text positions.
-- Confidence: HIGH when another source agrees cell for cell or no other source saw the table; UNCERTAIN when other sources saw it and disagree. Uncertain tables keep every version for the prompts file.
+- Candidates are grouped by position. The primary is the first candidate without a bad flag in the order tags, poll, grid, malformed tags, rule-band, text positions.
+- Confidence: HIGH when another source agrees cell for cell or no other source saw the table; UNCERTAIN when another source's reading disagrees. Only readings that pass the rule checks and lie mostly within the primary's rows count (a box drawn around a poll is not a reading of it). Uncertain tables keep those versions for the prompts file.
 - A text-position table that fails the checks and has no better version is dropped and its blocks flow back into normal processing (e.g. code synopses with a highlighted keyword column become code).
 - `remove_table_regions` removes the chosen tables' lines from both the MuPDF and spatial paths.
 
@@ -349,6 +353,7 @@ Tables follow the same rule as text: independent extractions are compared and ag
 | `table.py` | Text-position tables; selection across table sources | `detect_tables`, `select_tables`, `remove_table_regions`, `table_flags` | ~560 |
 | `ruled.py` | Tables from ruling lines and shaded rows | `extract_ruled_tables` | ~430 |
 | `tagged.py` | Tables from PDF accessibility tags | `extract_tagged_tables` | ~210 |
+| `poll.py` | WG21 poll result tables (SF F N A SA) | `extract_poll_tables` | ~100 |
 | `structure.py` | Comparison, heading/list/code classification | `compare_extractions`, `structure_sections` | ~939 |
 | `emit.py` | Markdown and prompts generation | `emit_markdown`, `emit_prompts` | ~401 |
 | `wg21.py` | WG21 metadata extraction | `extract_metadata_from_blocks` | ~199 |

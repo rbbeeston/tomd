@@ -33,7 +33,6 @@ _CORPUS = os.environ.get("TOMD_TABLE_CORPUS")
 # the list stays honest.
 KNOWN_GAPS = {
     "n5040-t3": "PDF text layer prints mojibake (std::spanâ€™s); exact text differs",
-    "n5040-t5": "unruled 2-line poll result; no extractor detects it",
     "p0533r9-t2": "booktabs table with 2 data rows; column split is ambiguous",
     "p0533r9-t4": "Comment column is empty in every body row and is dropped",
     "p0957r8-t4": "booktabs table split by a page break; neither part has enough rules",
