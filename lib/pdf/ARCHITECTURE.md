@@ -141,22 +141,40 @@ Enums:
 - Monospace spans are exempt (code boundaries are intentional)
 - Uses `dataclasses.replace` for immutable span updates
 
-### Layer 4: Table Detection (3 techniques)
+### Layer 4: Table Detection (three independent sources + selection)
 
-**T14. Table detection (two-signal)**
+Tables follow the same rule as text: independent extractions are compared and agreement sets the confidence. Every table is proposed by up to three sources that share no logic, then one version per region is selected.
+
+**T14. Text-position tables**
 - `table.py:detect_tables`
 - Signal 1 (block structure): blocks with 2+ lines where x-starts have gaps > 50 units are columnar. Consecutive matching-column blocks (within 10-unit tolerance) form a table run (min 2 rows). Works across page boundaries: blocks from consecutive pages with matching columns form one table.
-- Signal 2 (geometric column profile): pre-pass over all blocks collects x positions that co-occur with other x positions in the same y-band across 2+ y-bands. Y-bands are scoped per page. Body text (alone in its y-band) never qualifies; only genuine table column x positions are selected.
-- Orphan absorption: single-line blocks whose x0 matches a confirmed column are "orphans" (wrapped cell first lines split off by MuPDF). Absorbed when the following block is a full table row (one-block lookahead confirms continuation). Three guards prevent false positives: (1) only single-line blocks qualify; (2) orphan must be on the same page as the last confirmed table row; (3) the confirming lookahead block must also be on the same page as the orphan. Orphan partial rows are merged into the following row's first cell so multi-line cells render as a single cell string.
-- Known gap: a wrapped cell whose continuation line is the first block on the next page will not be absorbed (cross-page orphan). The table will end at the last same-page row and the orphan will appear in the output as an uncertain region.
-- Extracted as TABLE sections with HIGH confidence
+- Signal 2 (geometric column profile): pre-pass over all blocks collects x positions that co-occur with other x positions in the same y-band across 2+ y-bands. Y-bands are scoped per page.
+- Orphan absorption: single-line blocks whose x0 matches a confirmed column are absorbed when the following block is a full table row (same page only), and merged into that row's first cell.
+- Finds unruled tables (title-page label/value blocks) that the other sources cannot; weakest source for wrapped cells.
 
-**T15. Spatial table exclusion**
-- `table.py:exclude_table_regions`
-- Removes spatial blocks whose y-center falls within detected table y-ranges (5-unit margin)
+**T15. Ruling-line tables**
+- `ruled.py:extract_ruled_tables` (per page, in the extraction loop)
+- Grid tables: `page.find_tables(strategy="lines")` for tables ruled in both directions.
+- Rule-band tables (booktabs, ReportLab): horizontal rules and the edges of shaded row boxes that share an x-extent form a group; rows are the bands between them (booktabs top/mid/bottom rules: one row per text line). A band holding a single line that starts left of the padded cell text is a caption and splits the group into two tables. The revtex style (header above a doubled rule, rule above each row) is recognised.
+- Columns: x ranges no word covers (accepted when wide, or when 3+ distinct word pairs straddle them) plus x positions where a word starts after a gap in 60% of rows (survives text overrunning into the next column).
+- Cell text is rebuilt from the page's own character runs, so every character belongs to one word even where columns overprint, and the PDF's spaces are kept. Fonts, bold, italic and monospace survive.
 
-**T16. Table section insertion**
-- `__init__.py:convert_pdf`
+**T16. Tagged-PDF tables**
+- `tagged.py:extract_tagged_tables`
+- Reads Table/TR/TH/TD from the structure tree via `get_text("dict", flags=TEXT_COLLECT_STRUCTURE)`. Tables continued across pages share a structure index and are joined; split rows likewise. Runs on the same baseline are joined into one line. Short rows (empty cells are absent from the per-page data) are re-aligned by x.
+- If MuPDF reports structure-tree errors, every tagged table gets `tags-malformed` and ranks below grid tables.
+
+**T16a. Selection and confidence**
+- `table.py:select_tables`
+- Ruled candidates continued on the next page are stitched (`stitch_pages`: same columns and x-extent, no text after the first part or before the second; a repeated header row is dropped).
+- Rule checks (`table_flags`): ragged columns, empty cells, cells that look like split code, constant first column, TOC, bullet list, code-comment column, reference list, single-cell rows. Tags are exempt from the ragged/empty checks.
+- Candidates are grouped by position. The primary is the first candidate without a bad flag in the order tags, grid, malformed tags, rule-band, text positions.
+- Confidence: HIGH when another source agrees cell for cell or no other source saw the table; UNCERTAIN when other sources saw it and disagree. Uncertain tables keep every version for the prompts file.
+- A text-position table that fails the checks and has no better version is dropped and its blocks flow back into normal processing (e.g. code synopses with a highlighted keyword column become code).
+- `remove_table_regions` removes the chosen tables' lines from both the MuPDF and spatial paths.
+
+**T16b. Table section insertion**
+- `__init__.py:_run_pipeline`
 - Tables inserted into the section list by page number and y-position ordering
 
 ### Layer 5: Wording Detection (3 techniques)
@@ -283,6 +301,8 @@ Enums:
 **T34. Table rendering**
 - `emit.py:_render_table`
 - GitHub-style Markdown pipe tables. First row = header with bold suppressed.
+- Lines of a wrapped cell are joined with `<br>` (a word hyphenated at the break is rejoined); `|` is escaped as `\|`.
+- An UNCERTAIN table is preceded by a `tomd:uncertain` marker, and its prompt lists the table from every source.
 
 **T35. Uncertain region marking**
 - `emit.py:emit_markdown`
@@ -326,7 +346,9 @@ Enums:
 | `wording.py` | Wording section detection (ins/del) | `classify_wording`, `collect_line_drawings` | ~250 |
 | `cleanup.py` | Text cleanup, header/footer, hidden regions | `detect_repeating`, `strip_repeating`, `cleanup_text`, `find_hidden_regions`, `strip_hidden_blocks` | ~373 |
 | `spans.py` | Style boundary normalization | `normalize_spans` | ~149 |
-| `table.py` | Two-signal table detection and exclusion | `detect_tables`, `exclude_table_regions` | ~252 |
+| `table.py` | Text-position tables; selection across table sources | `detect_tables`, `select_tables`, `remove_table_regions`, `table_flags` | ~560 |
+| `ruled.py` | Tables from ruling lines and shaded rows | `extract_ruled_tables` | ~430 |
+| `tagged.py` | Tables from PDF accessibility tags | `extract_tagged_tables` | ~210 |
 | `structure.py` | Comparison, heading/list/code classification | `compare_extractions`, `structure_sections` | ~939 |
 | `emit.py` | Markdown and prompts generation | `emit_markdown`, `emit_prompts` | ~401 |
 | `wg21.py` | WG21 metadata extraction | `extract_metadata_from_blocks` | ~199 |

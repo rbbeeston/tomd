@@ -1,0 +1,207 @@
+{
+ "paper": "p4312r0",
+ "tables": [
+  {
+   "id": "p4312r0-t1",
+   "pages": [
+    0
+   ],
+   "rows": [
+    [
+     "Document number",
+     "P4312R0"
+    ],
+    [
+     "Date",
+     "2026-07-15"
+    ],
+    [
+     "Project",
+     "Programming Language C++"
+    ],
+    [
+     "Audience",
+     "SG14 (Low Latency), EWG; CC: SG21 (Contracts), SG23 (Safety & Security)"
+    ],
+    [
+     "Reply-to",
+     "Michael Galuszka <galuszka.michael@googlemail.com>"
+    ]
+   ],
+   "group": null,
+   "source": "typed",
+   "note": "metadata block, unruled",
+   "scope": "front-matter"
+  },
+  {
+   "id": "p4312r0-t2",
+   "pages": [
+    3
+   ],
+   "rows": [
+    [
+     "Property",
+     "Ignoring changes correctness?",
+     "Hence form"
+    ],
+    [
+     "Effects (this paper)",
+     "yes (guarantee breaks across indirect calls)",
+     "type specifier"
+    ],
+    [
+     "Quantitative resource bounds (out of scope here)",
+     "yes (a numeric promise breaks)",
+     "contract assertion (P2900 carrier)"
+    ],
+    [
+     "Trace / observability (out of scope here)",
+     "no (only less observability)",
+     "library directive / attribute"
+    ]
+   ],
+   "group": "g2",
+   "source": "picked:ruled2",
+   "note": "",
+   "scope": "table"
+  },
+  {
+   "id": "p4312r0-t3",
+   "pages": [
+    4
+   ],
+   "rows": [
+    [
+     "Effect guarantee",
+     "Meaning"
+    ],
+    [
+     "nonthrowing",
+     "Throws no exception (identical to noexcept , see §5.7)"
+    ],
+    [
+     "nonallocating",
+     "No dynamic/global memory request on the path"
+    ],
+    [
+     "nonblocking",
+     "Does not block the calling thread (see definition below)"
+    ],
+    [
+     "nonrecursing",
+     "No (direct or indirect) recursion"
+    ]
+   ],
+   "group": "g3",
+   "source": "edited:ruled3",
+   "note": "removed space before comma after code span | PDF text layer has a space char before the comma (verified in rawdict); truth follows the text layer.",
+   "scope": "table"
+  },
+  {
+   "id": "p4312r0-t4",
+   "pages": [
+    7
+   ],
+   "rows": [
+    [
+     "Level",
+     "Origin",
+     "Soundness",
+     "Discharge status"
+    ],
+    [
+     "checked",
+     "definition visible, compiler verifies body ⊆ declared bound",
+     "guaranteed",
+     "proven"
+    ],
+    [
+     "asserted",
+     "annotation on a declaration without definition (FFI)",
+     "trusted, unverified",
+     "assumed"
+    ],
+    [
+     "assumed",
+     "local effects_assume block around a call",
+     "trusted, unverified, local",
+     "assumed + site"
+    ],
+    [
+     "unknown",
+     "no annotation, no definition",
+     "worst case (all effects)",
+     "—"
+    ]
+   ],
+   "group": "g5",
+   "source": "edited:ruled5",
+   "note": "fixed effects_assume",
+   "scope": "table"
+  },
+  {
+   "id": "p4312r0-t5",
+   "pages": [
+    9
+   ],
+   "rows": [
+    [
+     "Case",
+     "Handling"
+    ],
+    [
+     "Inline assembly",
+     "worst case, unless wrapped in effects_assume"
+    ],
+    [
+     "C function pointer",
+     "type carries no effects → worst case; trust via asserted typedef or effects_assume at the call"
+    ],
+    [
+     "dlopen / dynamic loading",
+     "inherently a trust site; effects_assume at the call point"
+    ],
+    [
+     "Separately compiled TU without annotation",
+     "worst case; LTO may reconstruct the effects, otherwise an asserted declaration"
+    ],
+    [
+     "Type erasure ( std::function )",
+     "the effects of the erased target must be captured at construction → an effect-parameterized std::function type (open question) or an assertion"
+    ]
+   ],
+   "group": "g6",
+   "source": "edited:ruled6",
+   "note": "fixed effects_assume; joined hyphen line-break in effect-parameterized",
+   "scope": "table"
+  }
+ ],
+ "not_tables": [
+  {
+   "group": "g1",
+   "pages": [
+    1
+   ],
+   "reason": "blockquote and headings, not a table"
+  },
+  {
+   "group": "g4",
+   "pages": [
+    5
+   ],
+   "reason": "code listings and prose"
+  },
+  {
+   "group": "g7",
+   "pages": [
+    12
+   ],
+   "reason": "inline code highlights in reference list"
+  }
+ ],
+ "missed_by_all": [
+  "p4312r0-t1"
+ ],
+ "checked_pages": "all",
+ "source_pdf": "https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2026/p4312r0.pdf"
+}

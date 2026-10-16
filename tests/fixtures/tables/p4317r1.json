@@ -1,0 +1,951 @@
+{
+ "paper": "p4317r1",
+ "tables": [
+  {
+   "id": "p4317r1-t1",
+   "pages": [
+    0
+   ],
+   "rows": [
+    [
+     "Document Number:",
+     "P4317R1"
+    ],
+    [
+     "Date:",
+     "2026-08-01"
+    ],
+    [
+     "Intent:",
+     "Inform"
+    ],
+    [
+     "Audience:",
+     "EWG, SG22"
+    ],
+    [
+     "Reply-to:",
+     "Vinnie Falco vinnie.falco@gmail.com"
+    ]
+   ],
+   "group": null,
+   "source": "typed",
+   "note": "metadata block",
+   "scope": "front-matter"
+  },
+  {
+   "id": "p4317r1-t2",
+   "pages": [
+    5
+   ],
+   "rows": [
+    [
+     "Aspect",
+     "Under P3100R8",
+     "Under std::core_ub"
+    ],
+    [
+     "Check",
+     "Divisor is nonzero",
+     "Divisor is nonzero"
+    ],
+    [
+     "Mechanism",
+     "Implicit contract assertion",
+     "Profile constraint (quality of implementation)"
+    ],
+    [
+     "Semantics available",
+     "5 (ignore, observe, enforce, quick-enforce, assume)",
+     "1 (enforced: terminate or replace)"
+    ],
+    [
+     "Handler dependency",
+     "Contract-violation handler invoked on violation",
+     "None; profile owns the response"
+    ],
+    [
+     "Replacement behavior",
+     "Erroneous value (under ignore semantic)",
+     "Erroneous value (fixed for all conforming implementations)"
+    ]
+   ],
+   "group": "g13",
+   "source": "edited:tomd1",
+   "note": "tomd1 truncated after 3 rows; zebra, wrapped cells",
+   "scope": "table"
+  },
+  {
+   "id": "p4317r1-t3",
+   "pages": [
+    5
+   ],
+   "rows": [
+    [
+     "Aspect",
+     "Under P3100R8",
+     "Under std::core_ub"
+    ],
+    [
+     "Check",
+     "Execution does not flow off end of value-returning function",
+     "Execution does not flow off end of value-returning function"
+    ],
+    [
+     "Mechanism",
+     "Implicit contract assertion",
+     "Profile constraint (quality of implementation)"
+    ],
+    [
+     "Semantics available",
+     "5 (ignore, observe, enforce, quick-enforce, assume)",
+     "1 (enforced: return erroneous value for built-in types, terminate otherwise)"
+    ],
+    [
+     "Handler dependency",
+     "Contract-violation handler invoked on violation",
+     "None; profile owns the response"
+    ],
+    [
+     "Replacement behavior",
+     "Erroneous value (under ignore semantic)",
+     "Erroneous value for built-in return types (fixed); terminate otherwise"
+    ]
+   ],
+   "group": null,
+   "source": "typed",
+   "note": "second before/after table, same page as t2",
+   "scope": "table"
+  },
+  {
+   "id": "p4317r1-t4",
+   "pages": [
+    7
+   ],
+   "rows": [
+    [
+     "#",
+     "Case",
+     "Group",
+     "Link"
+    ],
+    [
+     "1",
+     "{basic.align.object.alignment}",
+     "A.1",
+     "https://godbolt.org/z/bMG14s5cG"
+    ],
+    [
+     "2",
+     "{expr.unary.dereference}",
+     "A.2",
+     "https://godbolt.org/z/obMj3EYTb"
+    ],
+    [
+     "3",
+     "{expr.add.out.of.bounds}",
+     "A.2",
+     "https://godbolt.org/z/YbxWbxMP9"
+    ],
+    [
+     "4",
+     "{expr.mul.div.by.zero}",
+     "A.1 + A.4",
+     "https://godbolt.org/z/s5Exo86K6"
+    ],
+    [
+     "5",
+     "{expr.mul.representable.type.result}",
+     "A.1 + A.4",
+     "https://godbolt.org/z/3vTjbdnxP"
+    ],
+    [
+     "6",
+     "{expr.shift.neg.and.width}",
+     "A.1 + A.4",
+     "https://godbolt.org/z/1nrccTq1s"
+    ],
+    [
+     "7",
+     "{conv.fpint.float.not.represented}",
+     "A.1 + A.4",
+     "https://godbolt.org/z/dbcKb6W8s"
+    ]
+   ],
+   "group": "g2",
+   "source": "edited:ruled2",
+   "note": "ruled2 missed header and split 'A.1 + A.4' into 3 cols",
+   "scope": "table"
+  },
+  {
+   "id": "p4317r1-t5",
+   "pages": [
+    14
+   ],
+   "rows": [
+    [
+     "Implementation",
+     "Shipped",
+     "Category",
+     "Response",
+     "Measured cost",
+     "Scale"
+    ],
+    [
+     "libc++ hardening",
+     "LLVM 18, 2024",
+     "library preconditions",
+     "trap",
+     "~0.30% (Google)",
+     "hundreds of millions of LoC"
+    ],
+    [
+     "libstdc++ assertions",
+     "GCC 6, 2016",
+     "library preconditions",
+     "diagnostic, abort()",
+     "not separately reported",
+     "default at -O0 since GCC 15.1"
+    ],
+    [
+     "MSVC STL hardening",
+     "VS 2022 17.14, 2025",
+     "library preconditions",
+     "__fastfail",
+     "not separately reported",
+     "opt-in"
+    ],
+    [
+     "WebKit",
+     "2024",
+     "library preconditions",
+     "trap (libc++ extensive)",
+     "not separately published",
+     "release builds"
+    ],
+    [
+     "Firefox",
+     "2025",
+     "library preconditions",
+     "vendor-selected",
+     "not separately published",
+     "opt macOS default; release pending"
+    ],
+    [
+     "Android UBSan",
+     "Android 7.0, 2016",
+     "core-language: arithmetic, bounds",
+     "abort",
+     "not public",
+     "per-component (media, Bluetooth)"
+    ],
+    [
+     "Chrome CFI",
+     "production",
+     "core-language: control flow",
+     "SIGILL",
+     "not public",
+     "official builds"
+    ],
+    [
+     "Apple -fbounds-safety",
+     "production",
+     "core-language: bounds",
+     "deterministic trap",
+     "not public",
+     "millions of LoC of C"
+    ]
+   ],
+   "group": "g5",
+   "source": "edited:ruled5",
+   "note": "added header row; Table 5",
+   "scope": "table"
+  },
+  {
+   "id": "p4317r1-t6",
+   "pages": [
+    19,
+    20
+   ],
+   "rows": [
+    [
+     "Identifier",
+     "Clause",
+     "Checking strategy"
+    ],
+    [
+     "{basic.align.object.alignment}",
+     "[basic.align]/1",
+     "Insert alignment check"
+    ],
+    [
+     "{expr.mptr.oper.member.func.null}",
+     "[expr.mptr.oper]/6",
+     "Insert null pointer check"
+    ],
+    [
+     "{expr.assign.overlap}",
+     "[expr.assign]/7",
+     "Check overlap of the two address ranges"
+    ],
+    [
+     "{class.abstract.pure.virtual}",
+     "[class.abstract]/6",
+     "Insert pre(false) into the pure-virtual stub"
+    ],
+    [
+     "{expr.expr.eval}",
+     "[expr.pre]/4",
+     "Check the value is valid"
+    ],
+    [
+     "{conv.double.out.of.range}",
+     "[conv.double]/2",
+     "Check the value is valid"
+    ],
+    [
+     "{conv.fpint.float.not.represented}",
+     "[conv.fpint]/1",
+     "Check the value is valid"
+    ],
+    [
+     "{conv.fpint.int.not.represented}",
+     "[conv.fpint]/2",
+     "Check the value is valid"
+    ],
+    [
+     "{expr.static.cast.enum.outside.range}",
+     "[expr.static.cast]/9",
+     "Check the value is valid"
+    ],
+    [
+     "{expr.static.cast.fp.outside.range}",
+     "[expr.static.cast]/10",
+     "Check the value is valid"
+    ],
+    [
+     "{expr.mul.div.by.zero}",
+     "[expr.mul]/4",
+     "Check the divisor is nonzero"
+    ],
+    [
+     "{expr.mul.representable.type.result}",
+     "[expr.mul]/4",
+     "Check the value is valid"
+    ],
+    [
+     "{expr.shift.neg.and.width}",
+     "[expr.shift]/1",
+     "Check the right operand is valid"
+    ],
+    [
+     "{intro.execution.unsequenced.modification}",
+     "[conv.rank]/10",
+     "Check unsequenced read and write refer to the same address"
+    ],
+    [
+     "{stmt.return.flow.off}",
+     "[stmt.return]/4",
+     "contract_assert(false) at end of function body (if a separate proposal makes flow-off-end ill-formed, no UB remains and this case drops from the profile automatically)"
+    ],
+    [
+     "{dcl.attr.noreturn.eventually.returns}",
+     "[dcl.attr.noreturn]/2",
+     "Insert post(false)"
+    ],
+    [
+     "{basic.stc.alloc.dealloc.throw}",
+     "[basic.stc.dynamic.deallocation]/4",
+     "Assertion in a catch handler"
+    ],
+    [
+     "{expr.new.non.allocating.null}",
+     "[expr.new]/22",
+     "Insert post(r: r)"
+    ],
+    [
+     "{stmt.return.coroutine.flow.off}",
+     "[stmt.return.coroutine]/3",
+     "contract_assert(false) at end if no return_void"
+    ]
+   ],
+   "group": "g6",
+   "source": "edited:ruled6",
+   "note": "cross-page (17 rows p19 + 2 rows p20); repeated header on p20 dropped; added header; ruled6 missed p20 rows",
+   "scope": "table"
+  },
+  {
+   "id": "p4317r1-t7",
+   "pages": [
+    20
+   ],
+   "rows": [
+    [
+     "Identifier",
+     "Clause",
+     "Condition",
+     "Checking strategy"
+    ],
+    [
+     "{expr.add.out.of.bounds}",
+     "[expr.add]/4",
+     "array bound statically known",
+     "Track pointer provenance, insert bounds check"
+    ],
+    [
+     "{expr.add.sub.diff.pointers}",
+     "[expr.add]/4",
+     "array bound statically known",
+     "Track pointer provenance, insert bounds check"
+    ],
+    [
+     "{conv.ptr.virtual.base}",
+     "[conv.ptr]/3",
+     "null pointer case",
+     "Track lifetime and type, or ctor-dtor state; null check"
+    ],
+    [
+     "{expr.dynamic.cast.pointer.lifetime}",
+     "[expr.dynamic.cast]/7",
+     "null pointer case",
+     "Track lifetime and type, or ctor-dtor state; null check"
+    ],
+    [
+     "{expr.static.cast.downcast.wrong.derived.type}",
+     "[expr.static.cast]/11",
+     "null pointer case",
+     "Track lifetime and type, or ctor-dtor state; null check"
+    ],
+    [
+     "{expr.unary.dereference}",
+     "[expr.unary.op]/1",
+     "null pointer case",
+     "Track lifetime and type, and function address; null check"
+    ]
+   ],
+   "group": null,
+   "source": "typed",
+   "note": "A.2 table, 4 cols, wrapped cells",
+   "scope": "table"
+  },
+  {
+   "id": "p4317r1-t8",
+   "pages": [
+    21
+   ],
+   "rows": [
+    [
+     "Identifier",
+     "Clause",
+     "Checking strategy"
+    ],
+    [
+     "{basic.indet.value}",
+     "[basic.indet]/2",
+     "Track whether storage has been initialised"
+    ]
+   ],
+   "group": "g7",
+   "source": "typed",
+   "note": "Initialization (1); g7 lumped this and Bounds together",
+   "scope": "table"
+  },
+  {
+   "id": "p4317r1-t9",
+   "pages": [
+    21
+   ],
+   "rows": [
+    [
+     "Identifier",
+     "Clause",
+     "Checking strategy"
+    ],
+    [
+     "{basic.stc.alloc.zero.dereference}",
+     "[basic.stc.dynamic.allocation]/2",
+     "Track pointer provenance, insert bounds check"
+    ],
+    [
+     "{expr.delete.mismatch}",
+     "[expr.delete]/2",
+     "Track pointer provenance, insert bounds check"
+    ],
+    [
+     "{expr.delete.array.mismatch}",
+     "[expr.delete]/2",
+     "Track pointer provenance, insert bounds check"
+    ]
+   ],
+   "group": "g7",
+   "source": "typed",
+   "note": "Bounds (3); separate table from t8",
+   "scope": "table"
+  },
+  {
+   "id": "p4317r1-t10",
+   "pages": [
+    22
+   ],
+   "rows": [
+    [
+     "Identifier",
+     "Clause",
+     "Checking strategy"
+    ],
+    [
+     "{intro.object.implicit.create}",
+     "[intro.object]/11",
+     "Track whether storage can hold implicit-lifetime objects"
+    ],
+    [
+     "{intro.object.implicit.pointer}",
+     "[intro.object]/11",
+     "Track whether storage can hold implicit-lifetime objects"
+    ],
+    [
+     "{lifetime.outside.pointer.delete}",
+     "[basic.life]/7",
+     "Track lifetime and type of storage"
+    ],
+    [
+     "{lifetime.outside.pointer.member}",
+     "[basic.life]/7",
+     "Track lifetime and type of storage"
+    ],
+    [
+     "{lifetime.outside.pointer.virtual}",
+     "[basic.life]/7",
+     "Track lifetime and type of storage"
+    ],
+    [
+     "{lifetime.outside.pointer.dynamic.cast}",
+     "[basic.life]/7",
+     "Track lifetime and type of storage"
+    ],
+    [
+     "{lifetime.outside.glvalue.access}",
+     "[basic.life]/8",
+     "Track lifetime and type of storage"
+    ],
+    [
+     "{lifetime.outside.glvalue.member}",
+     "[basic.life]/8",
+     "Track lifetime and type of storage"
+    ],
+    [
+     "{lifetime.outside.glvalue.virtual}",
+     "[basic.life]/8",
+     "Track lifetime and type of storage"
+    ],
+    [
+     "{lifetime.outside.glvalue.dynamic.cast}",
+     "[basic.life]/8",
+     "Track lifetime and type of storage"
+    ],
+    [
+     "{original.type.implicit.destructor}",
+     "[basic.life]/11",
+     "Track lifetime and type of storage"
+    ],
+    [
+     "{expr.basic.lvalue.strict.aliasing.violation}",
+     "[basic.lval]/11.3",
+     "Track lifetime and type of storage"
+    ],
+    [
+     "{expr.basic.lvalue.union.initialization}",
+     "[basic.lval]/11.3",
+     "Track lifetime and type of storage"
+    ],
+    [
+     "{expr.ref.member.not.similar}",
+     "[expr.ref]/9",
+     "Track lifetime and type of storage"
+    ],
+    [
+     "{expr.dynamic.cast.glvalue.lifetime}",
+     "[expr.dynamic.cast]/7",
+     "Track lifetime and type, or ctor-dtor state"
+    ],
+    [
+     "{expr.static.cast.base.class}",
+     "[expr.static.cast]/2",
+     "Track lifetime and type of storage"
+    ],
+    [
+     "{expr.add.not.similar}",
+     "[expr.add]/6",
+     "Track whether storage holds an object of the correct type"
+    ],
+    [
+     "{class.dtor.no.longer.exists}",
+     "[class.dtor]/18",
+     "Track lifetime and type of storage"
+    ]
+   ],
+   "group": "g8",
+   "source": "typed",
+   "note": "object lifetime and type (18)",
+   "scope": "table"
+  },
+  {
+   "id": "p4317r1-t11",
+   "pages": [
+    23
+   ],
+   "rows": [
+    [
+     "Identifier",
+     "Clause",
+     "Checking strategy"
+    ],
+    [
+     "{creating.within.const.complete.obj}",
+     "[basic.life]/12",
+     "Track whether storage holds a const object"
+    ],
+    [
+     "{basic.compound.invalid.pointer}",
+     "[basic.compound]/4",
+     "Track whether storage has been allocated and freed"
+    ],
+    [
+     "{expr.type.reference.lifetime}",
+     "[expr.type]/1",
+     "Track whether storage has been allocated and freed"
+    ],
+    [
+     "{conv.lval.valid.representation}",
+     "[conv.lval]/3.4",
+     "Track lifetime and type of storage"
+    ],
+    [
+     "{dcl.type.cv.modify.const.obj}",
+     "[dcl.type.cv]/4",
+     "Track whether storage holds a const object"
+    ],
+    [
+     "{dcl.type.cv.access.volatile}",
+     "[dcl.type.cv]/5",
+     "Track whether storage holds a volatile object"
+    ]
+   ],
+   "group": "g9",
+   "source": "typed",
+   "note": "allocation, const, volatile (6); g9 covers t11 and t12",
+   "scope": "table"
+  },
+  {
+   "id": "p4317r1-t12",
+   "pages": [
+    23
+   ],
+   "rows": [
+    [
+     "Identifier",
+     "Clause",
+     "Checking strategy"
+    ],
+    [
+     "{conv.member.missing.member}",
+     "[conv.mem]/2",
+     "Track which type the pointer-to-member originated from"
+    ],
+    [
+     "{expr.call.different.type}",
+     "[expr.call]/5",
+     "Track function type by address"
+    ],
+    [
+     "{expr.static.cast.does.not.contain.orignal.member}",
+     "[expr.static.cast]/12",
+     "Track which type the pointer-to-member originated from"
+    ],
+    [
+     "{expr.delete.dynamic.type.differ}",
+     "[expr.delete]/3",
+     "Track dynamic type of non-polymorphic objects"
+    ],
+    [
+     "{expr.delete.dynamic.array.dynamic.type.differ}",
+     "[expr.delete]/3",
+     "Track dynamic type of non-polymorphic objects"
+    ],
+    [
+     "{expr.mptr.oper.not.contain.member}",
+     "[expr.mptr.oper]/4",
+     "Track pointer-to-member origin and dynamic type"
+    ],
+    [
+     "{dcl.ref.incompatible.function}",
+     "[dcl.ref]/6",
+     "Track function types by address"
+    ],
+    [
+     "{dcl.ref.incompatible.type}",
+     "[dcl.ref]/6",
+     "Track whether storage holds an object of the correct type"
+    ],
+    [
+     "{dcl.ref.uninitialized.reference}",
+     "[dcl.ref]/6",
+     "Track whether references have been initialised"
+    ]
+   ],
+   "group": "g9",
+   "source": "typed",
+   "note": "function, member-pointer, reference types (9); identifier 'orignal' spelled as printed",
+   "scope": "table"
+  },
+  {
+   "id": "p4317r1-t13",
+   "pages": [
+    24
+   ],
+   "rows": [
+    [
+     "Identifier",
+     "Clause",
+     "Checking strategy"
+    ],
+    [
+     "{class.base.init.mem.fun}",
+     "[class.base.init]/16",
+     "Track whether objects are being constructed or destroyed"
+    ],
+    [
+     "{class.cdtor.before.ctor}",
+     "[class.cdtor]/1",
+     "Track whether objects are being constructed or destroyed"
+    ],
+    [
+     "{class.cdtor.after.dtor}",
+     "[class.cdtor]/1",
+     "Track whether objects are being constructed or destroyed"
+    ],
+    [
+     "{class.cdtor.convert.pointer}",
+     "[class.cdtor]/3",
+     "Track whether objects are being constructed or destroyed"
+    ],
+    [
+     "{class.cdtor.form.pointer}",
+     "[class.cdtor]/3",
+     "Track whether objects are being constructed or destroyed"
+    ],
+    [
+     "{class.cdtor.virtual.not.x}",
+     "[class.cdtor]/4",
+     "Track whether objects are being constructed or destroyed"
+    ],
+    [
+     "{class.cdtor.typeid}",
+     "[class.cdtor]/5",
+     "Track whether objects are being constructed or destroyed"
+    ],
+    [
+     "{class.cdtor.dynamic.cast}",
+     "[class.cdtor]/6",
+     "Track whether objects are being constructed or destroyed"
+    ],
+    [
+     "{except.handle.handler.ctor.dtor}",
+     "[except.handle]/11",
+     "Track whether objects are being constructed or destroyed"
+    ]
+   ],
+   "group": "g10",
+   "source": "typed",
+   "note": "construction and destruction state (9); g10 covers t13 and t14",
+   "scope": "table"
+  },
+  {
+   "id": "p4317r1-t14",
+   "pages": [
+    24
+   ],
+   "rows": [
+    [
+     "Identifier",
+     "Clause",
+     "Checking strategy"
+    ],
+    [
+     "{intro.races.data}",
+     "[intro.races]/17",
+     "Track inter-thread access and synchronization (TSan-style; a subset only)"
+    ]
+   ],
+   "group": "g10",
+   "source": "typed",
+   "note": "Threading (1)",
+   "scope": "table"
+  },
+  {
+   "id": "p4317r1-t15",
+   "pages": [
+    25
+   ],
+   "rows": [
+    [
+     "Identifier",
+     "Clause",
+     "Checking strategy"
+    ],
+    [
+     "{basic.start.main.exit.during.destruction}",
+     "[basic.start.main]/4",
+     "Track whether static or thread-local objects are being destroyed"
+    ],
+    [
+     "{basic.start.term.use.after.destruction}",
+     "[basic.start.term]/4",
+     "Track the lifetime of static objects"
+    ],
+    [
+     "{stmt.dcl.local.static.init.recursive}",
+     "[stmt.dcl]/3",
+     "Recursion counter in the static and thread-local init guard"
+    ]
+   ],
+   "group": "g11",
+   "source": "typed",
+   "note": "Control Flow (3); first identifier visually overlapped by clause column, closing brace from text layer; g11 covers t15 and t16",
+   "scope": "table"
+  },
+  {
+   "id": "p4317r1-t16",
+   "pages": [
+    25
+   ],
+   "rows": [
+    [
+     "Identifier",
+     "Clause",
+     "Checking strategy"
+    ],
+    [
+     "{dcl.fct.def.coroutine.resume.not.suspended}",
+     "[dcl.fct.def.coroutine]/9",
+     "Track the suspension state of each coroutine handle"
+    ],
+    [
+     "{dcl.fct.def.coroutine.destroy.not.suspended}",
+     "[dcl.fct.def.coroutine]/12",
+     "Track the suspension state of each coroutine handle"
+    ]
+   ],
+   "group": "g11",
+   "source": "typed",
+   "note": "Coroutines (2)",
+   "scope": "table"
+  },
+  {
+   "id": "p4317r1-t17",
+   "pages": [
+    26
+   ],
+   "rows": [
+    [
+     "Identifier",
+     "Replacement behavior"
+    ],
+    [
+     "{basic.indet.value}",
+     "Erroneous value (built-in types only)"
+    ],
+    [
+     "{conv.lval.valid.representation}",
+     "Coerce invalid representations to erroneous values"
+    ],
+    [
+     "{expr.expr.eval}",
+     "Coerce to erroneous value"
+    ],
+    [
+     "{conv.double.out.of.range}",
+     "Coerce to erroneous value"
+    ],
+    [
+     "{conv.fpint.float.not.represented}",
+     "Coerce to erroneous value"
+    ],
+    [
+     "{conv.fpint.int.not.represented}",
+     "Coerce to erroneous value"
+    ],
+    [
+     "{expr.static.cast.enum.outside.range}",
+     "Coerce to erroneous value"
+    ],
+    [
+     "{expr.static.cast.fp.outside.range}",
+     "Coerce to erroneous value"
+    ],
+    [
+     "{expr.mul.div.by.zero}",
+     "Coerce to erroneous value"
+    ],
+    [
+     "{expr.mul.representable.type.result}",
+     "Coerce to erroneous value"
+    ],
+    [
+     "{expr.shift.neg.and.width}",
+     "Coerce to erroneous value"
+    ],
+    [
+     "{intro.races.data}",
+     "Make primitive memory accesses implicitly atomic"
+    ],
+    [
+     "{intro.execution.unsequenced.modification}",
+     "Sequence the operations in some unspecified order"
+    ],
+    [
+     "{stmt.return.flow.off}",
+     "Return erroneous value (built-in return types only)"
+    ],
+    [
+     "{stmt.return.coroutine.flow.off}",
+     "Return erroneous value (built-in return types only)"
+    ]
+   ],
+   "group": "g12",
+   "source": "picked:tomd15",
+   "note": "A.4 replacement behaviors",
+   "scope": "table"
+  }
+ ],
+ "not_tables": [
+  {
+   "group": "g1",
+   "pages": [
+    7
+   ],
+   "reason": "bullet text with inline code, not a table"
+  },
+  {
+   "group": "g3",
+   "pages": [
+    8
+   ],
+   "reason": "bullet text with inline code, not a table"
+  },
+  {
+   "group": "g4",
+   "pages": [
+    11
+   ],
+   "reason": "bullet text with inline code, not a table"
+  }
+ ],
+ "missed_by_all": [
+  "p4317r1-t1",
+  "p4317r1-t3",
+  "p4317r1-t7"
+ ],
+ "checked_pages": "all",
+ "source_pdf": "https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2026/p4317r1.pdf"
+}

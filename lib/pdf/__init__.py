@@ -13,7 +13,9 @@ from .mono import propagate_monospace
 from .wording import classify_wording, collect_line_drawings
 from .spans import normalize_spans
 from .structure import compare_extractions, structure_sections
-from .table import detect_tables, exclude_table_regions
+from .table import detect_tables, select_tables, remove_table_regions
+from .ruled import extract_ruled_tables
+from .tagged import extract_tagged_tables
 from .wg21 import extract_metadata_from_blocks
 from .emit import emit_markdown, emit_prompts
 from .types import Section, SectionKind, is_readable
@@ -165,6 +167,7 @@ def _run_pipeline(path: Path) -> PipelineResult:
         all_mupdf_blocks = []
         all_spatial_blocks = []
         all_edge_items = []
+        all_ruled_tables = []
 
         for pg_num in range(result.page_count):
             page = doc[pg_num]
@@ -185,6 +188,18 @@ def _run_pipeline(path: Path) -> PipelineResult:
 
             all_mupdf_blocks.extend(mupdf_blocks)
             all_spatial_blocks.extend(spatial_blocks)
+
+            # Independent table sources, compared with detect_tables() below.
+            try:
+                all_ruled_tables.extend(extract_ruled_tables(page, pg_num))
+            except Exception as e:  # never let a table source break conversion
+                _log.warning("Ruled table extraction failed on page %d: %s", pg_num, e)
+
+        try:
+            tagged_tables = extract_tagged_tables(doc)
+        except Exception as e:
+            _log.warning("Tagged table extraction failed: %s", e)
+            tagged_tables = []
 
         font_counts: Counter[str] = Counter()
         for b in all_mupdf_blocks:
@@ -241,11 +256,13 @@ def _run_pipeline(path: Path) -> PipelineResult:
     wg21_metadata, _ = extract_metadata_from_blocks(all_mupdf_blocks,
                                                      text_colors=page0_colors)
 
-    table_sections, all_mupdf_blocks = detect_tables(all_mupdf_blocks)
+    tomd_tables, _ = detect_tables(all_mupdf_blocks)
+    table_sections = select_tables(tomd_tables, all_ruled_tables, tagged_tables,
+                                   all_mupdf_blocks)
     if table_sections:
-        _log.info("Detected %d table(s)", len(table_sections))
-        all_spatial_blocks = exclude_table_regions(
-            all_spatial_blocks, table_sections)
+        _log.info("Selected %d table(s)", len(table_sections))
+        all_mupdf_blocks = remove_table_regions(all_mupdf_blocks, table_sections)
+        all_spatial_blocks = remove_table_regions(all_spatial_blocks, table_sections)
 
     sections = compare_extractions(all_mupdf_blocks, all_spatial_blocks)
 

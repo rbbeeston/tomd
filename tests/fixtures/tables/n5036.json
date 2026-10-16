@@ -1,0 +1,55 @@
+{
+ "paper": "n5036",
+ "tables": [
+  {
+   "id": "n5036-t1",
+   "pages": [
+    11
+   ],
+   "rows": [
+    [
+     "Macro name",
+     "Value"
+    ],
+    [
+     "__cpp_transactional_memory",
+     "202602"
+    ]
+   ],
+   "group": "g1",
+   "source": "picked:ruled1",
+   "note": "Table 19 feature-test macros",
+   "scope": "table"
+  },
+  {
+   "id": "n5036-t2",
+   "pages": [
+    0
+   ],
+   "rows": [
+    [
+     "Document Number:",
+     "5036"
+    ],
+    [
+     "Date:",
+     "2026-02-22"
+    ],
+    [
+     "Reply to:",
+     "Michael Wong fraggamuffin@gmail.com"
+    ]
+   ],
+   "group": null,
+   "source": "typed",
+   "note": "unruled title-page metadata block; reply-to value spans 2 lines",
+   "scope": "front-matter"
+  }
+ ],
+ "not_tables": [],
+ "missed_by_all": [
+  "n5036-t2"
+ ],
+ "checked_pages": "all",
+ "source_pdf": "https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2026/n5036.pdf"
+}

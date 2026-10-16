@@ -1,0 +1,866 @@
+{
+ "paper": "p4353r0",
+ "tables": [
+  {
+   "id": "p4353r0-t1",
+   "pages": [
+    0
+   ],
+   "rows": [
+    [
+     "Document",
+     "P2034R9"
+    ],
+    [
+     "Date",
+     "2026-08-19"
+    ],
+    [
+     "Audience",
+     "CWG"
+    ],
+    [
+     "Project",
+     "ISO/IEC JTC1/SC22/WG21 14882: Programming Language – C++"
+    ],
+    [
+     "Authors",
+     "Ryan McDougall <mcdougall.ryan@gmail.com>"
+    ],
+    [
+     "",
+     "Lakshay Garg <lakshayg.xyz@gmail.com>"
+    ],
+    [
+     "GitHub Issue",
+     "https://wg21.link/P2034/github"
+    ],
+    [
+     "Source",
+     "https://github.com/lakshayg/wg21/tree/main/p2034"
+    ]
+   ],
+   "group": "g1",
+   "source": "edited:tags1",
+   "note": "metadata block; Authors label spans 2 rows",
+   "scope": "front-matter"
+  },
+  {
+   "id": "p4353r0-t2",
+   "pages": [
+    5
+   ],
+   "rows": [
+    [
+     "SF",
+     "F",
+     "N",
+     "A",
+     "SA"
+    ],
+    [
+     "1",
+     "2",
+     "6",
+     "8",
+     "2"
+    ]
+   ],
+   "group": "g2",
+   "source": "verified-draft",
+   "note": "poll",
+   "scope": "table"
+  },
+  {
+   "id": "p4353r0-t3",
+   "pages": [
+    5
+   ],
+   "rows": [
+    [
+     "SF",
+     "F",
+     "N",
+     "A",
+     "SA"
+    ],
+    [
+     "2",
+     "0",
+     "9",
+     "7",
+     "1"
+    ]
+   ],
+   "group": "g3",
+   "source": "verified-draft",
+   "note": "poll",
+   "scope": "table"
+  },
+  {
+   "id": "p4353r0-t4",
+   "pages": [
+    5
+   ],
+   "rows": [
+    [
+     "SF",
+     "F",
+     "N",
+     "A",
+     "SA"
+    ],
+    [
+     "4",
+     "13",
+     "2",
+     "1",
+     "2"
+    ]
+   ],
+   "group": "g4",
+   "source": "verified-draft",
+   "note": "poll",
+   "scope": "table"
+  },
+  {
+   "id": "p4353r0-t5",
+   "pages": [
+    5
+   ],
+   "rows": [
+    [
+     "SF",
+     "F",
+     "N",
+     "A",
+     "SA"
+    ],
+    [
+     "3",
+     "28",
+     "4",
+     "0",
+     "0"
+    ]
+   ],
+   "group": "g5",
+   "source": "verified-draft",
+   "note": "poll",
+   "scope": "table"
+  },
+  {
+   "id": "p4353r0-t6",
+   "pages": [
+    5
+   ],
+   "rows": [
+    [
+     "SF",
+     "F",
+     "N",
+     "A",
+     "SA"
+    ],
+    [
+     "8",
+     "25",
+     "1",
+     "2",
+     "0"
+    ]
+   ],
+   "group": "g6",
+   "source": "verified-draft",
+   "note": "poll",
+   "scope": "table"
+  },
+  {
+   "id": "p4353r0-t7",
+   "pages": [
+    5
+   ],
+   "rows": [
+    [
+     "SF",
+     "F",
+     "N",
+     "A",
+     "SA"
+    ],
+    [
+     "14",
+     "26",
+     "2",
+     "0",
+     "0"
+    ]
+   ],
+   "group": "g7",
+   "source": "verified-draft",
+   "note": "poll",
+   "scope": "table"
+  },
+  {
+   "id": "p4353r0-t8",
+   "pages": [
+    5
+   ],
+   "rows": [
+    [
+     "SF",
+     "F",
+     "N",
+     "A",
+     "SA"
+    ],
+    [
+     "21",
+     "27",
+     "5",
+     "0",
+     "0"
+    ]
+   ],
+   "group": "g8",
+   "source": "verified-draft",
+   "note": "poll",
+   "scope": "table"
+  },
+  {
+   "id": "p4353r0-t9",
+   "pages": [
+    6
+   ],
+   "rows": [
+    [
+     "SF",
+     "F",
+     "N",
+     "A",
+     "SA"
+    ],
+    [
+     "1",
+     "10",
+     "4",
+     "2",
+     "1"
+    ]
+   ],
+   "group": "g9",
+   "source": "verified-draft",
+   "note": "poll",
+   "scope": "table"
+  },
+  {
+   "id": "p4353r0-t10",
+   "pages": [
+    6
+   ],
+   "rows": [
+    [
+     "SF",
+     "F",
+     "N",
+     "A",
+     "SA"
+    ],
+    [
+     "2",
+     "15",
+     "3",
+     "1",
+     "0"
+    ]
+   ],
+   "group": "g10",
+   "source": "verified-draft",
+   "note": "poll",
+   "scope": "table"
+  },
+  {
+   "id": "p4353r0-t11",
+   "pages": [
+    6
+   ],
+   "rows": [
+    [
+     "SF",
+     "F",
+     "N",
+     "A",
+     "SA"
+    ],
+    [
+     "2",
+     "4",
+     "4",
+     "1",
+     "0"
+    ]
+   ],
+   "group": "g11",
+   "source": "verified-draft",
+   "note": "poll",
+   "scope": "table"
+  },
+  {
+   "id": "p4353r0-t12",
+   "pages": [
+    6
+   ],
+   "rows": [
+    [
+     "SF",
+     "F",
+     "N",
+     "A",
+     "SA"
+    ],
+    [
+     "3",
+     "7",
+     "0",
+     "0",
+     "0"
+    ]
+   ],
+   "group": "g12",
+   "source": "verified-draft",
+   "note": "poll",
+   "scope": "table"
+  },
+  {
+   "id": "p4353r0-t13",
+   "pages": [
+    7,
+    8
+   ],
+   "rows": [
+    [
+     "Before",
+     "After"
+    ],
+    [
+     "struct A { State state; mutable Buffer buf; void operator()() const { // ... } }; // manual bespoke type move_only_function<void() const> f = A{s, b};",
+     "move_only_function<void() const> f = [s, mutable b] { /* ... */ };"
+    ],
+    [
+     "template <typename T> class as_owned_mutable { mutable T value; public: T& ref() const { return value; } }; // new vocabulary type move_only_function<void() const> f = [s, b = as_owned_mutable<Buffer>{}]() { auto& buffer = b.ref(); // ... };",
+     "move_only_function<void() const> f = [s, mutable b] { // ... };"
+    ],
+    [
+     "// loss of const correctness move_only_function<void()> f = [s, b]() mutable { // ... };",
+     "move_only_function<void() const> f = [s, mutable b] { // ... };"
+    ],
+    [
+     "// loss of ownership move_only_function<void() const> f = [s, buf_ptr = &b]() { // ... };",
+     "move_only_function<void() const> f = [s, mutable b] { // ... };"
+    ]
+   ],
+   "group": "g13",
+   "source": "picked:tags13",
+   "note": "cross-page; header only on first page",
+   "scope": "table"
+  },
+  {
+   "id": "p4353r0-t14",
+   "pages": [
+    9
+   ],
+   "rows": [
+    [
+     "Before",
+     "After"
+    ],
+    [
+     "template <typename T> class as_owned_const { T value; public: const T& ref() const { return value; } }; // new vocabulary type move_only_function<void()> f = [s, b = as_owned_const<Buffer>{}] mutable { auto& buffer = b.ref(); // ... };",
+     "move_only_function<void()> f = [s, const b] mutable { // ... };"
+    ],
+    [
+     "// loss of const correctness move_only_function<void()> f = [s, b]() mutable { // b can be mutated };",
+     "move_only_function<void()> f = [s, const b] mutable { // ... };"
+    ],
+    [
+     "// loss of ownership move_only_function<void()> f = [s, b = std::cref(buf)]() mutable { // ... };",
+     "move_only_function<void()> f = [s, const b] mutable { // ... };"
+    ]
+   ],
+   "group": "g14",
+   "source": "picked:tags14",
+   "note": "draft rows had underscores mangled (ruled); tags correct",
+   "scope": "table"
+  },
+  {
+   "id": "p4353r0-t15",
+   "pages": [
+    10,
+    11
+   ],
+   "rows": [
+    [
+     "Capture Syntax",
+     "Description"
+    ],
+    [
+     "[mutable x]() const {}",
+     "simple capture of x by copy; the NSDM is mutable"
+    ],
+    [
+     "[mutable x...]() const {}",
+     "simple capture of pack x; each NSDM is mutable"
+    ],
+    [
+     "[mutable x = init]() const {}",
+     "init-capture initialized from init; the NSDM is mutable"
+    ],
+    [
+     "[mutable ...xs = init]() const {}",
+     "init-capture pack (P0780); each NSDM is mutable"
+    ]
+   ],
+   "group": "g15",
+   "source": "verified-draft",
+   "note": "cross-page",
+   "scope": "table"
+  },
+  {
+   "id": "p4353r0-t16",
+   "pages": [
+    11
+   ],
+   "rows": [
+    [
+     "",
+     "() const",
+     "() mutable"
+    ],
+    [
+     "[x]",
+     "struct X { int x; void operator()() const; };",
+     "struct X { int x; void operator()(); };"
+    ],
+    [
+     "[mutable x]",
+     "struct X { mutable int x; void operator()() const; };",
+     "struct X { mutable int x; void operator()(); };"
+    ]
+   ],
+   "group": "g16",
+   "source": "picked:ruled16",
+   "note": "empty top-left header cell",
+   "scope": "table"
+  },
+  {
+   "id": "p4353r0-t17",
+   "pages": [
+    11
+   ],
+   "rows": [
+    [
+     "Capture Syntax",
+     "Description"
+    ],
+    [
+     "[const x]() mutable {}",
+     "simple capture of x by copy; the NSDM is const"
+    ],
+    [
+     "[const x...]() mutable {}",
+     "simple capture of pack x; each NSDM is const"
+    ],
+    [
+     "[const x = init]() mutable {}",
+     "init-capture initialized from init; the NSDM is const"
+    ],
+    [
+     "[const ...xs = init]() mutable {}",
+     "init-capture pack (P0780); each NSDM is const"
+    ]
+   ],
+   "group": "g17",
+   "source": "verified-draft",
+   "note": "",
+   "scope": "table"
+  },
+  {
+   "id": "p4353r0-t18",
+   "pages": [
+    11,
+    12
+   ],
+   "rows": [
+    [
+     "",
+     "() const",
+     "() mutable"
+    ],
+    [
+     "[x]",
+     "struct X { int x; void operator()() const; };",
+     "struct X { int x; void operator()(); };"
+    ],
+    [
+     "[const x]",
+     "struct X { const int x; void operator()() const; };",
+     "struct X { const int x; void operator()(); };"
+    ]
+   ],
+   "group": "g18",
+   "source": "edited:tags18",
+   "note": "cross-page; empty top-left header cell",
+   "scope": "table"
+  },
+  {
+   "id": "p4353r0-t19",
+   "pages": [
+    12,
+    13
+   ],
+   "rows": [
+    [
+     "Capture Syntax",
+     "Description"
+    ],
+    [
+     "[const& x]() mutable {}",
+     "simple capture of x by const reference"
+    ],
+    [
+     "[const& x...]() mutable {}",
+     "simple capture of pack x, each by const reference"
+    ],
+    [
+     "[const& x = init]() mutable {}",
+     "init-capture binding a const reference to init"
+    ],
+    [
+     "[const& ...xs = init]() mutable {}",
+     "init-capture pack (P0780), each binding a const reference"
+    ]
+   ],
+   "group": "g19",
+   "source": "verified-draft",
+   "note": "cross-page",
+   "scope": "table"
+  },
+  {
+   "id": "p4353r0-t20",
+   "pages": [
+    13
+   ],
+   "rows": [
+    [
+     "",
+     "() const",
+     "() mutable"
+    ],
+    [
+     "[&x]",
+     "x is a modifiable lvalue",
+     "x is a modifiable lvalue"
+    ],
+    [
+     "[const& x]",
+     "x is a const lvalue",
+     "x is a const lvalue"
+    ]
+   ],
+   "group": "g20",
+   "source": "picked:ruled21",
+   "note": "empty top-left header cell",
+   "scope": "table"
+  },
+  {
+   "id": "p4353r0-t21",
+   "pages": [
+    13
+   ],
+   "rows": [
+    [
+     "",
+     "= (by copy)",
+     "& (by reference)"
+    ],
+    [
+     "(unqualified)",
+     "[=]",
+     "[&]"
+    ],
+    [
+     "const",
+     "[const =]",
+     "[const&]"
+    ],
+    [
+     "mutable",
+     "[mutable =]",
+     "ill-formed"
+    ]
+   ],
+   "group": "g21",
+   "source": "picked:ruled22",
+   "note": "empty top-left header cell",
+   "scope": "table"
+  },
+  {
+   "id": "p4353r0-t22",
+   "pages": [
+    14
+   ],
+   "rows": [
+    [
+     "Capture-default",
+     "Redundant (ill-formed) explicit capture"
+    ],
+    [
+     "[=]",
+     "[=, x]"
+    ],
+    [
+     "[mutable =]",
+     "[mutable =, mutable x]"
+    ],
+    [
+     "[const =]",
+     "[const =, const x]"
+    ],
+    [
+     "[&]",
+     "[&, &x]"
+    ],
+    [
+     "[const&]",
+     "[const&, const& x]"
+    ]
+   ],
+   "group": "g22",
+   "source": "verified-draft",
+   "note": "",
+   "scope": "table"
+  },
+  {
+   "id": "p4353r0-t23",
+   "pages": [
+    14
+   ],
+   "rows": [
+    [
+     "Capture",
+     "Effect"
+    ],
+    [
+     "[mutable =, const x]",
+     "implicit captures mutable; x a const member"
+    ],
+    [
+     "[const =, mutable x]",
+     "implicit captures const; x mutable"
+    ],
+    [
+     "[=, &x]",
+     "captured by copy; x by reference"
+    ],
+    [
+     "[&, x]",
+     "captured by reference; x a copy"
+    ],
+    [
+     "[const&, x]",
+     "const-reference views; x a copy"
+    ],
+    [
+     "...",
+     "…"
+    ]
+   ],
+   "group": "g23",
+   "source": "picked:tomd7",
+   "note": "last row: code \"...\" vs prose ellipsis \"…\"",
+   "scope": "table"
+  },
+  {
+   "id": "p4353r0-t24",
+   "pages": [
+    15
+   ],
+   "rows": [
+    [
+     "",
+     "unqualified",
+     "const or mutable"
+    ],
+    [
+     "[this]",
+     "captures the enclosing object by reference",
+     "ill-formed: no by-copy member for the qualifier to attach to"
+    ],
+    [
+     "[*this]",
+     "captures the object by copy, as an unnamed member",
+     "ill-formed: that member is unnamed, so the const-propagation wording does not reach it"
+    ]
+   ],
+   "group": "g24",
+   "source": "edited:tags24",
+   "note": "empty top-left header cell added",
+   "scope": "table"
+  },
+  {
+   "id": "p4353r0-t25",
+   "pages": [
+    16
+   ],
+   "rows": [
+    [
+     "Entity type of x",
+     "[x] (simple-capture)",
+     "[y = x] (init-capture)"
+    ],
+    [
+     "T",
+     "T",
+     "T"
+    ],
+    [
+     "const T",
+     "const T",
+     "T"
+    ],
+    [
+     "volatile T",
+     "volatile T",
+     "T"
+    ],
+    [
+     "T&",
+     "T",
+     "T"
+    ],
+    [
+     "const T&",
+     "const T",
+     "T"
+    ],
+    [
+     "T(&)()",
+     "T(&)()",
+     "T(*)()"
+    ]
+   ],
+   "group": "g25",
+   "source": "verified-draft",
+   "note": "",
+   "scope": "table"
+  },
+  {
+   "id": "p4353r0-t26",
+   "pages": [
+    16
+   ],
+   "rows": [
+    [
+     "Entity type of x",
+     "Capture",
+     "(1) preserve cv-qualifiers",
+     "(2) deduce by auto"
+    ],
+    [
+     "T",
+     "[mutable x]",
+     "mutable T",
+     "mutable T"
+    ],
+    [
+     "T",
+     "[const x]",
+     "const T",
+     "const T"
+    ],
+    [
+     "const T",
+     "[const x]",
+     "const T",
+     "const T"
+    ],
+    [
+     "const T",
+     "[mutable x]",
+     "mutable const T – ill-formed",
+     "mutable T"
+    ],
+    [
+     "volatile T",
+     "[mutable x]",
+     "mutable volatile T",
+     "mutable T"
+    ]
+   ],
+   "group": "g26",
+   "source": "picked:tomd9",
+   "note": "en dash in \"mutable const T – ill-formed\"",
+   "scope": "table"
+  },
+  {
+   "id": "p4353r0-t27",
+   "pages": [
+    17,
+    18
+   ],
+   "rows": [
+    [
+     "Nesting",
+     "Innermost x",
+     "Why"
+    ],
+    [
+     "[const& x]{ x; }",
+     "const lvalue",
+     "the const-reference view"
+    ],
+    [
+     "[const& x]{ [&x]{ x; } }",
+     "const lvalue",
+     "the view stays const through nesting"
+    ],
+    [
+     "[const& x]{ [x]{ x; } }",
+     "const copy",
+     "a copy of a const view is const"
+    ],
+    [
+     "[const& x]{ [x]() mutable { x = 0; } }",
+     "ill-formed",
+     "the const copy cannot be made mutable"
+    ],
+    [
+     "[const& x]{ [&x]{ [x]() mutable {} } }",
+     "const copy",
+     "const carries through the plain-& middle"
+    ],
+    [
+     "[&x]{ [x]() mutable { x = 0; } }",
+     "OK",
+     "no const& anywhere; an ordinary modifiable copy"
+    ]
+   ],
+   "group": "g27",
+   "source": "picked:tags27",
+   "note": "cross-page",
+   "scope": "table"
+  }
+ ],
+ "not_tables": [
+  {
+   "group": "g28",
+   "pages": [
+    29
+   ],
+   "reason": "wording insert/delete highlight box"
+  }
+ ],
+ "missed_by_all": [],
+ "checked_pages": "all",
+ "source_pdf": "https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2026/p4353r0.pdf"
+}
