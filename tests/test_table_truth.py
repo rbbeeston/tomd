@@ -37,10 +37,6 @@ KNOWN_GAPS = {
     "p4317r1-t7": "header row merged with caption band",
     "p4317r1-t16": "identifier overprints the next column in a 2-row table",
     "p4318r1-t3": "math font has no Unicode mapping; text layer is garbage",
-    "p4047r0-t8": "not detected; cause not yet diagnosed",
-    "p4182r1-t3": "Table B: legend/prose band above the header is read as a row (not yet diagnosed)",
-    "p4182r1-t11": "compiler table not detected; cause not yet diagnosed",
-    "p4182r1-t16": "footnote under the table whose reference marks sit on their own line is read as a row",
 }
 
 _MD = mistune.create_markdown(renderer="ast", plugins=["table"])

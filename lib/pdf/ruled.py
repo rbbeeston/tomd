@@ -42,7 +42,8 @@ _RULE_JOIN_GAP = 2.0      # Word draws one segment per cell; join them
 _RULE_MERGE_Y = 3.5       # booktabs double rules collapse to one
 _RULE_SAME_X = 3.0
 _MIN_RULES = 3            # top + mid + bottom
-_PER_ROW_RULES = 5        # at least this many rules: one rule per row
+_PER_ROW_RULES = 5        # at least this many rules: one rule per row (booktabs has 3)
+_HEADER_PADDING = 1.5     # a table's shaded header box is this much taller than its text
 _HEADER_ABOVE = 16.0      # height of a header line above a double rule
 _COL_GAP_MIN = 1.5        # x range no word covers separates columns...
 _COL_GAP_EM = 0.6         # ...if this share of a line height wide, or if
@@ -266,29 +267,32 @@ def _drop_empty(rows):
 # --------------------------------------------------------------------------
 
 
-def _horizontal_rules(drawings) -> list[tuple[float, float, float]]:
+def _horizontal_rules(drawings) -> list[tuple[float, float, float, bool]]:
+    """(y, x0, x1, shaded) for every horizontal rule; shaded marks an edge of
+    a filled box (header shading, zebra stripe) rather than a drawn line."""
     segs = []
     for d in drawings:
         for it in d["items"]:
             if it[0] == "l":
                 a, b = it[1], it[2]
                 if abs(a.y - b.y) < 1.0:
-                    segs.append(((a.y + b.y) / 2, min(a.x, b.x), max(a.x, b.x)))
+                    segs.append(((a.y + b.y) / 2, min(a.x, b.x), max(a.x, b.x), False))
             elif it[0] == "re":
                 r = it[1]
                 if r.height <= _RULE_MAX_THICK:
-                    segs.append(((r.y0 + r.y1) / 2, r.x0, r.x1))
+                    segs.append(((r.y0 + r.y1) / 2, r.x0, r.x1, False))
                 elif d.get("fill") is not None and r.height <= _FILL_MAX_HEIGHT:
                     # a shaded header row or zebra stripe: both edges bound a row
-                    segs.append((r.y0, r.x0, r.x1))
-                    segs.append((r.y1, r.x0, r.x1))
+                    segs.append((r.y0, r.x0, r.x1, True))
+                    segs.append((r.y1, r.x0, r.x1, True))
     segs.sort(key=lambda s: (round(s[0]), s[1]))
-    rules: list[list[float]] = []
-    for y, x0, x1 in segs:
+    rules: list[list] = []
+    for y, x0, x1, shaded in segs:
         if rules and abs(rules[-1][0] - y) < 1.0 and x0 - rules[-1][2] <= _RULE_JOIN_GAP:
             rules[-1][2] = max(rules[-1][2], x1)
+            rules[-1][3] = rules[-1][3] or shaded
         else:
-            rules.append([y, x0, x1])
+            rules.append([y, x0, x1, shaded])
     return sorted(tuple(r) for r in rules if r[2] - r[1] >= _RULE_MIN_LEN)
 
 
@@ -301,16 +305,17 @@ def _rule_groups(rules):
     """
     groups: list[list] = []
     doubled: dict[int, bool] = {}
-    for y, x0, x1 in rules:
+    for rule in rules:
+        y, x0, x1 = rule[:3]
         for gi, g in enumerate(groups):
             if abs(g[0][1] - x0) <= _RULE_SAME_X and abs(g[0][2] - x1) <= _RULE_SAME_X:
                 if y - g[-1][0] > _RULE_MERGE_Y:
-                    g.append((y, x0, x1))
+                    g.append(tuple(rule))
                 elif len(g) == 1:
                     doubled[gi] = True
                 break
         else:
-            groups.append([(y, x0, x1)])
+            groups.append([tuple(rule)])
     return [(g, doubled.get(gi, False)) for gi, g in enumerate(groups)
             if len(g) >= (_MIN_RULES - 1 if doubled.get(gi) else _MIN_RULES)]
 
@@ -446,7 +451,11 @@ def _is_caption_band(lw: list, cell_left: float, band_height: float = 0.0) -> bo
     # e.g. "Scenario 4 - Two Orders Resulting in a Trade".
     def prose(ws):
         return all(b[0] - a[2] < 1.5 * (a[3] - a[1]) for a, b in zip(ws, ws[1:]))
-    if len(lines) > 3 or not all(prose(ws) for ws in lines):
+    if not all(prose(ws) for ws in lines):
+        return False
+    if lines[0][0][0] < cell_left - _CAPTION_INDENT:
+        return True                      # a legend or note block starting at the margin
+    if len(lines) > 3:
         return False
     if all(abs(ws[0][0] - cell_left) > _CAPTION_INDENT for ws in lines):
         return True
@@ -469,7 +478,16 @@ def _rule_band_tables(page_num, words_all, group, header_above) -> list[TableCan
     if not words:
         return []
 
-    per_row_rules = len(ys) >= _PER_ROW_RULES
+    # One rule per row: many rules, or four starting with a padded shaded
+    # header box (header top/bottom, then one rule per row). Highlight strips
+    # around a single line of text are not padded and do not count.
+    def padded_header():
+        if len(group) != _PER_ROW_RULES - 1 or not all(len(r) > 3 and r[3] for r in group[:2]):
+            return False
+        hw = [w for w in words if group[0][0] < (w[1] + w[3]) / 2 < group[1][0]]
+        text_h = max((w[3] for w in hw), default=0) - min((w[1] for w in hw), default=0)
+        return bool(hw) and group[1][0] - group[0][0] >= _HEADER_PADDING * text_h
+    per_row_rules = len(ys) >= _PER_ROW_RULES or padded_header()
     band_words = [(top, bot, [w for w in words if top < (w[1] + w[3]) / 2 < bot])
                   for top, bot in zip(ys, ys[1:])]
     # where cell text usually starts: the commonest left edge of the bands
@@ -495,10 +513,24 @@ def _rule_band_tables(page_num, words_all, group, header_above) -> list[TableCan
     return out
 
 
+def _has_column_gap(ws) -> bool:
+    """A line of the row has a column-sized gap, or text drawn over text."""
+    for _, _, lw in _text_lines(ws):
+        lw = sorted(lw, key=lambda w: w[0])
+        for a, b in zip(lw, lw[1:]):
+            gap = b[0] - a[2]
+            if gap >= (a[3] - a[1]) or gap < -_OVERPRINT:
+                return True
+    return False
+
+
 def _bands_to_table(page_num, in_x, bands, x0, x1, header_above) -> TableCandidate | None:
     if len(bands) < 2:
         return None
     row_words = [[w for w in in_x if a <= (w[1] + w[3]) / 2 <= b] for a, b in bands]
+    # Prose between rules (quotations, notes) has no column gaps at all.
+    if sum(1 for ws in row_words if _has_column_gap(ws)) < 2:
+        return None
     seps = _column_starts(row_words)
     if len(seps) < 2:
         return None

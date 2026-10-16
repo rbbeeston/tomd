@@ -161,7 +161,8 @@ Tables follow the same rule as text: independent extractions are compared and ag
 - Superscript reference marks (smaller, shifted up at top and bottom, at most 8 characters) are attached to the line they belong to, so `P3481R5 [10]` keeps its order, and they never define columns or caption lines.
 - Caption bands are not rows: a band is a caption when every line starts left of the padded cell text, or when it holds at most three lines of prose that either start off the cell-text edge or leave the band mostly empty. A caption between rules of the same width splits them into separate tables.
 - Header-row gaps define a column when every row whose text crosses that x starts a word exactly there (an overrunning identifier with the next column drawn over it); a centred column does not qualify.
-- Shaded boxes up to 90pt tall count as row bounds (multi-line headers); taller boxes are panels.
+- Shaded boxes up to 90pt tall count as row bounds (multi-line headers); taller boxes are panels. Four rules read as one-rule-per-row when they start with a padded shaded header box (highlight strips around a single line are not padded).
+- A band of prose whose first line starts at the margin (legends, notes under a table) is never a row; a rule-band candidate needs at least two rows with a column-sized gap (or overprinted text), so quotations and notes between rules are not tables.
 
 **T16. Tagged-PDF tables**
 - `tagged.py:extract_tagged_tables`
