@@ -32,11 +32,8 @@ _CORPUS = os.environ.get("TOMD_TABLE_CORPUS")
 # entry when it is fixed; the test fails if a listed table starts passing so
 # the list stays honest.
 KNOWN_GAPS = {
-    "p0533r9-t4": "Comment column is empty in every body row and is dropped",
-    "p0957r8-t4": "booktabs table split by a page break; neither part has enough rules",
-    "p4317r1-t7": "header row merged with caption band",
-    "p4317r1-t16": "identifier overprints the next column in a 2-row table",
-    "p4318r1-t3": "math font has no Unicode mapping; text layer is garbage",
+    "p0533r9-t4": "ambiguous: the empty Comment column shows only in the header, \"Pass Comment\" spaced like one two-word header; only a sibling table reveals two columns",
+    "p4318r1-t3": "PDF text layer is damaged (math italics written without their last hex digit); not recoverable from text, so the table is marked uncertain with a note",
 }
 
 _MD = mistune.create_markdown(renderer="ast", plugins=["table"])

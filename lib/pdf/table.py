@@ -290,6 +290,17 @@ def candidates_agree(a: TableCandidate, b: TableCandidate) -> bool:
                                                          rb + [""] * (len(ra) - len(rb))))
 
 
+_DAMAGED_RANGE = (0x1D00, 0x1DBF)   # phonetic extensions: not WG21 text; seen as
+                                   # math italics with the last hex digit dropped
+
+
+def _damaged_text(cand: TableCandidate) -> str:
+    """Characters showing that the PDF's own text layer is wrong."""
+    bad = sorted({ch for row in cand.text_rows() for cell in row for ch in cell
+                  if _DAMAGED_RANGE[0] <= ord(ch) <= _DAMAGED_RANGE[1]})
+    return " ".join(bad[:6])
+
+
 def partial_reading(primary: TableCandidate, other: TableCandidate) -> bool:
     """True when `other` is tomd's text-position reading of part of a fully
     ruled table: same columns, and every one of its rows matches, cell for
@@ -549,7 +560,10 @@ def select_tables(tomd_sections: list[Section],
     version is dropped, so its blocks flow back into normal processing.
     """
     tomd = [candidate_from_section(s) for s in tomd_sections]
-    cands = tagged + list(polls) + stitch_pages(ruled, blocks) + tomd
+    # Continuation fragments (the last rows of a table on the next page) only
+    # count once stitched onto the table they continue.
+    ruled = [c for c in stitch_pages(ruled, blocks) if "continuation-fragment" not in c.flags]
+    cands = tagged + list(polls) + ruled + tomd
     for c in cands:
         c.flags = c.flags + table_flags(c)
 
@@ -575,7 +589,16 @@ def select_tables(tomd_sections: list[Section],
             conf = Confidence.HIGH
         else:
             conf = Confidence.UNCERTAIN
-        out.append(_to_section(primary, conf, others))
+        damaged = _damaged_text(primary)
+        if damaged:
+            conf = Confidence.UNCERTAIN
+        sec = _to_section(primary, conf, others)
+        if damaged:
+            sec.metadata["table_note"] = (
+                "The PDF's text layer is damaged in this table (characters such as "
+                f"{damaged} are wrong in the file itself, e.g. math italics written "
+                "without their last hex digit). Read the symbols from the page image.")
+        out.append(sec)
         _log.debug("Table p%d %dx%d from %s: %s", primary.pages[0], *primary.shape,
                    primary.source, conf.value)
         remaining = [c for c in remaining if not any(c is x for x in settled)]

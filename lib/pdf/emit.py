@@ -419,6 +419,9 @@ def emit_prompts(sections: list[Section]) -> str | None:
             parts.append("This is a table. The extractors below disagree on its rows,")
             parts.append("columns or cell text. Produce one correct Markdown table.")
             parts.append("")
+            if sec.metadata.get("table_note"):
+                parts.append(sec.metadata["table_note"])
+                parts.append("")
             for i, (source, table_md) in enumerate(sec.metadata.get("table_versions", [])):
                 label = "emitted" if i == 0 else "alternative"
                 parts.append(f"Table from the {source} extractor ({label}):")
