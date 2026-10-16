@@ -151,6 +151,21 @@ class TestCompareExtractionsOrdering:
         )
 
 
+    def test_promoted_confident_neighbour_not_duplicated(self):
+        """Regression (p1112r4): an uncertain page promoted together with an
+        already-confident next page must not emit that page's blocks twice."""
+        # Page 0: spatial path lost the text (e.g. a table region removed).
+        p0_m = [make_block([" ".join(f"a{i}" for i in range(12))], page_num=0)]
+        # Page 1: both paths agree; large enough that p0+p1 combined passes.
+        body = " ".join(f"w{i}" for i in range(100))
+        p1_m = [make_block([body], page_num=1)]
+        p1_s = [make_block([body], page_num=1)]
+
+        sections = compare_extractions(p0_m + p1_m, p1_s)
+        assert [s.page_num for s in sections] == [0, 1]
+        assert all(s.kind != SectionKind.UNCERTAIN for s in sections)
+
+
 class TestParagraphMerging:
     def test_merges_continuation(self):
         sections = [
