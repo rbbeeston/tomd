@@ -1,0 +1,31 @@
+{
+ "paper": "p3654r0",
+ "tables": [],
+ "not_tables": [
+  {
+   "group": "g1",
+   "pages": [
+    3
+   ],
+   "reason": "slide with two side-by-side code listings (Status quo / This paper) in separate unruled text boxes; code listings, not a table"
+  },
+  {
+   "group": "g2",
+   "pages": [
+    4
+   ],
+   "reason": "slide with two side-by-side code listings (Status quo / This paper) in separate unruled text boxes; code listings, not a table"
+  },
+  {
+   "group": "g3",
+   "pages": [
+    6
+   ],
+   "reason": "slide with two side-by-side code listings (Status quo / This paper) in separate unruled text boxes; code listings, not a table"
+  }
+ ],
+ "missed_by_all": [],
+ "checked_pages": "all",
+ "source_pdf": "https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2025/p3654r0.pdf",
+ "set": "heldout-2026-10"
+}

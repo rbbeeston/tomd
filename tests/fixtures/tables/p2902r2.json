@@ -1,0 +1,52 @@
+{
+ "paper": "p2902r2",
+ "tables": [
+  {
+   "id": "p2902r2-t1",
+   "pages": [
+    0
+   ],
+   "rows": [
+    [
+     "Document:",
+     "P2902R2"
+    ],
+    [
+     "Date:",
+     "May 12, 2025"
+    ],
+    [
+     "Project:",
+     "Programming Language C++, Library Working Group"
+    ],
+    [
+     "Audience:",
+     "LEWG & LWG"
+    ],
+    [
+     "Reply to:",
+     "Oliver J. Rosten (oliver.rosten@gmail.com)"
+    ]
+   ],
+   "group": null,
+   "source": "typed",
+   "scope": "front-matter",
+   "note": "title-page metadata block; no group covered it"
+  }
+ ],
+ "not_tables": [
+  {
+   "group": "g1",
+   "pages": [
+    42
+   ],
+   "reason": "[version.syn] #define wording listing with insert/delete highlight boxes on the version values; not a table"
+  }
+ ],
+ "missed_by_all": [
+  "p2902r2-t1"
+ ],
+ "checked_pages": "all",
+ "source_pdf": "https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2025/p2902r2.pdf",
+ "set": "heldout-2026-10"
+}

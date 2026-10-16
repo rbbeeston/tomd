@@ -261,10 +261,13 @@ _STITCH_X_TOL = 6.0        # page-continued tables keep their x-extent
 _REGION_MARGIN = 2.0
 
 _TRAIL_OP_RE = re.compile(r"(&&|\|\||==|!=|>=|<=|::|[,(<\[{=]|\s[+\-*/])\s*$")
-_LEAD_CONT_RE = re.compile(r"^\s*(&&|\|\||[)>\]},.;]|::)")
+_LEAD_CONT_RE = re.compile(r"^\s*(&&|\|\||[)>\]},.;=]|::)")
 _PAGE_NUM_CELL_RE = re.compile(r"^\d{1,4}$")
 _WORD_RE = re.compile(r"\w+")
-_REF_LABEL_RE = re.compile(r"(^|\S)\[[A-Z][A-Za-z0-9.+_-]{1,29}\]$")    # [N2529], [P3847R1], [Smith20]
+_REF_LABEL_RE = re.compile(r"(^|\S)\[[A-Z][A-Za-z0-9.+_'\u2019-]{1,29}\]$")    # [N2529], [P3847R1], [O'Dwyer2018]
+_REF_LEAD_RE = re.compile(r"^\[[A-Z][A-Za-z0-9.+_'\u2019-]{1,29}\]\s+\S")  # "[P2831R0] Timur ..."
+_SECTION_NUM_CELL_RE = re.compile(r"^(\d+(\.\d+)+\.?|[IVXLC]+\.)$")        # "9.1", "1.2.3", "IV."
+_ASCII_ART_RE = re.compile(r"[+|]-{2,}|-{3,}[+|]")
 
 
 def _key(s: str) -> str:
@@ -332,14 +335,24 @@ def table_flags(cand: TableCandidate) -> list[str]:
     ncol = cand.shape[1]
     # The header row may legitimately have an empty corner cell.
     body = rows[1:] if len(rows) > 2 else rows
-    filled = [sum(1 for c in r if c) for r in body]
+    # A column filled in under half the rows is a sparse annotation column
+    # ("<- reconsider!", a mostly empty last column): legitimate, so it does
+    # not count towards raggedness. Most columns sparse is a misread layout.
+    fill = [sum(1 for r in body if j < len(r) and r[j]) / len(body) for j in range(ncol)]
+    dense = [j for j in range(ncol) if fill[j] >= 0.5]
+    if ncol >= 3 and len(dense) < ncol / 2:
+        flags.append("sparse-columns")
+    filled = [sum(1 for j in dense if j < len(r) and r[j]) for r in body]
     mode = Counter(filled).most_common(1)[0][0]
-    # A misread grid shows rows with an empty key cell (a wrapped line taken
-    # for a row) or with more cells than usual. Empty cells further right are
-    # normal ("TLS | (none found) | ").
+    # A misread layout shows rows that fill more of the dense columns than
+    # usual (not in a grid ruled both ways, where lines fix the cells), rows
+    # with an empty key cell (a wrapped line taken for a row), or a lone cell
+    # in a wide table. Fewer filled cells is normal: "TLS | (none found) | ".
     keyed = sum(1 for r in body if r and r[0]) >= len(body) / 2
+    extra = cand.source != "grid"
     ragged = sum(1 for r, f in zip(body, filled)
-                 if f > mode or (keyed and r and not r[0]) or (f == 1 and mode >= 3))
+                 if (extra and f > mode) or (keyed and r and not r[0])
+                 or (sum(1 for c in r if c) == 1 and ncol >= 3))
     if ragged / len(body) > 0.2:
         flags.append("ragged-columns")
     # Two rows with a gap: too little evidence for a grid (fragments of a
@@ -374,13 +387,24 @@ def table_flags(cand: TableCandidate) -> list[str]:
         nums = [int(c) for c in last if _PAGE_NUM_CELL_RE.match(c)]
         if all(a <= b for a, b in zip(nums, nums[1:])):
             flags.append("toc-like")
-    if first and all(c.strip() in BULLET_CHARS or c.strip("\u200b ") in BULLET_CHARS
-                     for c in first):
-        flags.append("bullet-list")                 # "● | item text"
+    if first and all(c.strip("\u200b ")[:1] in BULLET_CHARS for c in first):
+        flags.append("bullet-list")                 # "● | item text", "• item | more"
+    if (ncol == 2 and first and len(first) == len(rows)
+            and all(_SECTION_NUM_CELL_RE.match(c) for c in first)) \
+            or (rows[0] and _SECTION_NUM_CELL_RE.match(rows[0][0])):
+        flags.append("numbered-list")               # "9.1 | feature test macro" (a header cell is never a section number)
+    if sum(1 for c in cells if c and _ASCII_ART_RE.search(c)) >= 2:
+        flags.append("ascii-art")                   # "+---+ +---+" box diagrams
+    comment_cols = [j for j in range(ncol)
+                    if [r[j] for r in rows if j < len(r) and r[j]]
+                    and all(r[j] == "//" for r in rows if j < len(r) and r[j])]
+    if comment_cols:
+        flags.append("code-comment-column")         # "using x = y; | // | exposition only"
     if len(last) >= 2 and all(c.startswith("//") for c in last):
         flags.append("code-comment-column")         # "Fun fun; | // exposition only"
     # (a label may arrive glued to the previous entry's URL: "...pdf[N2550]")
-    if first and len(first) >= 0.5 * len(rows) and all(_REF_LABEL_RE.search(c) for c in first):
+    if first and len(first) >= 0.5 * len(rows) and all(
+            _REF_LABEL_RE.search(c) or _REF_LEAD_RE.match(c) for c in first):
         flags.append("reference-list")              # "[N2529] | Lambda Expressions..."
     return flags
 
@@ -388,7 +412,8 @@ def table_flags(cand: TableCandidate) -> list[str]:
 BAD_TABLE_FLAGS = frozenset({"ragged-columns", "empty-cells", "split-code",
                              "constant-first-column", "toc-like", "bullet-list",
                              "code-comment-column", "reference-list",
-                             "single-cell-rows", "sparse-two-rows"})
+                             "single-cell-rows", "sparse-two-rows", "numbered-list",
+                             "ascii-art", "sparse-columns"})
 # Tags are explicit markup: an empty column or an empty corner is the
 # author's choice there, not an extraction error.
 _TAG_EXEMPT_FLAGS = frozenset({"ragged-columns", "empty-cells"})

@@ -1,0 +1,70 @@
+{
+ "paper": "p3950r1",
+ "tables": [
+  {
+   "id": "p3950r1-t1",
+   "pages": [
+    5
+   ],
+   "rows": [
+    [
+     "SF",
+     "F",
+     "N",
+     "A",
+     "SA"
+    ],
+    [
+     "10",
+     "6",
+     "1",
+     "0",
+     "0"
+    ]
+   ],
+   "group": "g1",
+   "source": "verified-draft",
+   "note": "SG1 poll",
+   "scope": "table"
+  },
+  {
+   "id": "p3950r1-t2",
+   "pages": [
+    5
+   ],
+   "rows": [
+    [
+     "SF",
+     "F",
+     "N",
+     "A",
+     "SA"
+    ],
+    [
+     "12",
+     "18",
+     "3",
+     "0",
+     "0"
+    ]
+   ],
+   "group": "g2",
+   "source": "verified-draft",
+   "note": "EWG poll",
+   "scope": "table"
+  }
+ ],
+ "not_tables": [
+  {
+   "group": "g3",
+   "pages": [
+    4
+   ],
+   "reason": "wording insert/delete highlight"
+  }
+ ],
+ "missed_by_all": [],
+ "checked_pages": "all",
+ "source_pdf": "https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2026/p3950r1.pdf",
+ "set": "heldout-2026-10"
+}

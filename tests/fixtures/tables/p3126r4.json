@@ -1,0 +1,109 @@
+{
+ "paper": "p3126r4",
+ "tables": [
+  {
+   "id": "p3126r4-t1",
+   "pages": [
+    0
+   ],
+   "rows": [
+    [
+     "Document #:",
+     "P3126r4"
+    ],
+    [
+     "Date:",
+     "2026-07-06"
+    ],
+    [
+     "Project:",
+     "Programming Language C++"
+    ],
+    [
+     "Audience:",
+     "Library Evolution SG19 Machine Learning SG14 Game, Embedded, Low Latency"
+    ],
+    [
+     "Revises:",
+     "P3126r3"
+    ],
+    [
+     "Reply-to:",
+     "Phil Ratzloff (SAS Institute) phil.ratzloff@sas.com Andrew Lumsdaine lumsdaine@gmail.com"
+    ],
+    [
+     "Contributors:",
+     "Kevin Deweese Muhammad Osama (AMD, Inc) Scott McMillan (Carnegie Mellon University) Jesun Firoz Michael Wong (Intel) Jens Maurer Richard Dosselmann (University of Regina) Matthew Galati (Amazon) Guy Davidson (Creative Assembly) Oliver Rosten"
+    ]
+   ],
+   "group": null,
+   "source": "typed",
+   "scope": "front-matter",
+   "note": "unruled title-page metadata block; multi-line values (Audience 3 lines, Reply-to 4, Contributors 10) joined; found by recall scan"
+  },
+  {
+   "id": "p3126r4-t2",
+   "pages": [
+    1
+   ],
+   "rows": [
+    [
+     "Paper",
+     "Status",
+     "Description"
+    ],
+    [
+     "P1709",
+     "Inactive",
+     "Original proposal, now separated into the following papers."
+    ],
+    [
+     "P3126",
+     "Active",
+     "Overview, describes the big picture of what we are proposing."
+    ],
+    [
+     "P3127",
+     "Active",
+     "Background and Terminology provides the motivation, theoretical background, and terminology used across the other documents."
+    ],
+    [
+     "P3128",
+     "Active",
+     "Algorithms covers the initial algorithms as well as the ones we’d like to see in the future."
+    ],
+    [
+     "P3129",
+     "Active",
+     "Views has helpful views for traversing a graph."
+    ],
+    [
+     "P3130",
+     "Active",
+     "Graph Container Interface is the core interface used for uniformly accessing graph data structures by views and algorithms. It is also designed to easily adapt to existing graph data structures."
+    ],
+    [
+     "P3131",
+     "Active",
+     "Graph Containers describes a proposed high-performance compressed_graph container. It also discusses how to use containers in the standard library to define a graph, and how to adapt existing graph data structures."
+    ],
+    [
+     "P3337",
+     "Active",
+     "Comparison to other graph libraries on performance and usage syntax."
+    ]
+   ],
+   "group": "g1",
+   "source": "edited:ruled1",
+   "scope": "table",
+   "note": "Table 1 (caption excluded); multi-line descriptions joined; ruled1 split continuation lines into rows"
+  }
+ ],
+ "not_tables": [],
+ "missed_by_all": [
+  "p3126r4-t1"
+ ],
+ "checked_pages": "all",
+ "source_pdf": "https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2026/p3126r4.pdf",
+ "set": "heldout-2026-10"
+}

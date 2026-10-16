@@ -1,0 +1,174 @@
+{
+ "paper": "p3287r3",
+ "tables": [
+  {
+   "id": "p3287r3-t1",
+   "pages": [
+    0
+   ],
+   "rows": [
+    [
+     "Document Number:",
+     "P3287R3"
+    ],
+    [
+     "Date:",
+     "2025-02-13"
+    ],
+    [
+     "Reply-to:",
+     "Matthias Kretz <m.kretz@gsi.de>"
+    ],
+    [
+     "Audience:",
+     "LWG"
+    ],
+    [
+     "Target:",
+     "C++26"
+    ]
+   ],
+   "group": "g8",
+   "source": "typed",
+   "scope": "front-matter",
+   "note": "unruled title-page metadata block"
+  },
+  {
+   "id": "p3287r3-t2",
+   "pages": [
+    2
+   ],
+   "rows": [
+    [
+     "SF",
+     "F",
+     "N",
+     "A",
+     "SA"
+    ],
+    [
+     "9",
+     "6",
+     "3",
+     "1",
+     "1"
+    ]
+   ],
+   "group": null,
+   "source": "typed",
+   "scope": "table",
+   "note": "poll result, missed by all"
+  },
+  {
+   "id": "p3287r3-t3",
+   "pages": [
+    2
+   ],
+   "rows": [
+    [
+     "SF",
+     "F",
+     "N",
+     "A",
+     "SA"
+    ],
+    [
+     "12",
+     "7",
+     "1",
+     "1",
+     "0"
+    ]
+   ],
+   "group": null,
+   "source": "typed",
+   "scope": "table",
+   "note": "poll result, missed by all"
+  },
+  {
+   "id": "p3287r3-t4",
+   "pages": [
+    3
+   ],
+   "rows": [
+    [
+     "SF",
+     "F",
+     "N",
+     "A",
+     "SA"
+    ],
+    [
+     "4",
+     "7",
+     "5",
+     "1",
+     "1"
+    ]
+   ],
+   "group": null,
+   "source": "typed",
+   "scope": "table",
+   "note": "poll result, missed by all"
+  }
+ ],
+ "not_tables": [
+  {
+   "group": "g1",
+   "pages": [
+    5
+   ],
+   "reason": "code listings (status-quo examples)"
+  },
+  {
+   "group": "g2",
+   "pages": [
+    19
+   ],
+   "reason": "code listing"
+  },
+  {
+   "group": "g3",
+   "pages": [
+    24
+   ],
+   "reason": "wording code listing (using-declarations)"
+  },
+  {
+   "group": "g4",
+   "pages": [
+    25
+   ],
+   "reason": "wording code listing (using-declarations)"
+  },
+  {
+   "group": "g5",
+   "pages": [
+    26
+   ],
+   "reason": "wording code listing (using-declarations)"
+  },
+  {
+   "group": "g6",
+   "pages": [
+    26
+   ],
+   "reason": "wording code listing (using-declarations)"
+  },
+  {
+   "group": "g7",
+   "pages": [
+    27
+   ],
+   "reason": "wording code listing (using-declarations)"
+  }
+ ],
+ "missed_by_all": [
+  "p3287r3-t2",
+  "p3287r3-t3",
+  "p3287r3-t4"
+ ],
+ "checked_pages": "all",
+ "source_pdf": "https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2025/p3287r3.pdf",
+ "set": "heldout-2026-10"
+}

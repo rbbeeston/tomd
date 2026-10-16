@@ -1,0 +1,40 @@
+{
+ "paper": "p3819r0",
+ "tables": [
+  {
+   "id": "p3819r0-t1",
+   "pages": [
+    0
+   ],
+   "rows": [
+    [
+     "Document #:",
+     "P3819R0"
+    ],
+    [
+     "Date:",
+     "2025-09-02"
+    ],
+    [
+     "Project:",
+     "Programming Language C++"
+    ],
+    [
+     "Audience:",
+     "LEWG"
+    ]
+   ],
+   "group": null,
+   "source": "typed",
+   "note": "unruled title metadata block below author list",
+   "scope": "front-matter"
+  }
+ ],
+ "not_tables": [],
+ "missed_by_all": [
+  "p3819r0-t1"
+ ],
+ "checked_pages": "all",
+ "source_pdf": "https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2025/p3819r0.pdf",
+ "set": "heldout-2026-10"
+}

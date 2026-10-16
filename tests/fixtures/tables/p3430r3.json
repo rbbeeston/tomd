@@ -1,0 +1,278 @@
+{
+ "paper": "p3430r3",
+ "tables": [
+  {
+   "id": "p3430r3-t1",
+   "pages": [
+    0
+   ],
+   "rows": [
+    [
+     "Document Number:",
+     "P3430R3"
+    ],
+    [
+     "Date:",
+     "2025-02-13"
+    ],
+    [
+     "Reply-to:",
+     "Matthias Kretz <m.kretz@gsi.de>"
+    ],
+    [
+     "Audience:",
+     "LWG"
+    ],
+    [
+     "Target:",
+     "C++26"
+    ]
+   ],
+   "group": "g4",
+   "source": "picked:tomd1",
+   "note": "title-page metadata block",
+   "scope": "front-matter"
+  },
+  {
+   "id": "p3430r3-t2",
+   "pages": [
+    2
+   ],
+   "rows": [
+    [
+     "SF",
+     "F",
+     "N",
+     "A",
+     "SA"
+    ],
+    [
+     "2",
+     "9",
+     "0",
+     "0",
+     "0"
+    ]
+   ],
+   "group": null,
+   "source": "typed",
+   "note": "LEWG Wroclaw poll 1",
+   "scope": "table"
+  },
+  {
+   "id": "p3430r3-t3",
+   "pages": [
+    2
+   ],
+   "rows": [
+    [
+     "SF",
+     "F",
+     "N",
+     "A",
+     "SA"
+    ],
+    [
+     "3",
+     "11",
+     "0",
+     "0",
+     "0"
+    ]
+   ],
+   "group": null,
+   "source": "typed",
+   "note": "LEWG Wroclaw poll 2",
+   "scope": "table"
+  },
+  {
+   "id": "p3430r3-t4",
+   "pages": [
+    3
+   ],
+   "rows": [
+    [
+     "default constructor",
+     "not explicit",
+     ""
+    ],
+    [
+     "copy constructor",
+     "not explicit",
+     ""
+    ],
+    [
+     "broadcast constructor",
+     "not explicit, ill-formed when not value-preserving",
+     "←reconsider!"
+    ],
+    [
+     "conversion constructor",
+     "conditionally explicit: depends on participating value types",
+     ""
+    ],
+    [
+     "generator construtor",
+     "explicit",
+     ""
+    ],
+    [
+     "load constructors",
+     "explicit",
+     ""
+    ],
+    [
+     "Recommended practice: conversion constructor from implementation-defined set of types (intrinsics / vector builtin)",
+     "explicit",
+     "←reconsider!"
+    ],
+    [
+     "Recommended practice: conversion operator to implementation-defined set of types (intrinsics / vector builtin)",
+     "explicit",
+     "←reconsider!"
+    ]
+   ],
+   "group": "g5+g6+g7",
+   "source": "typed",
+   "note": "ruled constructor table, no header; tomd split it into 3 fragments; 3rd column holds \"←reconsider!\" (no space in text layer); implementation-/defined line break joined as compound hyphen",
+   "scope": "table"
+  },
+  {
+   "id": "p3430r3-t5",
+   "pages": [
+    4
+   ],
+   "rows": [
+    [
+     "before",
+     "with P3430R3"
+    ],
+    [
+     "using floatv = std::simd<float>; void f(floatv x) { x + 2; // ill-formed x + float(2); // OK x + floatv(2); // ill-formed x = 2 // ill-formed x = float(2) // OK x = floatv(2) // ill-formed }",
+     "using floatv = std::simd<float>; void f(floatv x) { x + 2; // ill-formed x + float(2); // OK x + floatv(2); // OK x = 2 // ill-formed x = float(2) // OK x = floatv(2) // OK }"
+    ]
+   ],
+   "group": "g1",
+   "source": "edited:ruled1",
+   "note": "before/after code table 1; text-layer spacing artifacts (\"simd <float >\", \"ill -formed\") removed per image",
+   "scope": "table"
+  },
+  {
+   "id": "p3430r3-t6",
+   "pages": [
+    5
+   ],
+   "rows": [
+    [
+     "before",
+     "with P3430R3"
+    ],
+    [
+     "void f(std::simd<int, 4> x) { x = static_cast<std::simd<int, 4>>( _mm_add_epi32(static_cast<__m128i>(x), static_cast<__m128i>(x))); }",
+     "void f(std::simd<int, 4> x) { x = _mm_add_epi32(x, x); }"
+    ]
+   ],
+   "group": "g3",
+   "source": "typed",
+   "note": "before/after code table 2",
+   "scope": "table"
+  },
+  {
+   "id": "p3430r3-t7",
+   "pages": [
+    5
+   ],
+   "rows": [
+    [
+     "SF",
+     "F",
+     "N",
+     "A",
+     "SA"
+    ],
+    [
+     "",
+     "",
+     "",
+     "",
+     ""
+    ]
+   ],
+   "group": null,
+   "source": "typed",
+   "note": "empty suggested-poll table (header + blank ruled row)",
+   "scope": "table"
+  },
+  {
+   "id": "p3430r3-t8",
+   "pages": [
+    5
+   ],
+   "rows": [
+    [
+     "SF",
+     "F",
+     "N",
+     "A",
+     "SA"
+    ],
+    [
+     "",
+     "",
+     "",
+     "",
+     ""
+    ]
+   ],
+   "group": null,
+   "source": "typed",
+   "note": "empty suggested-poll table (header + blank ruled row)",
+   "scope": "table"
+  },
+  {
+   "id": "p3430r3-t9",
+   "pages": [
+    8
+   ],
+   "rows": [
+    [
+     "SF",
+     "F",
+     "N",
+     "A",
+     "SA"
+    ],
+    [
+     "",
+     "",
+     "",
+     "",
+     ""
+    ]
+   ],
+   "group": null,
+   "source": "typed",
+   "note": "empty suggested-poll table (header + blank ruled row)",
+   "scope": "table"
+  }
+ ],
+ "not_tables": [
+  {
+   "group": "g2",
+   "pages": [
+    4
+   ],
+   "reason": "wording insert/delete text with bullets, not a table"
+  }
+ ],
+ "missed_by_all": [
+  "p3430r3-t2",
+  "p3430r3-t3",
+  "p3430r3-t7",
+  "p3430r3-t8",
+  "p3430r3-t9"
+ ],
+ "checked_pages": "all",
+ "source_pdf": "https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2025/p3430r3.pdf",
+ "set": "heldout-2026-10"
+}

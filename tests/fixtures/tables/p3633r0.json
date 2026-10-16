@@ -1,0 +1,47 @@
+{
+ "paper": "p3633r0",
+ "tables": [
+  {
+   "id": "p3633r0-t1",
+   "pages": [
+    0
+   ],
+   "rows": [
+    [
+     "Vendor/Family",
+     "Byte Width",
+     "Compilers/Tools"
+    ],
+    [
+     "C166/ST10 DSPs",
+     "16-bit",
+     "- VX Viper C++11- Tasking Classic C166 C++98- Keil C166 C++98"
+    ],
+    [
+     "Texas Instruments C2x Series DSPs",
+     "16-bit",
+     "- TI C2000-CGT C++11 Compiler"
+    ],
+    [
+     "NXP DSP56k DSPs",
+     "16-bit",
+     "- Tasking DSP56k C++98 Compiler"
+    ],
+    [
+     "Analog Devices SHARC Family DSPs",
+     "16/24-bit",
+     "- CrossCore Embedded Studio C++11"
+    ]
+   ],
+   "group": "g1",
+   "source": "typed",
+   "scope": "table",
+   "note": "booktabs table; multi-line cells joined; 'C++11- Tasking' / 'C++98- Keil' printed without space"
+  }
+ ],
+ "not_tables": [],
+ "missed_by_all": [],
+ "checked_pages": "all",
+ "source_pdf": "https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2025/p3633r0.pdf",
+ "set": "heldout-2026-10"
+}

@@ -1,0 +1,87 @@
+{
+ "paper": "p3977r0",
+ "tables": [
+  {
+   "id": "p3977r0-t1",
+   "pages": [
+    0
+   ],
+   "rows": [
+    [
+     "Document:",
+     "P3977R0"
+    ],
+    [
+     "Date:",
+     "January 22, 2026"
+    ],
+    [
+     "Audience:",
+     "WG21"
+    ],
+    [
+     "Reply to:",
+     "Oliver J. Rosten (oliver.rosten@gmail.com)"
+    ]
+   ],
+   "group": null,
+   "source": "typed",
+   "scope": "front-matter",
+   "note": "centered unruled metadata block under title; missed by all"
+  },
+  {
+   "id": "p3977r0-t2",
+   "pages": [
+    4
+   ],
+   "rows": [
+    [
+     "wide",
+     "",
+     "",
+     "",
+     "",
+     "",
+     ""
+    ],
+    [
+     "faithful",
+     "",
+     "",
+     "",
+     "",
+     "",
+     ""
+    ],
+    [
+     "free",
+     "disambiguating",
+     "lossy",
+     "disconnecting",
+     "Unconditionally hardened",
+     "narrow",
+     "pathological"
+    ]
+   ],
+   "group": "g2",
+   "source": "picked:ruled2",
+   "scope": "table",
+   "note": "TABLE I; 'wide' spans cols 1-4, 'faithful' spans cols 1-2; right-hand header cells empty"
+  }
+ ],
+ "not_tables": [
+  {
+   "group": "g1",
+   "pages": [
+    3
+   ],
+   "reason": "figure (FIG. 1 decision tree)"
+  }
+ ],
+ "missed_by_all": [
+  "p3977r0-t1"
+ ],
+ "checked_pages": "all",
+ "source_pdf": "https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2026/p3977r0.pdf",
+ "set": "heldout-2026-10"
+}

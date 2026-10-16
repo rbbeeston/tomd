@@ -1,0 +1,166 @@
+{
+ "paper": "p4297r1",
+ "tables": [
+  {
+   "id": "p4297r1-t1",
+   "pages": [
+    0
+   ],
+   "rows": [
+    [
+     "Document Number:",
+     "P4297R1"
+    ],
+    [
+     "Date:",
+     "2026-08-11"
+    ],
+    [
+     "Intent:",
+     "Ask"
+    ],
+    [
+     "Audience:",
+     "EWG"
+    ],
+    [
+     "Reply-to:",
+     "Vinnie Falco vinnie.falco@gmail.com Ville Voutilainen ville.voutilainen@gmail.com"
+    ]
+   ],
+   "group": "g3",
+   "source": "edited:tomd1",
+   "scope": "front-matter",
+   "note": "shaded metadata box; added missing Reply-to row (two authors in one cell)"
+  },
+  {
+   "id": "p4297r1-t2",
+   "pages": [
+    6,
+    7
+   ],
+   "rows": [
+    [
+     "#",
+     "Body, meeting",
+     "Poll (as quoted in P3100R8)",
+     "SF/F/N/A/SA",
+     "Result (as printed)",
+     "What was asked"
+    ],
+    [
+     "1",
+     "SG21, Wrocław, 2024-11",
+     "\"We support the direction of P3100R1 and encourage the authors to come back with a fully specified proposal.\"",
+     "19/6/0/0/0",
+     "Consensus",
+     "Direction"
+    ],
+    [
+     "2",
+     "EWG, Hagenberg, 2025-02",
+     "\"Pursue a language safety white paper in the C++26 timeframe containing systematic treatment of core language Undefined Behavior in C++, covering Erroneous Behavior, Profiles, and Contracts. Appoint Herb and Gašper as editors.\"",
+     "32/31/6/4/4",
+     "Consensus",
+     "A white paper and its editors"
+    ],
+    [
+     "3",
+     "EWG, Sofia, 2025-06",
+     "\"EWG encourages more work on P3100R2 and wants a step-by-step systematic review of P3100R2 to do per-clause approval for inclusion in the core language UB whitepaper (in telecons)\"",
+     "15/27/2/0/0",
+     "Consensus",
+     "A review process"
+    ],
+    [
+     "4",
+     "EWG, Sofia, 2025-06",
+     "\"EWG agrees that Timur's (magic) slide 53 in P3754R0 is a good basis for the core language UB whitepaper, and asks that the Whitepaper editors make it so.\"",
+     "14/28/2/1/0",
+     "Consensus",
+     "A diagram as a basis for the white paper"
+    ],
+    [
+     "5",
+     "SG23, Kona, 2025-11",
+     "\"SG23 supports the direction of P3100R4 and recommends its inclusion in C++29\"",
+     "15/12/1/1/2",
+     "Consensus",
+     "Direction and a target"
+    ],
+    [
+     "6",
+     "EWG, Croydon, 2026-03",
+     "\"Update P3100R5 by applying the presented rules to all cases of runtime-checkable UB in the standard, as listed in appendix A, and bring it back to EWG for case-by-case wording review\"",
+     "39/19/5/2/1",
+     "Strong consensus",
+     "A wording update across all 77 cases, and more review"
+    ],
+    [
+     "7",
+     "EWG, Brno, 2026-06",
+     "\"EWG Approves of the overall direction of P3100R7, agrees to attend/spend time reviewing every line item in Telecons, and re-consider this in Búzios.\"",
+     "16/15/6/2/0",
+     "Consensus",
+     "Direction, a telecon commitment, and reconsideration at Búzios"
+    ]
+   ],
+   "group": "g1",
+   "source": "edited:ruled1",
+   "scope": "table",
+   "note": "Table 1 cross-page; header added, row 7 on next page (header repeated in PDF, not duplicated)"
+  },
+  {
+   "id": "p4297r1-t3",
+   "pages": [
+    8
+   ],
+   "rows": [
+    [
+     "Stable name",
+     "Change",
+     "What it settles"
+    ],
+    [
+     "[defns.undefined]",
+     "Redefines undefined behavior as behavior that begins with an implicit contract assertion that the behavior cannot occur",
+     "Every case of UB is definitionally a contract assertion, and every later paper writes against this definition"
+    ],
+    [
+     "[defns.unconstrained]",
+     "Adds a definition for the residual state previously called \"undefined behavior\" in the specification machinery",
+     "Frees the old term to carry its new, contract-based meaning"
+    ],
+    [
+     "[intro.abstract] 3+a",
+     "Establishes a guarding contract assertion for every operation described as undefined behavior",
+     "Attaches the mechanism to every case of UB by construction"
+    ],
+    [
+     "[basic.contract.general]",
+     "Splits all contract assertions into explicit (user-written) and implicit (compiler-generated)",
+     "Makes implicit assertions a first-class language concept rather than a tooling detail"
+    ],
+    [
+     "[basic.contract.eval]",
+     "Adds the assume semantic and restricts it to implicit assertions",
+     "Puts the backwards-compatibility escape hatch and the explicit/implicit asymmetry into normative wording"
+    ],
+    [
+     "[basic.contract.implicit]",
+     "Adds the section defining implicit contract assertions, stating that all undefined behavior has a guarding contract assertion",
+     "The clause that makes the whole framework normative"
+    ]
+   ],
+   "group": "g2",
+   "source": "edited:ruled2",
+   "scope": "table",
+   "note": "Table 2; header row added"
+  }
+ ],
+ "not_tables": [],
+ "missed_by_all": [],
+ "checked_pages": "all",
+ "source_pdf": "https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2026/p4297r1.pdf",
+ "set": "heldout-2026-10"
+}

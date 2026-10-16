@@ -1,0 +1,60 @@
+{
+ "paper": "p3658r1",
+ "tables": [
+  {
+   "id": "p3658r1-t1",
+   "pages": [
+    1
+   ],
+   "rows": [
+    [
+     "Identifiers",
+     "C++11–C++20 as originally published",
+     "After P1949",
+     "With this proposal"
+    ],
+    [
+     "Hawaiʻi, ǃnu, 𒉭, 𓋴𓅱𓎛𓏏𓆇, íkǃaːⁿd̥ǎ̤, fʹ, grad_𝑓, 𝑥2, xⁿ, 𝔰𝔬",
+     "OK",
+     "OK",
+     "OK"
+    ],
+    [
+     "𝛁f, x², x₂, 𝜕Ω",
+     "OK",
+     "Invalid",
+     "OK"
+    ],
+    [
+     "∇f, ∂Ω, C∞",
+     "Invalid",
+     "Invalid",
+     "OK"
+    ],
+    [
+     "🜅, , 🙵🞴🙶🙷",
+     "OK",
+     "Invalid",
+     "Invalid"
+    ]
+   ],
+   "group": "g1",
+   "source": "edited:tags1",
+   "note": "3. Examples; text taken from the PDF text layer (math-italic 𝑓/𝑥, en dash in header); the emoji glyph in the last row (a flying-saucer-like picture) has no Unicode in the text layer (a space), so it is left out",
+   "scope": "table"
+  }
+ ],
+ "not_tables": [
+  {
+   "group": "g2",
+   "pages": [
+    4
+   ],
+   "reason": "wording paragraph with yellow insert highlights, not a table"
+  }
+ ],
+ "missed_by_all": [],
+ "checked_pages": "all",
+ "source_pdf": "https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2025/p3658r1.pdf",
+ "set": "heldout-2026-10"
+}

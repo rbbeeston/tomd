@@ -1,0 +1,110 @@
+{
+ "paper": "p3561r2",
+ "tables": [
+  {
+   "id": "p3561r2-t1",
+   "pages": [
+    0
+   ],
+   "rows": [
+    [
+     "Revision",
+     "Date",
+     "Author(s)",
+     "Description"
+    ],
+    [
+     "P3561R0",
+     "8.1.2025",
+     "Esa Pulkkinen",
+     "Initial version for C++ standardization"
+    ],
+    [
+     "P3561R1",
+     "15.1.2025",
+     "Esa Pulkkinen",
+     "Clarify valueless_by_exception() = true scenario"
+    ],
+    [
+     "P3561R2",
+     "6.4.2025",
+     "Esa Pulkkinen",
+     "Describe semantics of valueless_by_exception() = true scenario. Many fixes to indices in the description of the categorical semantics. Expanded description of loose ends."
+    ]
+   ],
+   "group": null,
+   "source": "typed",
+   "scope": "table",
+   "note": "unruled revision history table; 'Pulkki-nen' hyphen line break joined; no group covered it"
+  },
+  {
+   "id": "p3561r2-t2",
+   "pages": [
+    3
+   ],
+   "rows": [
+    [
+     "operation",
+     "multi-parameter functions",
+     "variant first parameter",
+     "multiple functions"
+    ],
+    [
+     "visit invoke",
+     "No",
+     "Yes",
+     "Tuple"
+    ],
+    [
+     "visit invoke cases",
+     "No",
+     "Yes",
+     "Variadics"
+    ],
+    [
+     "invoke cases",
+     "No",
+     "No",
+     "Variadics"
+    ],
+    [
+     "visit apply",
+     "Yes",
+     "Yes",
+     "Tuple"
+    ],
+    [
+     "visit apply cases",
+     "Yes",
+     "Yes",
+     "Variadics"
+    ],
+    [
+     "apply cases",
+     "Yes",
+     "No",
+     "Variadics"
+    ]
+   ],
+   "group": "g1",
+   "source": "typed",
+   "scope": "table",
+   "note": "ruled1 collapsed body into one row; underscores are drawn (text layer has spaces) | underscores are drawn, not in the text layer (\"visit invoke\"); text layer wins"
+  }
+ ],
+ "not_tables": [
+  {
+   "group": "g2",
+   "pages": [
+    5
+   ],
+   "reason": "commutative diagram (figure), not a table"
+  }
+ ],
+ "missed_by_all": [
+  "p3561r2-t1"
+ ],
+ "checked_pages": "all",
+ "source_pdf": "https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2025/p3561r2.pdf",
+ "set": "heldout-2026-10"
+}

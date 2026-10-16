@@ -1,0 +1,56 @@
+{
+ "paper": "p3155r1",
+ "tables": [
+  {
+   "id": "p3155r1-t1",
+   "pages": [
+    0
+   ],
+   "rows": [
+    [
+     "Document #:",
+     "P3155R1"
+    ],
+    [
+     "Date:",
+     "2026-06-05"
+    ],
+    [
+     "Project:",
+     "Programming Language C++"
+    ],
+    [
+     "Audience:",
+     "LEWG"
+    ]
+   ],
+   "group": null,
+   "source": "typed",
+   "scope": "front-matter",
+   "note": "title-page metadata block; no group covered it"
+  }
+ ],
+ "not_tables": [
+  {
+   "group": "g1",
+   "pages": [
+    6,
+    7
+   ],
+   "reason": "bibliography reference entries (label + citation), not a table"
+  },
+  {
+   "group": "g2",
+   "pages": [
+    7
+   ],
+   "reason": "bibliography reference entries, not a table"
+  }
+ ],
+ "missed_by_all": [
+  "p3155r1-t1"
+ ],
+ "checked_pages": "all",
+ "source_pdf": "https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2026/p3155r1.pdf",
+ "set": "heldout-2026-10"
+}

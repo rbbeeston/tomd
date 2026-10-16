@@ -1,0 +1,52 @@
+{
+ "paper": "p3657r2",
+ "tables": [
+  {
+   "id": "p3657r2-t1",
+   "pages": [
+    0
+   ],
+   "rows": [
+    [
+     "Document #:",
+     "P3657R2"
+    ],
+    [
+     "Date:",
+     "2025-11-03"
+    ],
+    [
+     "Project:",
+     "Programming Language C++"
+    ],
+    [
+     "Audience:",
+     "Core"
+    ],
+    [
+     "Reply-to:",
+     "Alisdair Meredith <ameredith1@bloomberg.net>"
+    ]
+   ],
+   "group": null,
+   "source": "typed",
+   "note": "title-page metadata block; Reply-to wraps to 2 lines",
+   "scope": "front-matter"
+  }
+ ],
+ "not_tables": [
+  {
+   "group": "g1",
+   "pages": [
+    8
+   ],
+   "reason": "wording delete (strikethrough) text, not a table"
+  }
+ ],
+ "missed_by_all": [
+  "p3657r2-t1"
+ ],
+ "checked_pages": "all",
+ "source_pdf": "https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2025/p3657r2.pdf",
+ "set": "heldout-2026-10"
+}

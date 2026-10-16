@@ -1,0 +1,373 @@
+{
+ "paper": "p3691r1",
+ "tables": [
+  {
+   "id": "p3691r1-t1",
+   "pages": [
+    0
+   ],
+   "rows": [
+    [
+     "Document Number:",
+     "P3691R1"
+    ],
+    [
+     "Date:",
+     "2025-06-17"
+    ],
+    [
+     "Reply-to:",
+     "Matthias Kretz <m.kretz@gsi.de>, Abhilash Majumder <abmajumder@nvidia.com>, Bryce Adelstein Lelbach <brycelelbach@gmail.com>, Daniel Towner <daniel.towner@intel.com>, Ilya Burylov <iburylov@nvidia.com>, Mark Hoemmen <mhoemmen@nvidia.com>, Ruslan Arutyunyan <ruslan.arutyunyan@intel.com>"
+    ],
+    [
+     "Audience:",
+     "LWG"
+    ],
+    [
+     "Target:",
+     "C++26"
+    ]
+   ],
+   "group": "g5",
+   "source": "typed",
+   "note": "unruled title-page metadata block; 7-line Reply-to joined; tomd kept only 2 rows",
+   "scope": "front-matter"
+  },
+  {
+   "id": "p3691r1-t2",
+   "pages": [
+    2
+   ],
+   "rows": [
+    [
+     "SF",
+     "F",
+     "N",
+     "A",
+     "SA"
+    ],
+    [
+     "8",
+     "7",
+     "2",
+     "5",
+     "3"
+    ]
+   ],
+   "group": null,
+   "source": "typed",
+   "note": "ruled SF/F/N/A/SA poll result: We can live with the duplicated namespace::type name simd::simd",
+   "scope": "table"
+  },
+  {
+   "id": "p3691r1-t3",
+   "pages": [
+    2
+   ],
+   "rows": [
+    [
+     "SF",
+     "F",
+     "N",
+     "A",
+     "SA"
+    ],
+    [
+     "8",
+     "9",
+     "3",
+     "4",
+     "2"
+    ]
+   ],
+   "group": null,
+   "source": "typed",
+   "note": "ruled SF/F/N/A/SA poll result: Rename ... to std::simd::simd",
+   "scope": "table"
+  },
+  {
+   "id": "p3691r1-t4",
+   "pages": [
+    2
+   ],
+   "rows": [
+    [
+     "SF",
+     "F",
+     "N",
+     "A",
+     "SA"
+    ],
+    [
+     "6",
+     "8",
+     "5",
+     "5",
+     "2"
+    ]
+   ],
+   "group": null,
+   "source": "typed",
+   "note": "ruled SF/F/N/A/SA poll result: Rename ... to std::simd::pack",
+   "scope": "table"
+  },
+  {
+   "id": "p3691r1-t5",
+   "pages": [
+    2
+   ],
+   "rows": [
+    [
+     "SF",
+     "F",
+     "N",
+     "A",
+     "SA"
+    ],
+    [
+     "9",
+     "4",
+     "4",
+     "5",
+     "5"
+    ]
+   ],
+   "group": null,
+   "source": "typed",
+   "note": "ruled SF/F/N/A/SA poll result: We prefer std::simd::pack over std::simd::simd",
+   "scope": "table"
+  },
+  {
+   "id": "p3691r1-t6",
+   "pages": [
+    2
+   ],
+   "rows": [
+    [
+     "std::simd::pack",
+     "13"
+    ],
+    [
+     "std::simd::simd",
+     "11"
+    ],
+    [
+     "std::simd::vec",
+     "24"
+    ],
+    [
+     "std::simd::batch",
+     "5"
+    ]
+   ],
+   "group": null,
+   "source": "typed",
+   "note": "unruled 2-col name/vote-count list (\"Vote for all the names you like\"), no header",
+   "scope": "borderline"
+  },
+  {
+   "id": "p3691r1-t7",
+   "pages": [
+    2
+   ],
+   "rows": [
+    [
+     "SF",
+     "F",
+     "N",
+     "A",
+     "SA"
+    ],
+    [
+     "21",
+     "3",
+     "1",
+     "1",
+     "0"
+    ]
+   ],
+   "group": null,
+   "source": "typed",
+   "note": "ruled SF/F/N/A/SA poll result: Forward P3691R0 to LWG",
+   "scope": "table"
+  },
+  {
+   "id": "p3691r1-t8",
+   "pages": [
+    7
+   ],
+   "rows": [
+    [
+     "class template alias template",
+     "obvious criticism"
+    ],
+    [
+     "std::simd::basic_simd<int> std::simd::simd<int>",
+     "repetitive and human-ambiguous"
+    ],
+    [
+     "std::dpt::basic_simd<int> std::dpt::simd<int>",
+     "what is “dpt”? (like what is “pmr”?)"
+    ],
+    [
+     "std::datapar::basic_simd<int> std::datapar::simd<int>",
+     "see Section 3"
+    ],
+    [
+     "std::dataparallel::basic_simd<int> std::dataparallel::simd<int>",
+     "see Section 3"
+    ],
+    [
+     "std::data_parallelism::basic_simd<int> std::data_parallelism::simd<int>",
+     "too long? also see Section 3"
+    ],
+    [
+     "std::simd::basic_batch<int> std::simd::batch<int>",
+     ""
+    ],
+    [
+     "std::simd::basic_number<int> std::simd::number<int>",
+     "it’s not a number, but set of numbers"
+    ],
+    [
+     "std::simd::basic_numbers<int> std::simd::numbers<int>",
+     "we already have std::numbers::* what are “SIMD numbers”?"
+    ],
+    [
+     "std::simd::basic_pack<int> std::simd::pack<int>",
+     "C++ already has parameter packs; another existing meaning: packed structs"
+    ],
+    [
+     "std::simd::basic_value<int> std::simd::value<int>",
+     "too many variables are named value"
+    ],
+    [
+     "std::simd::basic_vec<int> std::simd::vec<int>",
+     "sounds like a container"
+    ],
+    [
+     "std::simd::basic_vector<int> std::simd::vector<int>",
+     "sounds even more like a container"
+    ],
+    [
+     "std::simd::basic_wide<int> std::simd::wide<int>",
+     "like in wchar_t? “SIMD wide” and “SIMD basic wide” need an explanation"
+    ],
+    [
+     "std::simd::basic_chunk<int> std::simd::chunk<int>",
+     "this is not a chunk out of a SIMD register"
+    ],
+    [
+     "std::datapar::basic_chunk<int> std::datapar::chunk<int>",
+     "where did the “SIMD” name go?"
+    ],
+    [
+     "std::dataparallel::basic_chunk<int> std::dataparallel::chunk<int>",
+     "ditto"
+    ],
+    [
+     "std::dataparallel::basic_numbers<int> std::dataparallel::numbers<int>",
+     "long; any abbreviation becomes unclear"
+    ]
+   ],
+   "group": "g2",
+   "source": "edited:ruled3",
+   "note": "5.1 options for basic_simd; header \"class template alias template\" is a 2-line cell; each name cell holds 2 lines; empty criticism cell for basic_batch row",
+   "scope": "table"
+  },
+  {
+   "id": "p3691r1-t9",
+   "pages": [
+    8
+   ],
+   "rows": [
+    [
+     "class template alias template",
+     "obvious criticism"
+    ],
+    [
+     "std::simd::basic_mask<4> std::simd::mask<int>",
+     ""
+    ],
+    [
+     "std::simd::basic_simd_mask<4> std::simd::simd_mask<int>",
+     "repetitive"
+    ],
+    [
+     "std::dpt::basic_mask<4> std::dpt::mask<int>",
+     "relation to dpt::simd only via namespace"
+    ],
+    [
+     "std::dpt::basic_simd_mask<4> std::dpt::simd_mask<int>",
+     "repetitive like dpt::simd"
+    ],
+    [
+     "std::datapar::basic_mask<4> std::datapar::mask<int>",
+     "LEWG already voted against this"
+    ],
+    [
+     "std::datapar::basic_simd_mask<4> std::datapar::simd_mask<int>",
+     "repetitive in a different way"
+    ],
+    [
+     "std::dataparallel::basic_simd_mask<4> std::dataparallel::simd_mask<int>",
+     "ditto"
+    ],
+    [
+     "std::simd::basic_logical<4> std::simd::logical<int>",
+     ""
+    ],
+    [
+     "std::simd::basic_batch_bool<4> std::simd::batch_bool<int>",
+     ""
+    ],
+    [
+     "std::simd::basic_simd_bool<4> std::simd::simd_bool<int>",
+     ""
+    ],
+    [
+     "std::simd::basic_boolean<4> std::simd::boolean<int>",
+     ""
+    ]
+   ],
+   "group": "g3",
+   "source": "edited:ruled4",
+   "note": "5.2 options for basic_simd_mask; several empty criticism cells",
+   "scope": "table"
+  }
+ ],
+ "not_tables": [
+  {
+   "group": "g1",
+   "pages": [
+    5
+   ],
+   "reason": "boxed code listings (4.2-4.6) with section headings, not a table"
+  },
+  {
+   "group": "g4",
+   "pages": [
+    11
+   ],
+   "reason": "numbered wording instructions with insert/delete markup, not a table"
+  },
+  {
+   "group": "g6",
+   "pages": [
+    3
+   ],
+   "reason": "list of std namespace names flowed into 3 columns (a list, not a table)"
+  }
+ ],
+ "missed_by_all": [
+  "p3691r1-t2",
+  "p3691r1-t3",
+  "p3691r1-t4",
+  "p3691r1-t5",
+  "p3691r1-t6",
+  "p3691r1-t7"
+ ],
+ "checked_pages": "all",
+ "source_pdf": "https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2025/p3691r1.pdf",
+ "set": "heldout-2026-10"
+}

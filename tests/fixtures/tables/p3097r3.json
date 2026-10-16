@@ -1,0 +1,143 @@
+{
+ "paper": "p3097r3",
+ "tables": [
+  {
+   "id": "p3097r3-t1",
+   "pages": [
+    0
+   ],
+   "rows": [
+    [
+     "Document #:",
+     "P3097R3"
+    ],
+    [
+     "Date:",
+     "2026-06-12"
+    ],
+    [
+     "Project:",
+     "Programming Language C++"
+    ],
+    [
+     "Audience:",
+     "CWG"
+    ]
+   ],
+   "group": null,
+   "source": "typed",
+   "scope": "front-matter",
+   "note": "unruled title-page metadata block, missed by all"
+  },
+  {
+   "id": "p3097r3-t2",
+   "pages": [
+    2
+   ],
+   "rows": [
+    [
+     "SF",
+     "F",
+     "N",
+     "A",
+     "SA"
+    ],
+    [
+     "18",
+     "15",
+     "5",
+     "1",
+     "2"
+    ]
+   ],
+   "group": null,
+   "source": "typed",
+   "scope": "table",
+   "note": "monospace-aligned poll inside green poll box (EWG St. Louis); missed by all"
+  },
+  {
+   "id": "p3097r3-t3",
+   "pages": [
+    2
+   ],
+   "rows": [
+    [
+     "SF",
+     "F",
+     "N",
+     "A",
+     "SA"
+    ],
+    [
+     "20",
+     "24",
+     "13",
+     "14",
+     "2"
+    ]
+   ],
+   "group": null,
+   "source": "typed",
+   "scope": "table",
+   "note": "monospace-aligned poll inside green poll box (EWG Hagenberg); missed by all"
+  },
+  {
+   "id": "p3097r3-t4",
+   "pages": [
+    3
+   ],
+   "rows": [
+    [
+     "SF",
+     "F",
+     "N",
+     "A",
+     "SA"
+    ],
+    [
+     "8",
+     "14",
+     "4",
+     "1",
+     "5"
+    ]
+   ],
+   "group": null,
+   "source": "typed",
+   "scope": "table",
+   "note": "monospace-aligned poll inside green poll box (EWG Brno); missed by all"
+  }
+ ],
+ "not_tables": [
+  {
+   "group": "g1",
+   "pages": [
+    23
+   ],
+   "reason": "wording insert/delete highlight"
+  },
+  {
+   "group": "g2",
+   "pages": [
+    24
+   ],
+   "reason": "wording insert highlight (bulleted wording)"
+  },
+  {
+   "group": "g3",
+   "pages": [
+    25
+   ],
+   "reason": "wording insert/delete highlight (feature macro value)"
+  }
+ ],
+ "missed_by_all": [
+  "p3097r3-t1",
+  "p3097r3-t2",
+  "p3097r3-t3",
+  "p3097r3-t4"
+ ],
+ "checked_pages": "all",
+ "source_pdf": "https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2026/p3097r3.pdf",
+ "set": "heldout-2026-10"
+}

@@ -1,0 +1,303 @@
+{
+ "paper": "p4195r0",
+ "tables": [
+  {
+   "id": "p4195r0-t1",
+   "pages": [
+    0
+   ],
+   "rows": [
+    [
+     "Document Number:",
+     "P4195R0"
+    ],
+    [
+     "Date:",
+     "2026-09-01"
+    ],
+    [
+     "Intent:",
+     "Inform"
+    ],
+    [
+     "Audience:",
+     "WG21"
+    ],
+    [
+     "Reply-to:",
+     "Vinnie Falco vinnie.falco@gmail.com Mungo Gill mungo.gill@me.com"
+    ]
+   ],
+   "group": "g5",
+   "source": "edited:tomd1",
+   "note": "shaded title-page metadata block; tomd omitted Reply-to row; two-line Reply-to joined",
+   "scope": "front-matter"
+  },
+  {
+   "id": "p4195r0-t2",
+   "pages": [
+    14
+   ],
+   "rows": [
+    [
+     "",
+     "Reviewer scrutinizes",
+     "Reviewer abstains"
+    ],
+    [
+     "Author revises",
+     "3, 3-c",
+     "4, 1"
+    ],
+    [
+     "Author pushes unchanged",
+     "1, 2-c",
+     "5, -2"
+    ]
+   ],
+   "group": "g1",
+   "source": "typed",
+   "note": "Matrix A; header row has empty first cell; ruled1 split words into columns",
+   "scope": "table"
+  },
+  {
+   "id": "p4195r0-t3",
+   "pages": [
+    15
+   ],
+   "rows": [
+    [
+     "",
+     "B accommodates",
+     "B blocks"
+    ],
+    [
+     "A accommodates",
+     "3, 3",
+     "0, 4"
+    ],
+    [
+     "A blocks",
+     "4, 0",
+     "1, 1"
+    ]
+   ],
+   "group": "g6",
+   "source": "edited:tomd2",
+   "note": "Matrix B; tomd omitted header row",
+   "scope": "table"
+  },
+  {
+   "id": "p4195r0-t4",
+   "pages": [
+    15
+   ],
+   "rows": [
+    [
+     "",
+     "Room acquiesces",
+     "Room organizes"
+    ],
+    [
+     "Chair advances",
+     "4, 3",
+     "0, 2"
+    ],
+    [
+     "Chair defers",
+     "1, 0",
+     "2, 3"
+    ]
+   ],
+   "group": "g7",
+   "source": "edited:tomd3",
+   "note": "Matrix C; tomd omitted header row",
+   "scope": "table"
+  },
+  {
+   "id": "p4195r0-t5",
+   "pages": [
+    16
+   ],
+   "rows": [
+    [
+     "Author response",
+     "Cost",
+     "Poll effect"
+    ],
+    [
+     "Redesign architecture",
+     "Very high",
+     "Expert becomes SF"
+    ],
+    [
+     "Thoroughly investigate objection",
+     "High",
+     "Unknown"
+    ],
+    [
+     "Add narrow accommodation",
+     "Moderate",
+     "Expert becomes WA"
+    ],
+    [
+     "Persuade room objection is non-blocking",
+     "Low-moderate",
+     "Expert remains SA"
+    ],
+    [
+     "Clarify scope/document caveat",
+     "Low",
+     "Expert becomes N"
+    ],
+    [
+     "Do nothing",
+     "Zero",
+     "Expert remains SA"
+    ]
+   ],
+   "group": "g2",
+   "source": "picked:tomd4",
+   "note": "author response options",
+   "scope": "table"
+  },
+  {
+   "id": "p4195r0-t6",
+   "pages": [
+    24,
+    25
+   ],
+   "rows": [
+    [
+     "Date",
+     "Event",
+     "Type"
+    ],
+    [
+     "2024-11-19",
+     "EWG forwards P2900R11 to CWG/LEWG for C++26 (SF:25, F:17, N:0, A:3, SA:12)",
+     "POLL"
+    ],
+    [
+     "2024-11-19",
+     "P3506R0 [37] \"P2900 Is Still Not Ready for C++26\" (Dos Reis). Published in the January 2025 mailing",
+     "OPPOSITION"
+    ],
+    [
+     "2025-01-12",
+     "P3573R0 [36] \"Contract concerns\" (Hava, Garcia, Regev, Dos Reis, Spicer, Stroustrup, et al.)",
+     "OPPOSITION"
+    ],
+    [
+     "2025-01-13",
+     "P2899R0 [16] \"Contracts for C++ - Rationale\" (Berne, Doumler, Khlebnikov, Krzemieński)",
+     "RATIONALE (filed one day after P3573R0; see below)"
+    ],
+    [
+     "2025-02-03",
+     "P3591R0 [10] \"Contextualizing Contracts Concerns\" (Berne, Doumler). Dated seven days before Hagenberg; published in the post-meeting mailing",
+     "REBUTTAL"
+    ],
+    [
+     "2025-02-11",
+     "EWG Hagenberg lists P3573, P3506, and P3591 as \"Papers considered\" in one session [14]; poll \"Remove P2900 from CWG's consideration for C++26, find a different ship vehicle\" (SF:9, F:8, N:3, A:19, SA:41), consensus against",
+     "POLL"
+    ],
+    [
+     "2025-02-15",
+     "Plenary adopts P2900R14 into C++26 Working Draft (100 in favor, 14 opposed, 12 abstain)",
+     "POLL"
+    ],
+    [
+     "2025-09-02",
+     "P3829R0 [47] \"Contracts do not belong in the language\" (Chisnall, Spicer, Dos Reis, et al.)",
+     "OPPOSITION"
+    ],
+    [
+     "2025-09-03",
+     "P3835R0 [48] \"Contracts make C++ less safe - full stop\" (Spicer, Voutilainen, Garcia)",
+     "OPPOSITION"
+    ],
+    [
+     "2025-09-27",
+     "P3849R0 [49] \"SIS/TK611 considerations on Contract Assertions\" (Achitz)",
+     "OPPOSITION"
+    ],
+    [
+     "2025-09-29",
+     "P3851R0 [50] \"Position on contracts assertion for C++26\" (Garcia et al.)",
+     "OPPOSITION"
+    ],
+    [
+     "2025-10-06",
+     "P3846R0 [11] \"C++26 Contract Assertions, Reasserted\" (Doumler, Berne, et al.). Same mailing as P3849R0 and P3851R0",
+     "REBUTTAL"
+    ],
+    [
+     "2025-11-04",
+     "EWG Kona: seven NB removal comments all fail (~9 SF vs ~40 SA each); P3846R0 listed as the response material after the Netherlands comment, not presented [17]; N5031 [5] records \"Rejected all but 2 requests\"",
+     "POLL"
+    ],
+    [
+     "2025-11-04",
+     "D3911R0 [55] \"Make Contracts Reliably Non-Ignorable\" (Neaţu, Alexandrescu, Teodorescu, Nichita). Presented at Kona as a draft; tracker issue created by the EWG chair the same day",
+     "OPPOSITION"
+    ],
+    [
+     "2025-11-04",
+     "EWG Kona: D3911R0 non-ignorable pre! (SF:18, F:25, N:22, A:7, SA:0), consensus for change [55]",
+     "POLL"
+    ],
+    [
+     "2025-12-14",
+     "P3946R0 [13] \"Designing enforced assertions\" (Krzemieński)",
+     "REBUTTAL"
+    ],
+    [
+     "2025-12-15",
+     "P3912R0 [12] \"Design considerations for always-enforced contract assertions\" (Doumler, Berne, et al.)",
+     "REBUTTAL"
+    ],
+    [
+     "2026-01-15",
+     "EWG telecon: \"EWG approves of the direction of P3911R2 to resolve RO 2-056 for C++26, and encourages more work in said direction\" (SF:4, F:4, N:9, A:13, SA:12), consensus against [62]",
+     "POLL"
+    ],
+    [
+     "2026-02-02",
+     "P4005R0 [51] \"A proposal for guaranteed-(quick-)enforced contracts\" (Voutilainen)",
+     "OPPOSITION"
+    ],
+    [
+     "2026-02-05",
+     "EWG telecon: D4005R0 not consensus [56]",
+     "POLL"
+    ],
+    [
+     "2026-02-09",
+     "P4009R0 [52] \"A proposal for solving all of the contracts concerns\" (Voutilainen)",
+     "OPPOSITION"
+    ],
+    [
+     "2026-02-12",
+     "EWG telecon: D4009R0 strong consensus against [57]",
+     "POLL"
+    ],
+    [
+     "2026-03-23",
+     "EWG Croydon: P3912R0 and P3946R0 first discussed, in the session that polls P4044R0 \"Just pre!\" (SF:3, F:4, N:0, A:22, SA:23), not consensus [61]",
+     "POLL"
+    ]
+   ],
+   "group": "g3+g4",
+   "source": "edited:ruled3+ruled4",
+   "note": "Appendix A timeline; cross-page, repeated header dropped; superscript refs inline per text layer",
+   "scope": "table"
+  }
+ ],
+ "not_tables": [],
+ "missed_by_all": [],
+ "checked_pages": "all",
+ "source_pdf": "https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2026/p4195r0.pdf",
+ "set": "heldout-2026-10"
+}

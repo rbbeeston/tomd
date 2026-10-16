@@ -1,0 +1,62 @@
+{
+ "paper": "p3986r1",
+ "tables": [
+  {
+   "id": "p3986r1-t1",
+   "pages": [
+    4
+   ],
+   "rows": [
+    [
+     "SF",
+     "F",
+     "N",
+     "A",
+     "SA"
+    ],
+    [
+     "2",
+     "5",
+     "2",
+     "15",
+     "5"
+    ]
+   ],
+   "group": "g1",
+   "source": "verified-draft",
+   "note": "R0 poll: Common+Require vs Common+Allow",
+   "scope": "table"
+  },
+  {
+   "id": "p3986r1-t2",
+   "pages": [
+    5
+   ],
+   "rows": [
+    [
+     "SF",
+     "F",
+     "N",
+     "A",
+     "SA"
+    ],
+    [
+     "11",
+     "12",
+     "0",
+     "5",
+     "0"
+    ]
+   ],
+   "group": "g2",
+   "source": "verified-draft",
+   "note": "R0 poll: approve Common+Allow wording",
+   "scope": "table"
+  }
+ ],
+ "not_tables": [],
+ "missed_by_all": [],
+ "checked_pages": "all",
+ "source_pdf": "https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2026/p3986r1.pdf",
+ "set": "heldout-2026-10"
+}

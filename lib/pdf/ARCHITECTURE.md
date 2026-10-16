@@ -160,6 +160,8 @@ Tables follow the same rule as text: independent extractions are compared and ag
 - Cell text is rebuilt from the page's own character runs, so every character belongs to one word even where columns overprint (text that jumps back in x starts a new word), and the PDF's spaces are kept. Fonts, bold, italic and monospace survive.
 - Words split where text jumps back in x (overprint) and where a code font meets a body font with no space (an identifier running into the next column).
 - A table continued from the previous page whose continuation has only two rules near the top of the page is read as a fragment and kept only if it stitches onto the table ending the previous page. Rules belonging to a grid already found are not reused for rule-band tables.
+- Characters are ordered by their centre (ligature glyphs such as "ff" can start right of the next character's left edge); a space character is kept only where it sits in a gap between two characters of its line; spaces are inferred from gaps only when a cell has no space characters of its own.
+- When find_tables builds a junk grid (a section underline joined to a real table), it is re-run inside each area its vertical rules span; only grids that pass the rule checks claim their area. Trailing margin-started prose is trimmed off a band, and a band of more than six prose lines is running text.
 - Superscript reference marks (strictly smaller, bottom raised by more than 2pt and top by more than 1pt against a neighbouring word, at most 8 characters) are attached to the line they belong to, so `P3481R5 [10]` keeps its order, and they never define columns or caption lines.
 - Caption bands are not rows: a band is a caption when every line starts left of the padded cell text, or when it holds at most three lines of prose that either start off the cell-text edge or leave the band mostly empty. A caption between rules of the same width splits them into separate tables.
 - Header-row gaps define a column when every row whose text crosses that x starts a word exactly there (an overrunning identifier with the next column drawn over it); a centred column does not qualify.
@@ -178,7 +180,7 @@ Tables follow the same rule as text: independent extractions are compared and ag
 **T16a. Selection and confidence**
 - `table.py:select_tables`
 - Ruled candidates continued on the next page are stitched (`stitch_pages`: same columns and x-extent, no text after the first part or before the second; a repeated header row is dropped).
-- Rule checks (`table_flags`): ragged columns (rows with an empty key cell, more cells than usual, or a single cell in a 3+ column table), empty cells, cells that look like split code, constant first column, TOC (ascending page numbers), bullet list, code-comment column, reference list, single-cell rows, sparse two-row tables. Tags are exempt from the ragged/empty checks.
+- Rule checks (`table_flags`): ragged columns (judged on dense columns only - a column filled in under half the rows is a legitimate annotation column; rows with extra filled cells outside full grids, an empty key cell, or a lone cell in a 3+ column table), mostly sparse columns, empty cells, cells that look like split code, constant first column, TOC (ascending page numbers), bullet list (cells starting with a bullet), numbered section lines ("9.1 | feature test macro", or any table whose first cell is a section number), ASCII-art diagrams, code-comment column (including a lone `//` column), reference list (labels leading or trailing, apostrophes allowed), single-cell rows, sparse two-row tables. Tags are exempt from the ragged/empty checks.
 - Candidates are grouped by position. The primary is the first candidate without a bad flag in the order tags, poll, grid, malformed tags, rule-band, text positions.
 - Confidence: HIGH when another source agrees cell for cell, when tomd's text-position reading is a correct subset of a fully ruled (grid or rule-band) table (same columns, every row matching in order), or when no other source saw the table; UNCERTAIN when another source's reading disagrees. Only readings that pass the rule checks and lie mostly within the primary's rows count (a box drawn around a poll is not a reading of it). Uncertain tables keep those versions for the prompts file.
 - A table whose text contains characters a damaged text layer produces (U+1D00-1DBF: math italics written without their last hex digit by some generators) is UNCERTAIN with a note for the prompt; the right symbols are not recoverable from the text.
@@ -313,7 +315,7 @@ Tables follow the same rule as text: independent extractions are compared and ag
 **T34. Table rendering**
 - `emit.py:_render_table`
 - GitHub-style Markdown pipe tables. First row = header with bold suppressed.
-- Lines of a wrapped cell are joined with `<br>` (a word hyphenated at the break is rejoined); `|` is escaped as `\|`.
+- Lines of a wrapped cell are joined with `<br>`; a word hyphenated at the break is rejoined, dropping the hyphen for a syllable break (short fragment or short continuation) and keeping it for a compound; letters stacked one per line ("S" / "F") read as one word; `|` is escaped as `\|`.
 - An UNCERTAIN table is preceded by a `tomd:uncertain` marker, and its prompt lists the table from every source.
 
 **T35. Uncertain region marking**

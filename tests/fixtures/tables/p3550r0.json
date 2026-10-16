@@ -1,0 +1,113 @@
+{
+ "paper": "p3550r0",
+ "tables": [
+  {
+   "id": "p3550r0-t1",
+   "pages": [
+    0
+   ],
+   "rows": [
+    [
+     "Document #:",
+     "P3550R0"
+    ],
+    [
+     "Date:",
+     "2025-01-13"
+    ],
+    [
+     "Project:",
+     "Programming Language C++"
+    ],
+    [
+     "Audience:",
+     "Evolution Incubator Library Incubator"
+    ],
+    [
+     "Reply-to:",
+     "Alisdair Meredith <ameredith1@bloomberg.net>"
+    ]
+   ],
+   "group": null,
+   "source": "typed",
+   "scope": "front-matter",
+   "note": "unruled title-page metadata block; Audience and Reply-to values span 2 lines; found by recall scan"
+  },
+  {
+   "id": "p3550r0-t2",
+   "pages": [
+    7
+   ],
+   "rows": [
+    [
+     "Subclause",
+     "",
+     "Header"
+    ],
+    [
+     "17.11",
+     "Comparisons",
+     "<compare>"
+    ],
+    [
+     "17.12",
+     "Coroutines support",
+     "<coroutine>"
+    ],
+    [
+     "17.13",
+     "Other runtime support",
+     "<cstdarg><csetjmp>, <csignal>"
+    ],
+    [
+     "Clause 18",
+     "Concepts library",
+     "<concepts>"
+    ]
+   ],
+   "group": "g1",
+   "source": "typed",
+   "scope": "table",
+   "note": "Table 27 [tab:headers.cpp.fs] in wording; 'Subclause' header spans 2 cols; struck <cstdarg> and inserted text both kept as printed"
+  },
+  {
+   "id": "p3550r0-t3",
+   "pages": [
+    7
+   ],
+   "rows": [
+    [
+     "Subclause",
+     "",
+     "Header"
+    ],
+    [
+     "17.11",
+     "Comparisons",
+     "<compare>"
+    ],
+    [
+     "17.12",
+     "Coroutines support",
+     "<coroutine>"
+    ],
+    [
+     "17.13",
+     "Other runtime support",
+     "<csetjmp>, <csignal>, <cstdarg>, <cstdlib>"
+    ]
+   ],
+   "group": "g1",
+   "source": "typed",
+   "scope": "table",
+   "note": "Table 42 [tab:support.summary] in wording; same group g1 as Table 27 (ruled1 merged both); struck '<cstdarg>,' kept as printed"
+  }
+ ],
+ "not_tables": [],
+ "missed_by_all": [
+  "p3550r0-t1"
+ ],
+ "checked_pages": "all",
+ "source_pdf": "https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2025/p3550r0.pdf",
+ "set": "heldout-2026-10"
+}

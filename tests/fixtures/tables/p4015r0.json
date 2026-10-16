@@ -1,0 +1,40 @@
+{
+ "paper": "p4015r0",
+ "tables": [
+  {
+   "id": "p4015r0-t1",
+   "pages": [
+    0
+   ],
+   "rows": [
+    [
+     "Document:",
+     "P4015r0"
+    ],
+    [
+     "Date:",
+     "2026-02-16"
+    ],
+    [
+     "Reply-to:",
+     "Lisa Lippincott <lisa.e.lippincott@gmail.com>"
+    ],
+    [
+     "Audience:",
+     "Evolution Working Group"
+    ]
+   ],
+   "group": null,
+   "source": "typed",
+   "scope": "front-matter",
+   "note": "unruled tab-aligned title-page metadata block; found by recall scan"
+  }
+ ],
+ "not_tables": [],
+ "missed_by_all": [
+  "p4015r0-t1"
+ ],
+ "checked_pages": "all",
+ "source_pdf": "https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2026/p4015r0.pdf",
+ "set": "heldout-2026-10"
+}

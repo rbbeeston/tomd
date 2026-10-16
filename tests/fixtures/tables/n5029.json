@@ -1,0 +1,10 @@
+{
+ "paper": "n5029",
+ "tables": [],
+ "not_tables": [],
+ "missed_by_all": [],
+ "checked_pages": "all",
+ "note": "meeting minutes; header lines 'Convener: ... / Date : ... / Time: ...' are inline label: value prose lines, not column-aligned, not recorded",
+ "source_pdf": "https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2025/n5029.pdf",
+ "set": "heldout-2026-10"
+}

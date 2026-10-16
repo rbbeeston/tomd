@@ -28,3 +28,14 @@ the PDF's text layer and its appearance differ (for example a space
 character before a comma), the text layer wins and the table's `note` says
 so. Text that is garbled in the PDF itself (fonts without a Unicode mapping)
 was typed from the image; no text-based extractor can reproduce it.
+
+## Sets
+
+- 44 papers (development set): built while developing the table sources.
+- 77 papers with `"set": "heldout-2026-10"`: a seeded random sample (all of
+  a 60-paper draw from the 2025 mailings, plus a generator-stratified draw of
+  unused 2026 papers) measured once on frozen code before any tuning on
+  them (60/114 tables exact), then used to fix general bugs. They are now
+  development data too; a fresh sample is needed for the next unbiased
+  measurement. KNOWN_GAPS / KNOWN_FALSE_TABLES in test_table_truth.py track
+  what is still open.

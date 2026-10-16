@@ -1,0 +1,97 @@
+{
+ "paper": "p3883r0",
+ "tables": [
+  {
+   "id": "p3883r0-t1",
+   "pages": [
+    1
+   ],
+   "rows": [
+    [
+     "Aspect",
+     "Specification"
+    ],
+    [
+     "Operator",
+     "Postfix ~"
+    ],
+    [
+     "Operand",
+     "bool lvalue"
+    ],
+    [
+     "Behavior",
+     "Toggles the boolean in-place (flag = !flag;)"
+    ],
+    [
+     "Return type",
+     "void (prevents chaining and misuse)"
+    ],
+    [
+     "Scope",
+     "Boolean lvalues only; rvalues and temporaries are disallowed"
+    ],
+    [
+     "Backward compatibility",
+     "Fully safe; postfix ~ syntax is currently unused"
+    ]
+   ],
+   "group": "g1",
+   "source": "edited:ruled1",
+   "note": "3 Design Overview; justified-text hyphen break \"com- patibility\" joined",
+   "scope": "table"
+  },
+  {
+   "id": "p3883r0-t2",
+   "pages": [
+    6
+   ],
+   "rows": [
+    [
+     "Alternative",
+     "Pros",
+     "Cons"
+    ],
+    [
+     "flag ^= true",
+     "Already works, no language change",
+     "Non-intuitive, verbose, looks like bit manipulation, requires XOR knowledge"
+    ],
+    [
+     "std::flip(flag)",
+     "Clear intent, library-only",
+     "Verbose, requires include, inconsistent with ++, function syntax overhead"
+    ],
+    [
+     "Prefix ~flag (statement context)",
+     "Familiar syntax",
+     "Context-dependent semantics, confusing, complex implementation"
+    ],
+    [
+     "New keyword/operator",
+     "Unambiguous",
+     "Breaks compatibility, extremely high acceptance bar"
+    ],
+    [
+     "flag = !flag;",
+     "Clear, works today",
+     "Verbose, repetitive, inconsistent with ++/--"
+    ],
+    [
+     "Postfix flag~ (this proposal)",
+     "Clean, safe, consistent with ++, no backward compat issues",
+     "Novel visual form, unfamiliar at first"
+    ]
+   ],
+   "group": "g2",
+   "source": "edited:ruled2",
+   "note": "7.5 Summary Comparison; hyphenated line breaks joined (state-ment, opera-tor, in-consistent, seman-tics, ex-tremely, inconsis-tent, is-sues)",
+   "scope": "table"
+  }
+ ],
+ "not_tables": [],
+ "missed_by_all": [],
+ "checked_pages": "all",
+ "source_pdf": "https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2025/p3883r0.pdf",
+ "set": "heldout-2026-10"
+}

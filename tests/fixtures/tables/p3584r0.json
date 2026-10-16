@@ -1,0 +1,46 @@
+{
+ "paper": "p3584r0",
+ "tables": [
+  {
+   "id": "p3584r0-t1",
+   "pages": [
+    0
+   ],
+   "rows": [
+    [
+     "Document number:",
+     "P3584R0"
+    ],
+    [
+     "Date:",
+     "2024-01-13"
+    ],
+    [
+     "Project:",
+     "Programming Language C++"
+    ],
+    [
+     "Audience:",
+     "LEWGI, LEWG"
+    ],
+    [
+     "Authors:",
+     "Mingxin Wang"
+    ],
+    [
+     "Reply-to:",
+     "Mingxin Wang <mingxwa@microsoft.com>"
+    ]
+   ],
+   "group": "g1",
+   "source": "picked:tags1",
+   "note": "title-page metadata block",
+   "scope": "front-matter"
+  }
+ ],
+ "not_tables": [],
+ "missed_by_all": [],
+ "checked_pages": "all",
+ "source_pdf": "https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2025/p3584r0.pdf",
+ "set": "heldout-2026-10"
+}
