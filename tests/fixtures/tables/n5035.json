@@ -1,0 +1,68 @@
+{
+ "paper": "n5035",
+ "tables": [
+  {
+   "id": "n5035-t1",
+   "pages": [
+    0
+   ],
+   "rows": [
+    [
+     "Document number:",
+     "5035"
+    ],
+    [
+     "Date:",
+     "2026-01-22"
+    ],
+    [
+     "Reply to:",
+     "Guy Davidson (standard.guy@hatcat.com)"
+    ]
+   ],
+   "group": null,
+   "source": "typed",
+   "note": "unruled metadata block",
+   "scope": "front-matter"
+  },
+  {
+   "id": "n5035-t2",
+   "pages": [
+    0
+   ],
+   "rows": [
+    [
+     "Dates:",
+     "Monday 2026-03-09"
+    ],
+    [
+     "Time:",
+     "16:00 London Time"
+    ],
+    [
+     "Link:",
+     "https://iso.zoom.us/j/95912638571"
+    ],
+    [
+     "Meeting ID:",
+     "959 1263 8571"
+    ],
+    [
+     "Password:",
+     "(see separate email/wiki)"
+    ]
+   ],
+   "group": null,
+   "source": "typed",
+   "note": "unruled teleconference info label/value block",
+   "scope": "borderline"
+  }
+ ],
+ "not_tables": [],
+ "missed_by_all": [
+  "n5035-t1",
+  "n5035-t2"
+ ],
+ "checked_pages": "all",
+ "source_pdf": "https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2026/n5035.pdf"
+}

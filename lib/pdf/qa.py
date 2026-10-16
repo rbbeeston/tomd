@@ -148,7 +148,18 @@ def compute_metrics(md_text: str, file: str = "") -> QAMetrics:
 
     m.list_count = sum(1 for t in tokens if t["type"] == "list")
 
-    m.table_count = sum(1 for t in tokens if t["type"] == "table")
+    # A table right after a tomd:uncertain marker is one whose extractors
+    # disagreed; it must not raise the structural-variety score.
+    m.table_count = 0
+    prev = None
+    for t in tokens:
+        if t["type"] == "blank_line":
+            continue
+        if t["type"] == "table" and not (
+                prev is not None and prev["type"] == "block_html"
+                and "tomd:uncertain" in prev.get("raw", "")):
+            m.table_count += 1
+        prev = t
 
     # Front matter: mistune doesn't parse YAML, so we check raw text.
     # The AST's leading thematic_break confirms the --- opener.

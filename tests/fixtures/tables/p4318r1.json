@@ -1,0 +1,135 @@
+{
+ "paper": "p4318r1",
+ "tables": [
+  {
+   "id": "p4318r1-t1",
+   "pages": [
+    0
+   ],
+   "rows": [
+    [
+     "Document Number:",
+     "P4318R1"
+    ],
+    [
+     "Date:",
+     "2026-08-11"
+    ],
+    [
+     "Intent:",
+     "Inform"
+    ],
+    [
+     "Audience:",
+     "EWG"
+    ],
+    [
+     "Reply-to:",
+     "Vinnie Falco vinnie.falco@gmail.com Mungo Gill mungo.gill@me.com"
+    ]
+   ],
+   "group": null,
+   "source": "typed",
+   "note": "metadata block",
+   "scope": "front-matter"
+  },
+  {
+   "id": "p4318r1-t2",
+   "pages": [
+    5
+   ],
+   "rows": [
+    [
+     "Term",
+     "Meaning"
+    ],
+    [
+     "implicit contract assertion",
+     "A check the compiler inserts at a core-language operation that can have undefined behavior, evaluated like a C++26 contract assertion on the operation's precondition."
+    ],
+    [
+     "evaluation semantic",
+     "The mode that decides what happens when a check's predicate is false: ignore, observe, enforce, quick-enforce, or assume."
+    ],
+    [
+     "observe",
+     "Call the violation handler; on a normal return, continue past the violation."
+    ],
+    [
+     "the continuing response",
+     "The observe outcome for the priced slice: proceed past a state the language does not define."
+    ],
+    [
+     "vendor opt-in",
+     "A non-portable build option, macro, or flag by which one implementation offers a behavior without the standard requiring it."
+    ],
+    [
+     "interaction tax",
+     "The ongoing cost a standardized feature imposes on the rest of the standard and its implementations for as long as it exists."
+    ],
+    [
+     "Return on Complexity",
+     "Net present value delivered per unit of specification and maintenance capacity spent."
+    ]
+   ],
+   "group": "g1",
+   "source": "edited:ruled1",
+   "note": "added header row",
+   "scope": "table"
+  },
+  {
+   "id": "p4318r1-t3",
+   "pages": [
+    6
+   ],
+   "rows": [
+    [
+     "Symbol",
+     "Meaning"
+    ],
+    [
+     "B",
+     "Marginal benefit per beneficiary per year of the standardized guarantee, measured against what a vendor opt-in already delivers"
+    ],
+    [
+     "N(t)",
+     "Beneficiaries at time t"
+    ],
+    [
+     "W",
+     "Length in years of the adoption window over which N(t) is non-negligible"
+    ],
+    [
+     "δ",
+     "Fraction of value forfeited to ossification once the design is frozen, 0 ≤ δ ≤ 1"
+    ],
+    [
+     "k",
+     "Specification and interaction complexity the slice spends"
+    ],
+    [
+     "τ",
+     "Annual cost per unit of complexity imposed on everything standardized around it"
+    ],
+    [
+     "r",
+     "Time discount rate"
+    ],
+    [
+     "λ",
+     "The return, per unit of specification and maintenance capacity, of the best alternative use of that capacity; λ ≥ 0, since capacity can always be left unspent"
+    ]
+   ],
+   "group": "g2",
+   "source": "typed",
+   "note": "math symbols garbled in extraction; added header row",
+   "scope": "table"
+  }
+ ],
+ "not_tables": [],
+ "missed_by_all": [
+  "p4318r1-t1"
+ ],
+ "checked_pages": "all",
+ "source_pdf": "https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2026/p4318r1.pdf"
+}

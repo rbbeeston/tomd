@@ -1,0 +1,43 @@
+{
+ "paper": "p4330r0",
+ "tables": [
+  {
+   "id": "p4330r0-t1",
+   "pages": [
+    0
+   ],
+   "rows": [
+    [
+     "Document Number:",
+     "P4330R0"
+    ],
+    [
+     "Date:",
+     "2026-07-28"
+    ],
+    [
+     "Intent:",
+     "Inform"
+    ],
+    [
+     "Audience:",
+     "WG21"
+    ],
+    [
+     "Reply-to:",
+     "Vinnie Falco vinnie.falco@gmail.com"
+    ]
+   ],
+   "group": null,
+   "source": "typed",
+   "note": "metadata block in shaded box",
+   "scope": "front-matter"
+  }
+ ],
+ "not_tables": [],
+ "missed_by_all": [
+  "p4330r0-t1"
+ ],
+ "checked_pages": "all",
+ "source_pdf": "https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2026/p4330r0.pdf"
+}

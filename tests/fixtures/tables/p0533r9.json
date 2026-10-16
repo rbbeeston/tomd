@@ -1,0 +1,345 @@
+{
+ "paper": "p0533r9",
+ "tables": [
+  {
+   "id": "p0533r9-t0",
+   "pages": [
+    0
+   ],
+   "rows": [
+    [
+     "Document:",
+     "P0533R9"
+    ],
+    [
+     "Date:",
+     "November 12, 2021"
+    ],
+    [
+     "Project:",
+     "Programming Language C++, Library Working Group"
+    ],
+    [
+     "Audience:",
+     "LWG & CWG"
+    ],
+    [
+     "Reply to:",
+     "Edward J. Rosten (erosten@snap.com) / Oliver J. Rosten (oliver.rosten@gmail.com)"
+    ]
+   ],
+   "group": null,
+   "source": "typed",
+   "note": "metadata block found by recall scan",
+   "scope": "front-matter"
+  },
+  {
+   "id": "p0533r9-t1",
+   "pages": [
+    3
+   ],
+   "rows": [
+    [
+     "Function",
+     "Pass",
+     "Comment"
+    ],
+    [
+     "float frexp(float value, int* exp)",
+     "Yes",
+     "w"
+    ],
+    [
+     "int ilogb(float arg)",
+     "Yes",
+     "G"
+    ],
+    [
+     "float ldexp(float x, int exp)",
+     "Yes",
+     "G|w"
+    ],
+    [
+     "float logb(float arg)",
+     "Yes",
+     "G"
+    ],
+    [
+     "float modf(float value, float* iptr)",
+     "Yes",
+     ""
+    ],
+    [
+     "float scalbn(float x, int n)",
+     "Yes",
+     "G|U"
+    ],
+    [
+     "float scalbln(float x, long int n)",
+     "Yes",
+     "G|U"
+    ]
+   ],
+   "group": null,
+   "source": "earlier hand verification (REPORT.md)",
+   "note": "TABLE II (p4)",
+   "scope": "table"
+  },
+  {
+   "id": "p0533r9-t2",
+   "pages": [
+    3
+   ],
+   "rows": [
+    [
+     "Function",
+     "Pass"
+    ],
+    [
+     "int abs(int j)",
+     "Yes"
+    ],
+    [
+     "float fabs(float x)",
+     "Yes"
+    ]
+   ],
+   "group": null,
+   "source": "earlier hand verification (REPORT.md)",
+   "note": "TABLE III (p4)",
+   "scope": "table"
+  },
+  {
+   "id": "p0533r9-t3",
+   "pages": [
+    4
+   ],
+   "rows": [
+    [
+     "Function",
+     "Pass",
+     "Comment"
+    ],
+    [
+     "float ceil(float x)",
+     "Yes",
+     "G⋆"
+    ],
+    [
+     "float floor(float x)",
+     "Yes",
+     "G⋆"
+    ],
+    [
+     "float nearbyint(float x)",
+     "No",
+     "S"
+    ],
+    [
+     "float rint(float x)",
+     "No",
+     "G|S"
+    ],
+    [
+     "long int lrint(float x)",
+     "No",
+     "G|S"
+    ],
+    [
+     "long long int llrint(float x)",
+     "No",
+     "G|S"
+    ],
+    [
+     "float round(float x)",
+     "Yes",
+     "G"
+    ],
+    [
+     "float lround(float x)",
+     "Yes",
+     "G"
+    ],
+    [
+     "float llround(float x)",
+     "Yes",
+     "G"
+    ],
+    [
+     "float trunc(float x)",
+     "Yes",
+     "G"
+    ],
+    [
+     "float fmod(float x, float y)",
+     "Yes",
+     "G|W"
+    ],
+    [
+     "float remainder(float x, float y)",
+     "Yes",
+     "G|W⋆"
+    ],
+    [
+     "float remquo(float x, float y, int* quo)",
+     "Yes",
+     "G|W⋆"
+    ],
+    [
+     "float copysign(float x, float y)",
+     "Yes",
+     ""
+    ],
+    [
+     "float nextafter(float x, float y)",
+     "Yes",
+     "G"
+    ],
+    [
+     "float nexttoward(float x, long double y)",
+     "Yes",
+     "G"
+    ],
+    [
+     "float fdim(float x, float y)",
+     "Yes",
+     "G|U"
+    ],
+    [
+     "float fmax(float x, float y)",
+     "Yes",
+     ""
+    ],
+    [
+     "float fmin(float x, float y)",
+     "Yes",
+     ""
+    ],
+    [
+     "float fma(float x, float y, float z)",
+     "Yes",
+     "G|W"
+    ]
+   ],
+   "group": null,
+   "source": "earlier hand verification (REPORT.md)",
+   "note": "TABLE IV (p5)",
+   "scope": "table"
+  },
+  {
+   "id": "p0533r9-t4",
+   "pages": [
+    4
+   ],
+   "rows": [
+    [
+     "Function",
+     "Pass",
+     "Comment"
+    ],
+    [
+     "int fpclassify(float x);",
+     "Yes",
+     ""
+    ],
+    [
+     "int isfinite(float x)",
+     "Yes",
+     ""
+    ],
+    [
+     "int isinf(float x)",
+     "Yes",
+     ""
+    ],
+    [
+     "int isnan(float x)",
+     "Yes",
+     ""
+    ],
+    [
+     "int isnormal(float x)",
+     "Yes",
+     ""
+    ],
+    [
+     "int signbit(float x)",
+     "Yes",
+     ""
+    ],
+    [
+     "int isgreater(float x, float y)",
+     "Yes",
+     ""
+    ],
+    [
+     "int isgreaterequal(float x, float y)",
+     "Yes",
+     ""
+    ],
+    [
+     "int isless(float x, float y)",
+     "Yes",
+     ""
+    ],
+    [
+     "int islessequal(float x, float y)",
+     "Yes",
+     ""
+    ],
+    [
+     "int islessgreater(float x, float y)",
+     "Yes",
+     ""
+    ],
+    [
+     "int isunordered(float x, float y)",
+     "Yes",
+     ""
+    ]
+   ],
+   "group": null,
+   "source": "earlier hand verification (REPORT.md)",
+   "note": "TABLE V (p5)",
+   "scope": "table"
+  }
+ ],
+ "not_tables": [
+  {
+   "group": null,
+   "pages": [
+    5,
+    6,
+    7,
+    8
+   ],
+   "reason": "constexpr-highlighted code synopses (tomd made tables)"
+  },
+  {
+   "group": null,
+   "pages": [
+    0
+   ],
+   "reason": "table of contents"
+  },
+  {
+   "group": null,
+   "pages": [
+    3
+   ],
+   "reason": "TABLE I is a captioned code listing"
+  },
+  {
+   "group": null,
+   "pages": [
+    4
+   ],
+   "reason": "wording highlight box"
+  }
+ ],
+ "missed_by_all": [
+  "p0533r9-t0"
+ ],
+ "checked_pages": "all (recall scan)",
+ "source_pdf": "tests/fixtures/golden/p0533r9.pdf"
+}

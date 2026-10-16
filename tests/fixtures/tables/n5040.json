@@ -1,0 +1,1394 @@
+{
+ "paper": "n5040",
+ "tables": [
+  {
+   "id": "n5040-t1",
+   "pages": [
+    2
+   ],
+   "rows": [
+    [
+     "Document",
+     "Editor’s Report",
+     "Prospective WD"
+    ],
+    [
+     "C++26 Working Draft",
+     "N5033",
+     "N5032"
+    ]
+   ],
+   "group": "g1",
+   "source": "edited:tags1",
+   "note": "curly apostrophe in Editor’s",
+   "scope": "table"
+  },
+  {
+   "id": "n5040-t2",
+   "pages": [
+    2
+   ],
+   "rows": [
+    [
+     "Meeting",
+     "Minutes"
+    ],
+    [
+     "WG21 Kona",
+     "N5031"
+    ],
+    [
+     "WG21 pre-Croydon administrative telecon",
+     "N5038"
+    ]
+   ],
+   "group": "g2",
+   "source": "verified-draft",
+   "note": "",
+   "scope": "table"
+  },
+  {
+   "id": "n5040-t3",
+   "pages": [
+    8,
+    9,
+    10,
+    11,
+    12,
+    13,
+    14
+   ],
+   "rows": [
+    [
+     "#",
+     "Title",
+     "Status"
+    ],
+    [
+     "1",
+     "US 70-126 17.12.7 [compare.type] Allow incomplete types in type_order",
+     "Accepted (P4140R0) (C++26)"
+    ],
+    [
+     "2",
+     "GB11-302 29.11.1 [stdckdint.h.syn] Add C++ feature test macro for the header",
+     "Accepted (C++26)"
+    ],
+    [
+     "3",
+     "GB 07-223 22.12 [stdbit.h.syn] Add a C++-specific feature test macro for stdbit.h",
+     "Accepted (C++26)"
+    ],
+    [
+     "4",
+     "CA-318 33 [exec] Reduce operation-state sizes for child operations P3425 (P3425 Superseded by P3986)",
+     "Accepted (P3986R0) (C++26)"
+    ],
+    [
+     "5",
+     "P3986 R0 A Wording Strategy for Inlinable Receivers",
+     "Approved (C++26)"
+    ],
+    [
+     "6",
+     "P3425 R1 Reducing operation-state sizes for subobject child operations",
+     "Approved (P3986R0) (C++26)"
+    ],
+    [
+     "7",
+     "CA-338 33.9.12.10 [exec.let] Do not extend lifetimes of input operation states for let_value, let_error, let_stopped P3373",
+     "Accepted (P3373R2) (C++26)"
+    ],
+    [
+     "8",
+     "P3373 R2 Of Operation States and Their Lifetimes",
+     "Approved (CA-338) (C++26)"
+    ],
+    [
+     "9",
+     "FR-025-246 25.7.18.2 [range.concat.view] Add a reserve_hint function to concat_view",
+     "Accepted (C++26)"
+    ],
+    [
+     "10",
+     "US 153-247 25.7.27.1, 25.7.28.1p02.1 Remove the N>0 restriction from adjacent_transform_view",
+     "Rejected (NAD)"
+    ],
+    [
+     "11",
+     "DE-251 25.7.8.2 [range.filter.view] Apply P3725 Filter View Extensions for Input Ranges (DR for 23)",
+     "Accepted (C++26)"
+    ],
+    [
+     "12",
+     "Filter View Extensions for Input Ranges",
+     "Approved (DE-251) (C++26)"
+    ],
+    [
+     "13",
+     "GB 09-257 26.7 [alg.modifying.operations] Adopt P3059 Making user-defined constructors of view iterators/sentinels private",
+     "Accepted (C++26)"
+    ],
+    [
+     "14",
+     "P3059 R1 Making user-defined constructors of view iterators/sentinels private",
+     "Approved (GB-009) (C++26)"
+    ],
+    [
+     "15",
+     "LWG4492 std::generate and std::ranges::generate wording is unclear for parallel algorithms",
+     "Approved (C++26)"
+    ],
+    [
+     "16",
+     "FR-027-267 26.11.7 [uninitialized.fill] Adopt P3787R0 - Adjoints to \"Enabling list-initialization for algorithms\": uninitialized_fill",
+     "Accepted (P3787R0) (C++26)"
+    ],
+    [
+     "17",
+     "P3787 R0 Adjoints to \"Enabling list-initialization for algorithms\": uninitialized_fill",
+     "Approved (FR-027) (C++26)"
+    ],
+    [
+     "18",
+     "P3953 R1 Rename std::runtime_format",
+     "Approved (C++26)"
+    ],
+    [
+     "19",
+     "RU-222 22.10.17.06 [func.wrap.ref] function_ref's constructor should be constexpr to avoid dynamic initialization",
+     "Rejected"
+    ],
+    [
+     "20",
+     "RU-221 22.10.17.05 [func.wrap.copy.ctor] copyable_function's constructors should be constexpr to avoid dynamic initialization",
+     "Rejected"
+    ],
+    [
+     "21",
+     "RU-220 22.10.17.01 [func.wrap.general] Adopt LWG4264 Skipping indirection is not allowed for function_ref (P3961R0)",
+     "Accepted (LWG4264+P3961R2+P3929R0 discussed) (C++26)"
+    ],
+    [
+     "22",
+     "P3961 R0 Less double indirection in function_ref (RU-220)",
+     "Approved (RU-220) (C++26)"
+    ],
+    [
+     "23",
+     "LWG4264 Skipping indirection is not allowed for function_ref",
+     "Approved (RU-220) (C++26)"
+    ],
+    [
+     "24",
+     "P3929 R0 Fix safety hazard in std::function_ref",
+     "Discussed (RU-220) (C++26)"
+    ],
+    [
+     "25",
+     "US 142-236 23.3.9.3p4 [hive.capacity] reserve(n) gap between postconditions and throws",
+     "Accepted (C++26)"
+    ],
+    [
+     "26",
+     "P3978 R2 constant_wrapper should unwrap on call and subscript",
+     "Approved (C++26)"
+    ],
+    [
+     "27",
+     "P3948 R0 constant_wrapper is the only tool needed for passing constant expressions",
+     "Approved (C++26)"
+    ],
+    [
+     "28",
+     "P4012 R0 value-preserving consteval broadcast to simd::vec (new paper resulted from DE-286)",
+     "Accepted (C++26)"
+    ],
+    [
+     "29",
+     "PL-007 23.7.3.7 [mdspan.sub] [mdspan.sub] Define the extent member of the strided_slice",
+     "Accepted (P3982R1) (C++26)"
+    ],
+    [
+     "30",
+     "GB12-308 32.5.6 [atomics.wait] atomic wait/notify should not be required for freestanding",
+     "Rejected"
+    ],
+    [
+     "31",
+     "FR-026-265 26.10.17 [numeric.sat] Confusing names add_sat, sub_sat, mul_sat",
+     "Accepted (P4052R0) (C++26)"
+    ],
+    [
+     "32",
+     "P4052 R0 Renaming saturation arithmetic functions",
+     "Approved (FR-026) (C++26)"
+    ],
+    [
+     "33",
+     "LWG4544 Parallel overload of ranges::set_difference should return in_in_out_result",
+     "Approved (C++26)"
+    ],
+    [
+     "34",
+     "LWG4548 Parallel ranges::set_intersection should not do unnecessary work",
+     "Approved (C++26)"
+    ],
+    [
+     "35",
+     "US 238-368 33.13.5 [exec.task.scheduler] Allow customizations when using task_scheduler LWG4336 (P3927R0)",
+     "Accepted (P3927R1) (C++26)"
+    ],
+    [
+     "36",
+     "P3927R0 task_scheduler Support for Parallel Bulk Execution",
+     "Approved (IS-238) (C++26)"
+    ],
+    [
+     "37",
+     "P3941 R3 Scheduler Affinity",
+     "Approved (US-232) (C++26)"
+    ],
+    [
+     "38",
+     "US 232-366 33.13.3 [exec.affine.on] Specify customizations for affine_on when sender does not change scheduler LWG4329",
+     "Accepted (P3941R3) (C++26)"
+    ],
+    [
+     "39",
+     "US 233-365 33.13.3 [exec.affine.on] Clarify affine_on vs. continues_on LWG4330",
+     "Accepted (P3941R3) (C++26)"
+    ],
+    [
+     "40",
+     "US 234-364 33.13.3 [exec.affine.on] Remove scheduler parameter from affine_on LWG4331",
+     "Accepted (P3941R3) (C++26)"
+    ],
+    [
+     "41",
+     "US 235-363 33.13.3 [exec.affine.on] affine_on should not forward the stop token to the scheduling operation LWG4332",
+     "Accepted (P3941R3) (C++26)"
+    ],
+    [
+     "42",
+     "US 236-362 33.13.3 [exec.affine.on] Specify default implementation of affine_on LWG4344",
+     "Accepted (P3941R3) (C++26)"
+    ],
+    [
+     "43",
+     "US 246-373 33.13.6.2 [task.class] Support symmetric transfer LWG4348",
+     "Rejected"
+    ],
+    [
+     "44",
+     "P4007 R0 Senders and Coroutines",
+     "(discussed during US-246)"
+    ],
+    [
+     "45",
+     "P2583 R0 Symmetric Transfer and Sender Composition",
+     "(discussed during US-246) (C++26)"
+    ],
+    [
+     "46",
+     "US 139-232 23.3.9.1p05.4 [hive.overview] Adjust all constructors and methods on hive to throw in case specified block limits violate the conditions",
+     "Rejected"
+    ],
+    [
+     "47",
+     "US 205-320 33.4 [execution.syn] Rename system_context_replaceability namespace P4031",
+     "Accepted (P4031R0) (C++26)"
+    ],
+    [
+     "48",
+     "P4031 R0 Rename system_context_replaceability namespace",
+     "Approved (US-205) (C++26)"
+    ],
+    [
+     "49",
+     "CH 33 [exec] Signal-safe asynchronous execution",
+     "Rejected"
+    ],
+    [
+     "50",
+     "P3947 R0 identifier_of Should Return std::string",
+     "Rejected"
+    ],
+    [
+     "51",
+     "FR-034-336 33.9.12 [exec.adapt] Rename then, let_value, let_error, let_stopped",
+     "Rejected"
+    ],
+    [
+     "52",
+     "US 49-090 13.2 [temp.param] Add \"is_structural_type\" query facility to the library P3856",
+     "Accepted (P3856R7) (C++26)"
+    ],
+    [
+     "53",
+     "P3856 R7 New reflection metafunction - is_structural_type (US NB comment 49)",
+     "Approved (US-049) (C++26)"
+    ],
+    [
+     "54",
+     "US 75-138 20.3.2.2 [util.smartptr.shared] Does it make sense for owner_before and owner_less to be constexpr?",
+     "Accepted (C++26)"
+    ],
+    [
+     "55",
+     "P3940 R0 Rename concept tags for C++26: sender_t to sender_tag",
+     "Accepted (C++26)"
+    ],
+    [
+     "56",
+     "GB14-306 32.5.12 [stdatomic.h.syn] Remove stdatomic.h",
+     "Rejected"
+    ],
+    [
+     "57",
+     "P4022 R0 Remove try_append_range from inplace_vector for now",
+     "Approved (PL-006) (C++26)"
+    ],
+    [
+     "58",
+     "PL-006 23.3.16.1 [inplace.vector.overview] Change the return type of inplace_vector try_push_back and try_emplace_back functions to optional, change the return type of try_append_range to return conditional_t<ranges::borrowed_range<SR>, SR, ranges::dangling> (P3981)",
+     "Accepted (P4022R0) (C++26)"
+    ],
+    [
+     "59",
+     "Breaking change in std::span new initializer_list constructor",
+     "Approved (C++26)"
+    ],
+    [
+     "60",
+     "P4144 R0 Breaking change in std::spanâ€™s new initializer_list constructor (https://isocpp.org/files/papers/P4144R0.html)",
+     "Approved (LWG4520) (C++26)"
+    ],
+    [
+     "61",
+     "US 203-327 33.4 [exec] Rename bulk execution algorithms",
+     "Rejected"
+    ],
+    [
+     "62",
+     "RU-272 29.5.3.1 [rand.req.genl] Prevent instantiation of uniform_int_distribution with std::uint8_t LWG4109 P4037",
+     "Accepted (LWG4109+P4037R0) (C++26)"
+    ],
+    [
+     "63",
+     "P4037 R0 Supporting signed char and unsigned char in random number generation (https://isocpp.org/files/papers/P4037R0.html)",
+     "Approved (with changes, RU-272) (C++26)"
+    ],
+    [
+     "64",
+     "(Partially revert the change in P3795R2 (the shape of data_member_spec)) (https://wg21.link/P3795R1)",
+     "Approved (partially reverted) (C++26)"
+    ],
+    [
+     "65",
+     "P2929 R3 Proposal to add chunked_invoke to std::simd (https://isocpp.org/files/papers/P2929R3.html)",
+     "Discussed (C++29)"
+    ],
+    [
+     "66",
+     "LWG4555 Remove is_consteval_only (C++26 issue)",
+     "Approved (C++26)"
+    ],
+    [
+     "67",
+     "P3655 R3 cstring_view",
+     "Discussed (C++29)"
+    ],
+    [
+     "68",
+     "D4035 R0 The Need for Escape Hatches (https://isocpp.org/files/papers/P4035R0.pdf)",
+     "Discussed (P3655, C++29)"
+    ],
+    [
+     "69",
+     "P2414 R10 Pointer lifetime-end zap proposed solutions",
+     "Forwarded (C++29)"
+    ],
+    [
+     "70",
+     "P3790 R1 Pointer lifetime-end zap proposed solutions: Bag-of-bits pointer class",
+     "Forwarded (C++29)"
+    ],
+    [
+     "71",
+     "P3427 R2 Hazard Pointer Synchronous Reclamation",
+     "Discussed (C++29)"
+    ],
+    [
+     "72",
+     "P3052 R1 view_interface::at()",
+     "Forwarded (C++29)"
+    ],
+    [
+     "73",
+     "P3428 R2 Hazard Pointer Batches",
+     "Forwarded (with update) (C++29)"
+    ],
+    [
+     "74",
+     "LWG4361. awaitable-receiver::set_value should use Mandates instead of constraints",
+     "Approved (C++26)"
+    ],
+    [
+     "75",
+     "LWG4354 Reconsider `weakly_parallel` as the default `forward_progress_guarantee`",
+     "Approved (C++26)"
+    ],
+    [
+     "76",
+     "P3411 R5 `any_view`",
+     "Discussed (C++29)"
+    ],
+    [
+     "77",
+     "P1708 R10 Basic Statistics",
+     "Discussed (C++29)"
+    ],
+    [
+     "78",
+     "FR-017-155 21.04.01 Introduce a core term for C variadic functions and rename meta::has_ellipsis_parameter CWG3112",
+     "Accepted (C++26)"
+    ],
+    [
+     "79",
+     "P3472 R1 Make fiber_context::can_resume() const",
+     "Forwarded (C++29)"
+    ],
+    [
+     "80",
+     "P3045 R7 Quantities and units library",
+     "Discussed (C++29)"
+    ],
+    [
+     "81",
+     "P3242 R1 Copy and fill for mdspan",
+     "Forwarded with changes (C++29)"
+    ],
+    [
+     "82",
+     "LWG4497 std::nullopt_t should be comparable (https://cplusplus.github.io/LWG/issue4497)",
+     "Approved (C++26)"
+    ],
+    [
+     "83",
+     "P3154 R1 Deprecating signed character types in iostreams",
+     "Approved (C++29)"
+    ],
+    [
+     "84",
+     "LWG4476 run_loop should not have a set_error completion",
+     "Approved (C++26)"
+    ],
+    [
+     "85",
+     "P4151 R0 Rename affine_on",
+     "Approved (C++26)"
+    ],
+    [
+     "86",
+     "P3666 R3 Bit-precise integers (P3869 R1 Slides for P3666R1 Bit-precise integers)",
+     "Discussed (C++29)"
+    ],
+    [
+     "87",
+     "P3625 R0 either neither",
+     "Forwarded (C++29)"
+    ]
+   ],
+   "group": "g3",
+   "source": "edited:tags3",
+   "note": "cross-page LEWG status table, 87 rows; ruled versions mangle underscores and absorb trailing text; mojibake 'â€™' kept as printed",
+   "scope": "table"
+  },
+  {
+   "id": "n5040-t5",
+   "pages": [
+    7
+   ],
+   "rows": [
+    [
+     "SF",
+     "F",
+     "N",
+     "A",
+     "SA"
+    ],
+    [
+     "11",
+     "3",
+     "7",
+     "24",
+     "35"
+    ]
+   ],
+   "group": null,
+   "source": "typed",
+   "note": "unruled poll result (Contracts removal)",
+   "scope": "table"
+  },
+  {
+   "id": "n5040-t4",
+   "pages": [
+    28,
+    29,
+    30,
+    31,
+    32,
+    33
+   ],
+   "rows": [
+    [
+     "Name",
+     "National Body"
+    ],
+    [
+     "Adams, Michael",
+     "SCC"
+    ],
+    [
+     "Alday, Juan",
+     "ANSI"
+    ],
+    [
+     "ALEXANDRESCU, Andrei Cristian",
+     "ASRO"
+    ],
+    [
+     "Arutyunyan, Ruslan",
+     "ANSI"
+    ],
+    [
+     "Ažman, Gašper",
+     "BSI"
+    ],
+    [
+     "Bagdonas, Ignas",
+     "BSI"
+    ],
+    [
+     "Baker, Billy",
+     "ANSI"
+    ],
+    [
+     "Balog, Pal",
+     "ANSI"
+    ],
+    [
+     "Banglawala, Neelofer",
+     "BSI"
+    ],
+    [
+     "Benetkiewicz, Paweł",
+     "PKN"
+    ],
+    [
+     "Berge', Agustin",
+     "UNI"
+    ],
+    [
+     "Berne, Joshua",
+     "ANSI"
+    ],
+    [
+     "Beyls, Kristof",
+     "BSI"
+    ],
+    [
+     "Bi, Brian",
+     "ANSI"
+    ],
+    [
+     "Bindels, Peter",
+     "NEN"
+    ],
+    [
+     "Birbacher, Frank",
+     "ANSI"
+    ],
+    [
+     "Blackwell, Bianca",
+     "SCC"
+    ],
+    [
+     "Boeckel, Ben",
+     "ANSI"
+    ],
+    [
+     "Boehm, Hans",
+     "ANSI"
+    ],
+    [
+     "Bonaventura, Xavier",
+     "DIN"
+    ],
+    [
+     "Borland, Matt",
+     "ANSI"
+    ],
+    [
+     "Bott, Harold",
+     "ANSI"
+    ],
+    [
+     "Brindle, Tristan",
+     "BSI"
+    ],
+    [
+     "Brito Gadeschi, Gonzalo",
+     "ANSI"
+    ],
+    [
+     "Brown, Walter E.",
+     "SII"
+    ],
+    [
+     "Butler, Matthew",
+     "ANSI"
+    ],
+    [
+     "Büttner, Sebastian",
+     "ANSI"
+    ],
+    [
+     "ÇAĞRI, Murat Can",
+     "TSE"
+    ],
+    [
+     "Cardoso de Souza Rodrigues, Guilherme",
+     "ASI"
+    ],
+    [
+     "Cassagnes, Aurelien",
+     "ANSI"
+    ],
+    [
+     "Caves, Jonathan",
+     "ANSI"
+    ],
+    [
+     "Childers, Wyatt",
+     "ANSI"
+    ],
+    [
+     "Coe, Jonathan Brian",
+     "BSI"
+    ],
+    [
+     "Corden, Richard",
+     "ANSI"
+    ],
+    [
+     "Craig, Philip",
+     "BSI"
+    ],
+    [
+     "Cranmer, Joshua",
+     "ANSI"
+    ],
+    [
+     "D'Angelo, Giuseppe",
+     "ANSI"
+    ],
+    [
+     "Davidson, Guy",
+     "BSI"
+    ],
+    [
+     "de Wever, Mark",
+     "ANSI"
+    ],
+    [
+     "Delfino, Gianluca",
+     "UNI"
+    ],
+    [
+     "DOS REIS, Gabriel",
+     "AFNOR"
+    ],
+    [
+     "Doumler, Timur",
+     "BSI"
+    ],
+    [
+     "Downey, Steve",
+     "ANSI"
+    ],
+    [
+     "Drakeford, Andrew",
+     "BSI"
+    ],
+    [
+     "Dusikova, Hana",
+     "UNMZ"
+    ],
+    [
+     "Egan, Jake",
+     "SCC"
+    ],
+    [
+     "Engert, Daniela",
+     "DIN"
+    ],
+    [
+     "Falco, Vincent",
+     "ANSI"
+    ],
+    [
+     "Fertig, Andreas",
+     "DIN"
+    ],
+    [
+     "Floyd, Paul",
+     "ANSI"
+    ],
+    [
+     "Foco, Marco",
+     "UNI"
+    ],
+    [
+     "Fracassi, Fabio",
+     "DIN"
+    ],
+    [
+     "Gabor Horvath",
+     "ANSI"
+    ],
+    [
+     "Ganetsky, Braden",
+     "SCC"
+    ],
+    [
+     "García Sánchez, José Daniel",
+     "UNE"
+    ],
+    [
+     "Garg, Lakshay",
+     "ANSI"
+    ],
+    [
+     "Garland, Michael",
+     "ANSI"
+    ],
+    [
+     "Genovese, Walter",
+     "ANSI"
+    ],
+    [
+     "Gill, Mungo",
+     "NSAI"
+    ],
+    [
+     "Giroux, Olivier",
+     "ANSI"
+    ],
+    [
+     "Goodspeed, Nathaniel",
+     "ANSI"
+    ],
+    [
+     "Gordon, Fraser",
+     "SCC"
+    ],
+    [
+     "Gros-Lemesre, Stephane",
+     "BSI"
+    ],
+    [
+     "Gruber, Bernhard",
+     "ANSI"
+    ],
+    [
+     "Gustafsson, Bengt",
+     "SIS"
+    ],
+    [
+     "Halpern, Pablo",
+     "ANSI"
+    ],
+    [
+     "Hava, Michael Florian",
+     "ASI"
+    ],
+    [
+     "Haynes, Graham",
+     "BSI"
+    ],
+    [
+     "He, Maotian",
+     "BSI"
+    ],
+    [
+     "Herring, Davis",
+     "ANSI"
+    ],
+    [
+     "Hoemmen, Mark",
+     "ANSI"
+    ],
+    [
+     "Honermann, Tom",
+     "ANSI"
+    ],
+    [
+     "Hrenka, Peter",
+     "DIN"
+    ],
+    [
+     "Hunt, Oliver",
+     "ANSI"
+    ],
+    [
+     "HUSSONG, Charles",
+     "JISC"
+    ],
+    [
+     "Jelinek, Jakub",
+     "ANSI"
+    ],
+    [
+     "Kamiński, Tomasz",
+     "PKN"
+    ],
+    [
+     "Karampour, Maryam",
+     "SCC"
+    ],
+    [
+     "Katz, Dan",
+     "ANSI"
+    ],
+    [
+     "Kawulak, Robert",
+     "PKN"
+    ],
+    [
+     "Keane, Erich",
+     "ANSI"
+    ],
+    [
+     "Khlebnikov, Rostislav",
+     "ANSI"
+    ],
+    [
+     "Khyzha, Artem",
+     "BSI"
+    ],
+    [
+     "Kilpeläinen, Mikael",
+     "SFS"
+    ],
+    [
+     "Koeppe, Thomas",
+     "ANSI"
+    ],
+    [
+     "Kostur, Andre",
+     "SCC"
+    ],
+    [
+     "Kosunen, Elias",
+     "SFS"
+    ],
+    [
+     "Kozicki, Bronek",
+     "BSI"
+    ],
+    [
+     "Kremer, Alexander",
+     "BSI"
+    ],
+    [
+     "Kretz, Matthias",
+     "DIN"
+    ],
+    [
+     "Krzemienski, Andrzej",
+     "PKN"
+    ],
+    [
+     "Kuhl, Dietmar",
+     "ANSI"
+    ],
+    [
+     "Larson, Brad",
+     "ANSI"
+    ],
+    [
+     "Lauko, Henrich",
+     "UNMZ"
+    ],
+    [
+     "Leahy, Robert",
+     "SCC"
+    ],
+    [
+     "Lebrun-Grandie, Damien",
+     "ANSI"
+    ],
+    [
+     "Levi, Inbal",
+     "ANSI"
+    ],
+    [
+     "Levi, Inbal",
+     "SII"
+    ],
+    [
+     "Levine, Michael",
+     "ANSI"
+    ],
+    [
+     "Li, Yihe",
+     "ANSI"
+    ],
+    [
+     "Liber, Nevin",
+     "ANSI"
+    ],
+    [
+     "Lippincott, Lisa",
+     "ANSI"
+    ],
+    [
+     "López Gómez, Javier",
+     "UNE"
+    ],
+    [
+     "Louis Dionne",
+     "SCC"
+    ],
+    [
+     "Luchkin, Viacheslav",
+     "ANSI"
+    ],
+    [
+     "Majumder, Abhilash",
+     "ANSI"
+    ],
+    [
+     "Marcey, Joel",
+     "ANSI"
+    ],
+    [
+     "Matt, Cummins",
+     "ANSI"
+    ],
+    [
+     "Maurer, Jens",
+     "ANSI"
+    ],
+    [
+     "McKenney, Paul",
+     "ANSI"
+    ],
+    [
+     "McMonagle, John",
+     "BSI"
+    ],
+    [
+     "Meerwald, Christof",
+     "ASI"
+    ],
+    [
+     "Meredith, Alisdair",
+     "ANSI"
+    ],
+    [
+     "Merrill, Jason",
+     "ANSI"
+    ],
+    [
+     "Michael, Maged",
+     "ANSI"
+    ],
+    [
+     "Miller, Cody",
+     "ANSI"
+    ],
+    [
+     "Morales, Nicolas",
+     "ANSI"
+    ],
+    [
+     "Moschovakos, Paris",
+     "SNV"
+    ],
+    [
+     "Mueller, Gideon",
+     "ANSI"
+    ],
+    [
+     "Myers, Nathan",
+     "ANSI"
+    ],
+    [
+     "Nash, Phil",
+     "BSI"
+    ],
+    [
+     "Neațu, Darius",
+     "ASRO"
+    ],
+    [
+     "Nelson, Catherine",
+     "ANSI"
+    ],
+    [
+     "NICHITA, Radu",
+     "ASRO"
+    ],
+    [
+     "Nolan, Edward",
+     "ANSI"
+    ],
+    [
+     "Orr, Roger",
+     "BSI"
+    ],
+    [
+     "Owen, Nathan",
+     "ANSI"
+    ],
+    [
+     "Peacock, Antony",
+     "BSI"
+    ],
+    [
+     "Persson, Jonas",
+     "SIS"
+    ],
+    [
+     "Petersen, Ian",
+     "SCC"
+    ],
+    [
+     "Polacek, Marek",
+     "ANSI"
+    ],
+    [
+     "Polukhin, Anton",
+     "GOST R"
+    ],
+    [
+     "Preney, Paul",
+     "SCC"
+    ],
+    [
+     "Pusz, Mateusz",
+     "PKN"
+    ],
+    [
+     "Ranns, Nina Dinka",
+     "BSI"
+    ],
+    [
+     "REVERDY, Vincent",
+     "AFNOR"
+    ],
+    [
+     "Revzin, Barry",
+     "ANSI"
+    ],
+    [
+     "Rifkin, Jeremy",
+     "ANSI"
+    ],
+    [
+     "Rivera Morell, René Ferdinand",
+     "ANSI"
+    ],
+    [
+     "Robert Douglas",
+     "ANSI"
+    ],
+    [
+     "Ronkainen, Jari",
+     "SFS"
+    ],
+    [
+     "Rosten, Oliver",
+     "BSI"
+    ],
+    [
+     "Roy, Patrice",
+     "SCC"
+    ],
+    [
+     "Russell, Thomas",
+     "BSI"
+    ],
+    [
+     "Ryan, Christopher",
+     "ANSI"
+    ],
+    [
+     "Saariste, Sam",
+     "BSI"
+    ],
+    [
+     "Sankel, David",
+     "ANSI"
+    ],
+    [
+     "Satle, Ankur",
+     "BIS"
+    ],
+    [
+     "Sattler, Florian",
+     "ANSI"
+    ],
+    [
+     "Serebrennikov, Vladislav",
+     "ANSI"
+    ],
+    [
+     "Simerda, Pavel",
+     "UNMZ"
+    ],
+    [
+     "Snyder, Jeff",
+     "BSI"
+    ],
+    [
+     "Song, Tim",
+     "ANSI"
+    ],
+    [
+     "Spencer, Michael",
+     "ANSI"
+    ],
+    [
+     "Spicer, John",
+     "ANSI"
+    ],
+    [
+     "St. Amour, Bryan",
+     "SCC"
+    ],
+    [
+     "Starosz, Sebastian",
+     "PKN"
+    ],
+    [
+     "Stroustrup, Bjarne",
+     "ANSI"
+    ],
+    [
+     "Sutter, Herb",
+     "ANSI"
+    ],
+    [
+     "Szolnoki, Lénárd",
+     "BSI"
+    ],
+    [
+     "Tadel, Matevz",
+     "SIST"
+    ],
+    [
+     "Tanwar Preeti",
+     "ANSI"
+    ],
+    [
+     "Taylor, Matthew",
+     "BSI"
+    ],
+    [
+     "TEODORESCU, Lucian Radu",
+     "ASRO"
+    ],
+    [
+     "Teoh, Joon Nam",
+     "ANSI"
+    ],
+    [
+     "Thomas, Alexsandro",
+     "ABNT"
+    ],
+    [
+     "Tichak, Michal",
+     "SNV"
+    ],
+    [
+     "Tong, Hubert",
+     "SCC"
+    ],
+    [
+     "Towner, Daniel",
+     "ANSI"
+    ],
+    [
+     "Trott, Christian",
+     "ANSI"
+    ],
+    [
+     "Tsaousis-Seiras, Isidoros",
+     "ANSI"
+    ],
+    [
+     "Vandevoorde, Daveed",
+     "ANSI"
+    ],
+    [
+     "Varlamov, Konstantin",
+     "ANSI"
+    ],
+    [
+     "Vasama, Lauri",
+     "SFS"
+    ],
+    [
+     "Voicu, Alexandru",
+     "ANSI"
+    ],
+    [
+     "Vollmann, Detlef",
+     "SNV"
+    ],
+    [
+     "Voutilainen, Ville",
+     "SFS"
+    ],
+    [
+     "Wakely, Jonathan",
+     "BSI"
+    ],
+    [
+     "Walker, Kelly",
+     "ANSI"
+    ],
+    [
+     "Wang, Mingxin",
+     "SAC"
+    ],
+    [
+     "Waterloo, Jarrad",
+     "ANSI"
+    ],
+    [
+     "Weis, Andreas",
+     "ANSI"
+    ],
+    [
+     "Williams, Anthony",
+     "BSI"
+    ],
+    [
+     "Wippich, Matthias",
+     "ANSI"
+    ],
+    [
+     "Wong, Michael",
+     "SCC"
+    ],
+    [
+     "Wood, Tobias",
+     "BSI"
+    ],
+    [
+     "Xie, Hui",
+     "BSI"
+    ],
+    [
+     "Yacobi, Tal",
+     "ANSI"
+    ],
+    [
+     "Yaghmour, Shafik",
+     "ANSI"
+    ],
+    [
+     "Yeong, Al-Afiq",
+     "BSI"
+    ],
+    [
+     "Yuan, Zhihao",
+     "ANSI"
+    ],
+    [
+     "YUKHYMENKO, VALENTYN",
+     "ANSI"
+    ],
+    [
+     "Zimmermann, Philipp",
+     "ANSI"
+    ],
+    [
+     "Zissu, Andrei",
+     "ANSI"
+    ],
+    [
+     "Amir Kirsh",
+     "SII"
+    ],
+    [
+     "Bruce Adams",
+     "BSI"
+    ],
+    [
+     "David Rowland",
+     "BSI"
+    ],
+    [
+     "Felix Hellmann",
+     "DIN"
+    ],
+    [
+     "Filimon Roukoutakis",
+     "BSI"
+    ],
+    [
+     "İslam Yaşar",
+     "TSE"
+    ],
+    [
+     "Jon Bauman",
+     "ANSI"
+    ],
+    [
+     "Kartik Ohlan",
+     "DIN"
+    ],
+    [
+     "Mara Bos",
+     "NEN"
+    ],
+    [
+     "Marcelo Gonda Stangler",
+     "ABNT"
+    ],
+    [
+     "Missier, Prabhu",
+     ""
+    ],
+    [
+     "Nathan Baggs",
+     "BSI"
+    ],
+    [
+     "William Fynn",
+     "BSI"
+    ],
+    [
+     "Yongwei Wu",
+     "SAC"
+    ]
+   ],
+   "group": "g4",
+   "source": "picked:tags4",
+   "note": "cross-page attendance list; ruled pieces concatenate identically",
+   "scope": "table"
+  }
+ ],
+ "not_tables": [],
+ "missed_by_all": [
+  "n5040-t5"
+ ],
+ "checked_pages": "all",
+ "source_pdf": "https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2026/n5040.pdf"
+}

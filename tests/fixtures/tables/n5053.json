@@ -1,0 +1,879 @@
+{
+ "paper": "n5053",
+ "tables": [
+  {
+   "id": "n5053-t1",
+   "pages": [
+    2
+   ],
+   "rows": [
+    [
+     "Document",
+     "Editor’s Report",
+     "Prospective WD"
+    ],
+    [
+     "C++26 Working Draft",
+     "N5047",
+     "N5046"
+    ]
+   ],
+   "group": "g1",
+   "source": "edited:tags1",
+   "note": "curly apostrophe in Editor’s",
+   "scope": "table"
+  },
+  {
+   "id": "n5053-t2",
+   "pages": [
+    2
+   ],
+   "rows": [
+    [
+     "Meeting",
+     "Minutes"
+    ],
+    [
+     "WG21 Croydon",
+     "N5040"
+    ],
+    [
+     "WG21 pre-Brno administrative telecon",
+     "N5049"
+    ]
+   ],
+   "group": "g2",
+   "source": "verified-draft",
+   "note": "",
+   "scope": "table"
+  },
+  {
+   "id": "n5053-t3",
+   "pages": [
+    20,
+    21,
+    22,
+    23,
+    24
+   ],
+   "rows": [
+    [
+     "Name (199)",
+     "National Body (29)"
+    ],
+    [
+     "Adams, Michael",
+     "SCC"
+    ],
+    [
+     "Akkaoui, Mohamed Ayoub",
+     "UNMZ"
+    ],
+    [
+     "Alday, Juan",
+     "ANSI"
+    ],
+    [
+     "Arutyunyan, Ruslan",
+     "ANSI"
+    ],
+    [
+     "Bagdonas, Ignas",
+     "BSI"
+    ],
+    [
+     "Baker, Billy",
+     "ANSI"
+    ],
+    [
+     "Balog, Pal",
+     "ANSI"
+    ],
+    [
+     "Banglawala, Neelofer",
+     "BSI"
+    ],
+    [
+     "Bentley, Matthew",
+     "ANSI"
+    ],
+    [
+     "Berge', Agustin",
+     "UNI"
+    ],
+    [
+     "Berne, Joshua",
+     "ANSI"
+    ],
+    [
+     "Beyls, Kristof",
+     "BSI"
+    ],
+    [
+     "Bi, Brian",
+     "ANSI"
+    ],
+    [
+     "Bindels, Peter",
+     "NEN"
+    ],
+    [
+     "Birbacher, Frank",
+     "ANSI"
+    ],
+    [
+     "Boeckel, Ben",
+     "ANSI"
+    ],
+    [
+     "Boehm, Hans",
+     "ANSI"
+    ],
+    [
+     "Bonaventura, Xavier",
+     "DIN"
+    ],
+    [
+     "Borland, Matt",
+     "ANSI"
+    ],
+    [
+     "Bott, Harold",
+     "ANSI"
+    ],
+    [
+     "Brindle, Tristan",
+     "BSI"
+    ],
+    [
+     "Brito Gadeschi, Gonzalo",
+     "ANSI"
+    ],
+    [
+     "Brown, Walter E.",
+     "SII"
+    ],
+    [
+     "Butler, Matthew",
+     "ANSI"
+    ],
+    [
+     "Büttner, Sebastian",
+     "ANSI"
+    ],
+    [
+     "ÇAĞRI, Murat Can",
+     "TSE"
+    ],
+    [
+     "Cardoso de Souza Rodrigues, Guilherme",
+     "ASI"
+    ],
+    [
+     "Cassagnes, Aurelien",
+     "ANSI"
+    ],
+    [
+     "Caves, Jonathan",
+     "ANSI"
+    ],
+    [
+     "Childers, Wyatt",
+     "ANSI"
+    ],
+    [
+     "Chochlik, Matus",
+     "UNMS SR"
+    ],
+    [
+     "Coe, Jonathan Brian",
+     "BSI"
+    ],
+    [
+     "Craig, Philip",
+     "BSI"
+    ],
+    [
+     "Cranmer, Joshua",
+     "ANSI"
+    ],
+    [
+     "D'Angelo, Giuseppe",
+     "ANSI"
+    ],
+    [
+     "Davidson, Guy",
+     "BSI"
+    ],
+    [
+     "Dionne, Louis",
+     "SCC"
+    ],
+    [
+     "Douglas, Robert",
+     "ANSI"
+    ],
+    [
+     "Doumler, Timur",
+     "BSI"
+    ],
+    [
+     "Downey, Steve",
+     "ANSI"
+    ],
+    [
+     "Dusikova, Hana",
+     "UNMZ"
+    ],
+    [
+     "Ebenkamp, Alli",
+     "ANSI"
+    ],
+    [
+     "Egan, Jake",
+     "SCC"
+    ],
+    [
+     "Engert, Daniela",
+     "DIN"
+    ],
+    [
+     "Falco, Vincent",
+     "ANSI"
+    ],
+    [
+     "Fertig, Andreas",
+     "DIN"
+    ],
+    [
+     "Fracassi, Fabio",
+     "DIN"
+    ],
+    [
+     "Ganetsky, Braden",
+     "SCC"
+    ],
+    [
+     "García Sánchez, José Daniel",
+     "UNE"
+    ],
+    [
+     "Garg, Lakshay",
+     "ANSI"
+    ],
+    [
+     "Garland, Jeff",
+     "ANSI"
+    ],
+    [
+     "Genovese, Walter",
+     "ANSI"
+    ],
+    [
+     "Gill, Mungo",
+     "NSAI"
+    ],
+    [
+     "Goodspeed, Nathaniel",
+     "ANSI"
+    ],
+    [
+     "Gordon, Fraser",
+     "SCC"
+    ],
+    [
+     "Gordon, Molly",
+     "ANSI"
+    ],
+    [
+     "Gruber, Bernhard",
+     "ANSI"
+    ],
+    [
+     "Gustafsson, Bengt",
+     "SIS"
+    ],
+    [
+     "Halpern, Pablo",
+     "ANSI"
+    ],
+    [
+     "Hannon, Daniel",
+     "NSAI"
+    ],
+    [
+     "Hava, Michael Florian",
+     "ASI"
+    ],
+    [
+     "Haynes, Graham",
+     "BSI"
+    ],
+    [
+     "Herring, Davis",
+     "ANSI"
+    ],
+    [
+     "Hoemmen, Mark",
+     "ANSI"
+    ],
+    [
+     "Honermann, Tom",
+     "ANSI"
+    ],
+    [
+     "Hrenka, Peter",
+     "DIN"
+    ],
+    [
+     "Hunt, Oliver",
+     "ANSI"
+    ],
+    [
+     "HUSSONG, Charles",
+     "JISC"
+    ],
+    [
+     "Izvekov, Matheus",
+     "ABNT"
+    ],
+    [
+     "Izvekov, Matheus",
+     "ANSI"
+    ],
+    [
+     "JABOT, Corentin",
+     "AFNOR"
+    ],
+    [
+     "Jelinek, Jakub",
+     "ANSI"
+    ],
+    [
+     "Josuttis, Nicolai",
+     "DIN"
+    ],
+    [
+     "Kamiński, Tomasz",
+     "PKN"
+    ],
+    [
+     "Karampour, Maryam",
+     "SCC"
+    ],
+    [
+     "Kawulak, Robert",
+     "PKN"
+    ],
+    [
+     "Keane, Erich",
+     "ANSI"
+    ],
+    [
+     "Khyzha, Artem",
+     "BSI"
+    ],
+    [
+     "Kilpeläinen, Mikael",
+     "SFS"
+    ],
+    [
+     "Koeppe, Thomas",
+     "ANSI"
+    ],
+    [
+     "Kosunen, Elias",
+     "SFS"
+    ],
+    [
+     "Kozicki, Bronek",
+     "BSI"
+    ],
+    [
+     "Kretz, Matthias",
+     "DIN"
+    ],
+    [
+     "Krzemienski, Andrzej",
+     "PKN"
+    ],
+    [
+     "Kuhl, Dietmar",
+     "ANSI"
+    ],
+    [
+     "Lakos, John",
+     "ANSI"
+    ],
+    [
+     "Lapkowski, Christopher",
+     "ANSI"
+    ],
+    [
+     "Larson, Brad",
+     "ANSI"
+    ],
+    [
+     "Lauko, Henrich",
+     "UNMZ"
+    ],
+    [
+     "Leahy, Robert",
+     "SCC"
+    ],
+    [
+     "Lebrun-Grandie, Damien",
+     "ANSI"
+    ],
+    [
+     "Leroy, Robin",
+     "UNICODE"
+    ],
+    [
+     "Levi, Inbal",
+     "ANSI"
+    ],
+    [
+     "Levi, Inbal",
+     "SII"
+    ],
+    [
+     "Li, Yihe",
+     "ANSI"
+    ],
+    [
+     "Liao, Tian",
+     "SAC"
+    ],
+    [
+     "Liber, Nevin",
+     "ANSI"
+    ],
+    [
+     "Lippincott, Lisa",
+     "ANSI"
+    ],
+    [
+     "López Gómez, Javier",
+     "UNE"
+    ],
+    [
+     "Luchkin, Viacheslav",
+     "ANSI"
+    ],
+    [
+     "Lyngmo, Ted",
+     "SIS"
+    ],
+    [
+     "Machutova, Jana",
+     "UNMZ"
+    ],
+    [
+     "Majumder, Abhilash",
+     "ANSI"
+    ],
+    [
+     "Maness, Wesley",
+     "ANSI"
+    ],
+    [
+     "Martin, Adam",
+     "ANSI"
+    ],
+    [
+     "Matt, Cummins",
+     "ANSI"
+    ],
+    [
+     "Maurer, Jens",
+     "ANSI"
+    ],
+    [
+     "McDougall, Ryan",
+     "ANSI"
+    ],
+    [
+     "McKenney, Paul",
+     "ANSI"
+    ],
+    [
+     "McMonagle, John",
+     "BSI"
+    ],
+    [
+     "Meerwald, Christof",
+     "ASI"
+    ],
+    [
+     "Mejstrik, Thomas",
+     "ASI"
+    ],
+    [
+     "Meneide, JeanHeyd",
+     "NEN"
+    ],
+    [
+     "Meredith, Alisdair",
+     "ANSI"
+    ],
+    [
+     "Merrill, Jason",
+     "ANSI"
+    ],
+    [
+     "Michael, Maged",
+     "ANSI"
+    ],
+    [
+     "Morales, Nicolas",
+     "ANSI"
+    ],
+    [
+     "Moschovakos, Paris",
+     "SNV"
+    ],
+    [
+     "Müller, Jonathan",
+     "DIN"
+    ],
+    [
+     "Murzin, Sergei",
+     "ANSI"
+    ],
+    [
+     "Myers, Nathan",
+     "ANSI"
+    ],
+    [
+     "Nathan Baggs",
+     "BSI"
+    ],
+    [
+     "Nolan, Edward",
+     "ANSI"
+    ],
+    [
+     "Orr, Roger",
+     "BSI"
+    ],
+    [
+     "Owen, Nathan",
+     "ANSI"
+    ],
+    [
+     "Pashov, Vasil",
+     "BDS"
+    ],
+    [
+     "Peacock, Antony",
+     "BSI"
+    ],
+    [
+     "Pelliccioni, Fernando",
+     "ANSI"
+    ],
+    [
+     "Persson, Jonas",
+     "SIS"
+    ],
+    [
+     "Petersen, Ian",
+     "SCC"
+    ],
+    [
+     "Polukhin, Anton",
+     "GOST R"
+    ],
+    [
+     "Pusz, Mateusz",
+     "PKN"
+    ],
+    [
+     "Ranns, Nina Dinka",
+     "BSI"
+    ],
+    [
+     "Revzin, Barry",
+     "ANSI"
+    ],
+    [
+     "Rivera Morell, René Ferdinand",
+     "ANSI"
+    ],
+    [
+     "Ronkainen, Jari",
+     "SFS"
+    ],
+    [
+     "Rosten, Oliver",
+     "BSI"
+    ],
+    [
+     "Roy, Patrice",
+     "SCC"
+    ],
+    [
+     "Ryan, Christopher",
+     "ANSI"
+    ],
+    [
+     "Sandoe, Iain",
+     "BSI"
+    ],
+    [
+     "Satle, Ankur",
+     "BIS"
+    ],
+    [
+     "Sattler, Florian",
+     "ANSI"
+    ],
+    [
+     "Schultke, Jan",
+     "ANSI"
+    ],
+    [
+     "Serebrennikov, Vladislav",
+     "ANSI"
+    ],
+    [
+     "Simerda, Pavel",
+     "UNMZ"
+    ],
+    [
+     "Snyder, Jeff",
+     "BSI"
+    ],
+    [
+     "Song, Tim",
+     "ANSI"
+    ],
+    [
+     "Spencer, Michael",
+     "ANSI"
+    ],
+    [
+     "Spicer, John",
+     "ANSI"
+    ],
+    [
+     "St. Amour, Bryan",
+     "SCC"
+    ],
+    [
+     "Starosz, Sebastian",
+     "PKN"
+    ],
+    [
+     "Stroustrup, Bjarne",
+     "ANSI"
+    ],
+    [
+     "Sutter, Herb",
+     "ANSI"
+    ],
+    [
+     "Taylor, Matthew",
+     "BSI"
+    ],
+    [
+     "TEODORESCU, Lucian Radu",
+     "ASRO"
+    ],
+    [
+     "Thomas, Alexsandro",
+     "ABNT"
+    ],
+    [
+     "Tong, Hubert",
+     "SCC"
+    ],
+    [
+     "Towner, Daniel",
+     "ANSI"
+    ],
+    [
+     "Trott, Christian",
+     "ANSI"
+    ],
+    [
+     "Van Eerd, Tony",
+     "SCC"
+    ],
+    [
+     "Vandevoorde, Daveed",
+     "ANSI"
+    ],
+    [
+     "Varlamov, Konstantin",
+     "ANSI"
+    ],
+    [
+     "Vasama, Lauri",
+     "SFS"
+    ],
+    [
+     "Veigas Ramírez, Santiago",
+     "UNE"
+    ],
+    [
+     "Vollmann, Detlef",
+     "SNV"
+    ],
+    [
+     "Voutilainen, Ville",
+     "SFS"
+    ],
+    [
+     "Wakely, Jonathan",
+     "ANSI"
+    ],
+    [
+     "Walker, Kelly",
+     "ANSI"
+    ],
+    [
+     "Wang, Yihan",
+     "ANSI"
+    ],
+    [
+     "Waterloo, Jarrad",
+     "ANSI"
+    ],
+    [
+     "Weis, Andreas",
+     "ANSI"
+    ],
+    [
+     "Williams, Anthony",
+     "BSI"
+    ],
+    [
+     "Wippich, Matthias",
+     "ANSI"
+    ],
+    [
+     "Wood, Tobias",
+     "BSI"
+    ],
+    [
+     "Xie, Hui",
+     "BSI"
+    ],
+    [
+     "xu, chuanqi",
+     "SAC"
+    ],
+    [
+     "Yacobi, Tal",
+     "ANSI"
+    ],
+    [
+     "Yaghmour, Shafik",
+     "ANSI"
+    ],
+    [
+     "Yuan, Zhihao",
+     "ANSI"
+    ],
+    [
+     "YUKHYMENKO, VALENTYN",
+     "ANSI"
+    ],
+    [
+     "Zimmermann, Philipp",
+     "ANSI"
+    ],
+    [
+     "Zissu, Andrei",
+     "ANSI"
+    ],
+    [
+     "Zverovich, Victor",
+     "ANSI"
+    ],
+    [
+     "Arnold, Anthony",
+     "SA"
+    ],
+    [
+     "Bauman, Jon",
+     "ANSI"
+    ],
+    [
+     "Chris Blume",
+     "ANSI"
+    ],
+    [
+     "Császár Mátyás",
+     "MSZT"
+    ],
+    [
+     "Daniel Pfeifer",
+     "SNV"
+    ],
+    [
+     "Jan Koniarik",
+     "UNMZ"
+    ],
+    [
+     "Jan Mrázek",
+     "UNMZ"
+    ],
+    [
+     "Jan Wilmans",
+     "NEN"
+    ],
+    [
+     "Jan Zatyko",
+     "UNMZ"
+    ],
+    [
+     "Klaus Triendl",
+     "CYS"
+    ],
+    [
+     "Lukáš Korenčik",
+     "UNMZ"
+    ],
+    [
+     "Marcos Bracco",
+     "IRAM"
+    ],
+    [
+     "Matěj Plch",
+     "UNMZ"
+    ],
+    [
+     "Miklós Kozák",
+     "MSZT"
+    ],
+    [
+     "Tibor Mikeš",
+     "UNMZ"
+    ],
+    [
+     "Václav Chvíla",
+     "UNMZ"
+    ],
+    [
+     "Vladimír Štill",
+     "UNMZ"
+    ],
+    [
+     "Zoltán Porkoláb",
+     "MSZT"
+    ]
+   ],
+   "group": "g3",
+   "source": "picked:tags3",
+   "note": "cross-page attendance list; ruled pieces concatenate identically",
+   "scope": "table"
+  }
+ ],
+ "not_tables": [],
+ "missed_by_all": [],
+ "checked_pages": "all",
+ "source_pdf": "https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2026/n5053.pdf"
+}

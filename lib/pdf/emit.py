@@ -4,7 +4,7 @@ import logging
 
 from .. import format_front_matter
 from .cleanup import normalize_whitespace
-from .types import Line, Span, Section, SectionKind, BULLET_CHARS
+from .types import Line, Span, Section, SectionKind, Confidence, BULLET_CHARS
 
 _log = logging.getLogger(__name__)
 
@@ -56,7 +56,7 @@ def _render_line_spans(line: Line, in_code_section: bool = False,
 
     groups: list[tuple[bool, list[Span]]] = []
     for span in line.spans:
-        is_mono = span.monospace and span.text.strip()
+        is_mono = bool(span.monospace and span.text.strip())
         if groups and groups[-1][0] == is_mono:
             groups[-1][1].append(span)
         else:
@@ -249,9 +249,28 @@ def _render_wording_section(sec: Section) -> str:
 
 
 def _render_cell_spans(spans: list, suppress_bold: bool = False) -> str:
-    """Render a table cell's spans with inline formatting."""
-    line = Line(spans=spans)
-    return _render_line_spans(line, suppress_bold=suppress_bold).strip()
+    """Render a table cell's spans with inline formatting.
+
+    A span whose text is "\n" separates the lines of a wrapped cell; they
+    are joined with <br>. Pipes are escaped so they cannot split the cell
+    (GFM honours the escape inside code spans too).
+    """
+    parts: list[list] = [[]]
+    for s in spans:
+        if s.text == "\n":
+            parts.append([])
+        else:
+            parts[-1].append(s)
+    rendered = [r for r in (_render_line_spans(Line(spans=p), suppress_bold=suppress_bold).strip()
+                            for p in parts if p) if r]
+    out = rendered[:1]
+    for r in rendered[1:]:
+        # A word hyphenated at the cell's line break is one word: "effect-" + "parameterized".
+        if out[-1].endswith("-") and r[:1].islower():
+            out[-1] += r
+        else:
+            out.append(r)
+    return "<br>".join(out).replace("|", "\\|")
 
 
 def _render_table(sec: Section) -> str:
@@ -332,6 +351,14 @@ def emit_markdown(metadata: dict, sections: list[Section]) -> str:
         rendered = _render_section_md(sec)
         if not rendered.strip():
             continue
+        if sec.kind == SectionKind.TABLE and sec.confidence == Confidence.UNCERTAIN:
+            # Table sources disagreed: mark it like any uncertain region.
+            text_lines = rendered.count("\n") + 1
+            text_start = line_num + 2
+            parts.append(f"<!-- tomd:uncertain:L{text_start}-L{text_start + text_lines - 1} -->")
+            parts.append(rendered)
+            line_num += text_lines + 3
+            continue
         parts.append(rendered)
         line_num += rendered.count("\n") + 2
 
@@ -340,13 +367,17 @@ def emit_markdown(metadata: dict, sections: list[Section]) -> str:
     return md
 
 
+def _is_uncertain_table(sec: Section) -> bool:
+    return sec.kind == SectionKind.TABLE and sec.confidence == Confidence.UNCERTAIN
+
+
 def emit_prompts(sections: list[Section]) -> str | None:
     """Generate the companion prompts file for uncertain regions.
 
     Returns None if there are no uncertain regions.
     """
     uncertain = [(idx, s) for idx, s in enumerate(sections)
-                 if s.kind == SectionKind.UNCERTAIN]
+                 if s.kind == SectionKind.UNCERTAIN or _is_uncertain_table(s)]
     if not uncertain:
         return None
 
@@ -361,9 +392,10 @@ def emit_prompts(sections: list[Section]) -> str | None:
     for i, (idx, sec) in enumerate(uncertain):
         ctx_before = ""
         ctx_after = ""
-        if idx > 0 and sections[idx - 1].kind != SectionKind.UNCERTAIN:
+        if idx > 0 and sections[idx - 1].kind != SectionKind.UNCERTAIN and not _is_uncertain_table(sections[idx - 1]):
             ctx_before = sections[idx - 1].text[:200].strip()
-        if idx + 1 < len(sections) and sections[idx + 1].kind != SectionKind.UNCERTAIN:
+        if (idx + 1 < len(sections) and sections[idx + 1].kind != SectionKind.UNCERTAIN
+                and not _is_uncertain_table(sections[idx + 1])):
             ctx_after = sections[idx + 1].text[:200].strip()
 
         parts.append(f"## Region {i + 1} (page {sec.page_num})")
@@ -381,16 +413,29 @@ def emit_prompts(sections: list[Section]) -> str | None:
             parts.append(f"> {ctx_before}")
             parts.append("")
 
-        parts.append("MuPDF extraction:")
-        parts.append("```")
-        parts.append(sec.mupdf_text or sec.text)
-        parts.append("```")
-        parts.append("")
-        parts.append("Spatial extraction:")
-        parts.append("```")
-        parts.append(sec.spatial_text or sec.text)
-        parts.append("```")
-        parts.append("")
+        if _is_uncertain_table(sec):
+            # One block per table extractor; the first is the one emitted.
+            parts.append("This is a table. The extractors below disagree on its rows,")
+            parts.append("columns or cell text. Produce one correct Markdown table.")
+            parts.append("")
+            for i, (source, table_md) in enumerate(sec.metadata.get("table_versions", [])):
+                label = "emitted" if i == 0 else "alternative"
+                parts.append(f"Table from the {source} extractor ({label}):")
+                parts.append("```")
+                parts.append(table_md)
+                parts.append("```")
+                parts.append("")
+        else:
+            parts.append("MuPDF extraction:")
+            parts.append("```")
+            parts.append(sec.mupdf_text or sec.text)
+            parts.append("```")
+            parts.append("")
+            parts.append("Spatial extraction:")
+            parts.append("```")
+            parts.append(sec.spatial_text or sec.text)
+            parts.append("```")
+            parts.append("")
 
         if ctx_after:
             parts.append("Context (following confident section):")

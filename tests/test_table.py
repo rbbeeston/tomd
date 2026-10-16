@@ -3,7 +3,7 @@
 from conftest import make_span
 from lib.pdf.types import Block, Line, Section, SectionKind, Confidence
 from lib.pdf.table import (
-    detect_tables, exclude_table_regions,
+    detect_tables, remove_table_regions,
     _find_column_xs, _is_column_aligned_orphan,
 )
 
@@ -240,46 +240,32 @@ class TestOrphanAbsorption:
         assert len(tables[0].columns) == 3
 
 
-class TestExcludeTableRegions:
-    def test_blocks_inside_table_removed(self):
-        """Blocks whose y-center falls within a table range are excluded."""
-        table_line = _col_line("x", 50, 100)
-        table_line2 = _col_line("y", 50, 140)
-        table_sec = Section(
-            kind=SectionKind.TABLE,
-            text="table",
-            confidence=Confidence.HIGH,
-            lines=[table_line, table_line2],
-            page_num=0,
-        )
+class TestRemoveTableRegions:
+    def _table(self, *lines):
+        return Section(kind=SectionKind.TABLE, text="table",
+                       confidence=Confidence.HIGH, lines=list(lines), page_num=0)
 
-        inside = Block(lines=[], bbox=(50, 110, 400, 130), page_num=0)
-        outside = Block(lines=[], bbox=(50, 300, 400, 320), page_num=0)
+    def test_lines_inside_table_removed(self):
+        """Lines whose centre falls within a table's region are dropped."""
+        table_sec = self._table(_col_line("x", 50, 100), _col_line("y", 50, 140))
+        inside = Block(lines=[_col_line("in", 60, 120)], page_num=0)
+        outside = Block(lines=[_col_line("out", 50, 300)], page_num=0)
 
-        result = exclude_table_regions([inside, outside], [table_sec])
+        result = remove_table_regions([inside, outside], [table_sec])
         assert len(result) == 1
         assert result[0] is outside
 
-    def test_different_page_not_excluded(self):
+    def test_different_page_not_removed(self):
         """Blocks on a different page from the table are kept."""
-        table_line = _col_line("x", 50, 100, page_num=0)
-        table_sec = Section(
-            kind=SectionKind.TABLE,
-            text="table",
-            confidence=Confidence.HIGH,
-            lines=[table_line],
-            page_num=0,
-        )
-
-        block = Block(lines=[], bbox=(50, 100, 400, 112), page_num=1)
-        result = exclude_table_regions([block], [table_sec])
-        assert len(result) == 1
+        table_sec = self._table(_col_line("x", 50, 100, page_num=0))
+        block = Block(lines=[_col_line("x", 50, 100, page_num=1)], page_num=1)
+        result = remove_table_regions([block], [table_sec])
+        assert result == [block]
 
     def test_empty_tables_returns_all(self):
         """No table sections means all blocks are returned."""
         blocks = [
-            Block(lines=[], bbox=(50, 100, 400, 112), page_num=0),
-            Block(lines=[], bbox=(50, 200, 400, 212), page_num=0),
+            Block(lines=[_col_line("a", 50, 100)], page_num=0),
+            Block(lines=[_col_line("b", 50, 200)], page_num=0),
         ]
-        result = exclude_table_regions(blocks, [])
-        assert len(result) == 2
+        assert remove_table_regions(blocks, []) == blocks

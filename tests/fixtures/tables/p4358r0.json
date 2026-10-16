@@ -1,0 +1,51 @@
+{
+ "paper": "p4358r0",
+ "tables": [
+  {
+   "id": "p4358r0-t1",
+   "pages": [
+    0
+   ],
+   "rows": [
+    [
+     "Document #:",
+     "P4358R0"
+    ],
+    [
+     "Date:",
+     "2026-09-21"
+    ],
+    [
+     "Programming Language C++",
+     ""
+    ],
+    [
+     "Audience:",
+     "LEWG"
+    ],
+    [
+     "Reply-to:",
+     "Corentin Jabot <corentin.jabot@gmail.com>"
+    ]
+   ],
+   "group": null,
+   "source": "typed",
+   "note": "unruled metadata block; 'Programming Language C++' has no value cell (spans)",
+   "scope": "front-matter"
+  }
+ ],
+ "not_tables": [
+  {
+   "group": null,
+   "pages": [
+    1
+   ],
+   "reason": "bit-layout diagram (address|tag|0|0 with bit numbers) - figure"
+  }
+ ],
+ "missed_by_all": [
+  "p4358r0-t1"
+ ],
+ "checked_pages": "all",
+ "source_pdf": "https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2026/p4358r0.pdf"
+}

@@ -1,0 +1,93 @@
+{
+ "paper": "n5057",
+ "tables": [
+  {
+   "id": "n5057-t1",
+   "pages": [
+    1
+   ],
+   "rows": [
+    [
+     "Item",
+     "Information"
+    ],
+    [
+     "Orientation",
+     "Sunday evening, 14 March 2027"
+    ],
+    [
+     "WG21 meeting",
+     "Monday, 15 March through Saturday, 20 March 2027"
+    ],
+    [
+     "Venue",
+     "Bahçeşehir University - Beşiktaş South Campus"
+    ],
+    [
+     "Address",
+     "Çırağan Street, Osmanpaşa Mektebi Street No. 4-6, 34353 Beşiktaş, Istanbul, Türkiye"
+    ],
+    [
+     "Map",
+     "Bahçeşehir University Beşiktaş South Campus on Apple Maps"
+    ],
+    [
+     "Format",
+     "In person and remote"
+    ],
+    [
+     "Time zone",
+     "Türkiye Time (TRT), UTC+3"
+    ]
+   ],
+   "group": "g1",
+   "source": "picked:ruled1",
+   "note": "tomd split it into two fragments",
+   "scope": "table"
+  },
+  {
+   "id": "n5057-t2",
+   "pages": [
+    4
+   ],
+   "rows": [
+    [
+     "Hotel",
+     "Access to the campus"
+    ],
+    [
+     "Conrad Istanbul Bosphorus",
+     "10-15 minutes on foot, steeply uphill; route"
+    ],
+    [
+     "DoubleTree by Hilton Istanbul Maçka",
+     "15-20 minutes on foot, uphill; route"
+    ],
+    [
+     "AC Hotel Istanbul Maçka",
+     "10-15 minutes on foot, uphill; route"
+    ],
+    [
+     "Shangri-La Bosphorus",
+     "About 5 minutes on foot, with the flattest route; route"
+    ]
+   ],
+   "group": "g3",
+   "source": "picked:ruled3",
+   "note": "",
+   "scope": "table"
+  }
+ ],
+ "not_tables": [
+  {
+   "group": "g2",
+   "pages": [
+    2
+   ],
+   "reason": "route diagram figure (boxes and coloured lines)"
+  }
+ ],
+ "missed_by_all": [],
+ "checked_pages": "all",
+ "source_pdf": "https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2026/n5057.pdf"
+}

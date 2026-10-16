@@ -269,6 +269,8 @@ The table pipeline (independent readers and their evidence, selection, verificat
 **T34. Table rendering**
 - `emit.py:_render_table`
 - GitHub-style Markdown pipe tables. First row = header with bold suppressed.
+- Lines of a wrapped cell are joined with `<br>` (a word hyphenated at the break is rejoined); `|` is escaped as `\|`.
+- An UNCERTAIN table is preceded by a `tomd:uncertain` marker, and its prompt lists the table from every source.
 
 **T35. Uncertain region marking**
 - `emit.py:emit_markdown`
@@ -312,7 +314,9 @@ The table pipeline (independent readers and their evidence, selection, verificat
 | `wording.py` | Wording section detection (ins/del) | `classify_wording`, `collect_line_drawings` | ~250 |
 | `cleanup.py` | Text cleanup, header/footer, hidden regions | `detect_repeating`, `strip_repeating`, `cleanup_text`, `find_hidden_regions`, `strip_hidden_blocks` | ~373 |
 | `spans.py` | Style boundary normalization | `normalize_spans` | ~149 |
-| `table.py` | Two-signal table detection and exclusion | `detect_tables`, `exclude_table_regions` | ~252 |
+| `table.py` | Text-position tables; selection across table sources | `detect_tables`, `select_tables`, `remove_table_regions`, `table_flags` | ~560 |
+| `ruled.py` | Tables from ruling lines and shaded rows | `extract_ruled_tables` | ~430 |
+| `tagged.py` | Tables from PDF accessibility tags | `extract_tagged_tables` | ~210 |
 | `structure.py` | Comparison, heading/list/code classification | `compare_extractions`, `structure_sections` | ~939 |
 | `emit.py` | Markdown and prompts generation | `emit_markdown`, `emit_prompts` | ~401 |
 | `wg21.py` | WG21 metadata extraction | `extract_metadata_from_blocks` | ~199 |
