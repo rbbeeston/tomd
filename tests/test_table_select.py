@@ -94,7 +94,7 @@ class TestSelectTables:
         assert out[0].confidence == Confidence.HIGH
 
     def test_disagreement_is_uncertain_with_all_versions(self):
-        bad = [["Name", "Value"], ["alpha", "1"]]
+        bad = [["Name", "Value"], ["alpha", "1"], ["gamma", "7"]]
         out = select_tables([self._tomd_section(bad)], [_cand("rules", _GOOD)], [], [])
         assert out[0].confidence == Confidence.UNCERTAIN
         sources = [s for s, _ in out[0].metadata["table_versions"]]
@@ -156,7 +156,7 @@ class TestTableOutput:
         assert _render_cell_spans(spans) == "`[mutable x]`"
 
     def test_uncertain_table_is_marked_and_prompted(self):
-        bad = [["Name", "Value"], ["alpha", "1"]]
+        bad = [["Name", "Value"], ["alpha", "1"], ["gamma", "7"]]
         tomd = TestSelectTables()._tomd_section(bad)
         secs = select_tables([tomd], [_cand("rules", _GOOD)], [], [])
         md = emit_markdown({}, secs)
@@ -219,3 +219,25 @@ def test_text_in_table_region_but_not_in_table_is_kept():
     captured = _line("alpha", 52, 121)
     out = remove_table_regions([Block(lines=[captured, stray], page_num=0)], table)
     assert [ln.text for b in out for ln in b.lines] == ["Weak Consensus"]
+
+
+class TestPartialReading:
+    _ROWS = [["Name", "Kind"], ["alpha", "fast"], ["beta", "slow"], ["gamma", "slow"]]
+
+    def _tomd_section(self, rows):
+        return TestSelectTables()._tomd_section(rows)
+
+    def test_tomd_subset_of_ruled_table_is_high(self):
+        out = select_tables([self._tomd_section(self._ROWS[1:3])],
+                            [_cand("rules", self._ROWS)], [], [])
+        assert out[0].confidence == Confidence.HIGH
+
+    def test_tomd_subset_with_wrong_cell_stays_uncertain(self):
+        wrong = [["alpha", "fast"], ["beta", "quick"]]
+        out = select_tables([self._tomd_section(wrong)], [_cand("rules", self._ROWS)], [], [])
+        assert out[0].confidence == Confidence.UNCERTAIN
+
+    def test_subset_rule_only_applies_to_ruled_tables(self):
+        out = select_tables([self._tomd_section(self._ROWS[1:3])], [],
+                            [_cand("tags", self._ROWS)], [])
+        assert out[0].confidence == Confidence.UNCERTAIN

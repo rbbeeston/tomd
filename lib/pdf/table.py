@@ -290,6 +290,27 @@ def candidates_agree(a: TableCandidate, b: TableCandidate) -> bool:
                                                          rb + [""] * (len(ra) - len(rb))))
 
 
+def partial_reading(primary: TableCandidate, other: TableCandidate) -> bool:
+    """True when `other` is tomd's text-position reading of part of a fully
+    ruled table: same columns, and every one of its rows matches, cell for
+    cell, a row of the ruled table in the same order. The text-position
+    detector often stops early or starts late on ruled tables; a correct
+    subset confirms the rows it saw rather than contradicting the rest."""
+    if other.source != "tomd" or primary.source not in ("grid", "rules"):
+        return False
+    if other.shape[1] != primary.shape[1] or other.shape[0] > primary.shape[0]:
+        return False
+    rows = primary.text_rows()
+    i = 0
+    for orow in other.text_rows():
+        while i < len(rows) and not all(_cells_agree(x, y) for x, y in zip(orow, rows[i])):
+            i += 1
+        if i == len(rows):
+            return False
+        i += 1
+    return True
+
+
 def table_flags(cand: TableCandidate) -> list[str]:
     """Rule-based sanity checks. Flags in BAD_TABLE_FLAGS mean the grid is
     probably wrong; the others are informational."""
@@ -519,7 +540,8 @@ def select_tables(tomd_sections: list[Section],
 
     Primary version by source priority (tags, polls, ruling lines, text positions),
     skipping versions that fail the rule checks. Confidence:
-      - another source agrees cell for cell        -> HIGH
+      - another source agrees cell for cell, or tomd's
+        reading is a correct subset of a ruled table -> HIGH
       - only one source found the table            -> HIGH
       - other sources found it but disagree        -> UNCERTAIN, and every
         version is kept for the prompts file
@@ -548,7 +570,8 @@ def select_tables(tomd_sections: list[Section],
         # drawn around a poll is not another reading of the poll.
         others = [c for c in settled if c is not primary and c.source != primary.source
                   and not _is_bad(c) and _same_region(primary, c)]
-        if not others or any(candidates_agree(primary, o) for o in others):
+        if not others or any(candidates_agree(primary, o) or partial_reading(primary, o)
+                             for o in others):
             conf = Confidence.HIGH
         else:
             conf = Confidence.UNCERTAIN
