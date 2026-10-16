@@ -14,6 +14,7 @@ from .wording import classify_wording, collect_line_drawings
 from .spans import normalize_spans
 from .structure import compare_extractions, structure_sections
 from .table import detect_tables, select_tables, remove_table_regions
+from .flag import text_regions, rejected_regions, flag_possible_tables
 from .ruled import extract_ruled_tables
 from .tagged import extract_tagged_tables
 from .poll import extract_poll_tables
@@ -260,12 +261,16 @@ def _run_pipeline(path: Path) -> PipelineResult:
                                                      text_colors=page0_colors)
 
     tomd_tables, _ = detect_tables(all_mupdf_blocks)
+    rejected_tables: list = []
     table_sections = select_tables(tomd_tables, all_ruled_tables, tagged_tables,
-                                   all_mupdf_blocks, all_poll_tables)
+                                   all_mupdf_blocks, all_poll_tables, rejected_tables)
     if table_sections:
         _log.info("Selected %d table(s)", len(table_sections))
         all_mupdf_blocks = remove_table_regions(all_mupdf_blocks, table_sections)
         all_spatial_blocks = remove_table_regions(all_spatial_blocks, table_sections)
+    # Table-like areas left in the text, marked uncertain once sections exist.
+    possible_tables = (rejected_regions(rejected_tables, table_sections)
+                       + text_regions(all_mupdf_blocks))
 
     sections = compare_extractions(all_mupdf_blocks, all_spatial_blocks)
 
@@ -284,6 +289,7 @@ def _run_pipeline(path: Path) -> PipelineResult:
                 break
         if not inserted:
             sections.append(ts)
+    flag_possible_tables(sections, possible_tables)
 
     has_title = "title" in wg21_metadata
     # Three metadata pathways, merged here in precedence order (last wins):
@@ -300,7 +306,10 @@ def _run_pipeline(path: Path) -> PipelineResult:
     structural_hints = _toc_structural_hints(sections) if not heading_texts else None
     toc_indices = find_toc_indices(texts, heading_texts, structural_hints)
     if toc_indices:
-        sections = [s for i, s in enumerate(sections) if i not in toc_indices]
+        # A selected table is never a contents entry: dropping it would lose
+        # the table silently.
+        sections = [s for i, s in enumerate(sections)
+                    if i not in toc_indices or s.kind == SectionKind.TABLE]
 
     md = emit_markdown(metadata, sections)
     prompts = emit_prompts(sections)

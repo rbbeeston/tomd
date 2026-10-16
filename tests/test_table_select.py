@@ -89,8 +89,25 @@ class TestSelectTables:
         out = select_tables([self._tomd_section(_GOOD)], [_cand("rules", _GOOD)], [], [])
         assert len(out) == 1 and out[0].confidence == Confidence.HIGH
 
-    def test_single_source_is_high(self):
+    def test_single_source_is_uncertain(self):
         out = select_tables([], [_cand("grid", _GOOD)], [], [])
+        assert out[0].confidence == Confidence.UNCERTAIN
+        assert "Only one table source" in out[0].metadata["table_note"]
+
+    def test_lost_text_is_uncertain(self):
+        # a page line inside the table area that no cell holds
+        lost = Block(lines=[_line("delta", 52, 141)], page_num=0)
+        cells = Block(lines=[ln for r in _cand("grid", _GOOD).rows for c in r for ln in c],
+                      page_num=0)
+        out = select_tables([self._tomd_section(_GOOD)], [_cand("rules", _GOOD)], [],
+                            [cells, lost])
+        assert out[0].confidence == Confidence.UNCERTAIN
+        assert "conservation" in out[0].metadata["table_note"]
+
+    def test_conserved_text_stays_high(self):
+        cells = Block(lines=[ln for r in _cand("grid", _GOOD).rows for c in r for ln in c],
+                      page_num=0)
+        out = select_tables([self._tomd_section(_GOOD)], [_cand("rules", _GOOD)], [], [cells])
         assert out[0].confidence == Confidence.HIGH
 
     def test_disagreement_is_uncertain_with_all_versions(self):
@@ -249,3 +266,67 @@ def test_damaged_text_layer_marks_table_uncertain_with_note():
     assert out[0].confidence == Confidence.UNCERTAIN
     assert "damaged" in out[0].metadata["table_note"]
     assert "damaged" in emit_prompts(out)
+
+
+class TestPossibleTables:
+    """lib.pdf.flag: table-like text left after selection is marked, not changed."""
+
+    def _rows(self, rows, y0=100, x0=50, col_w=120, page=0):
+        return Block(lines=[_line(t, x0 + c * col_w, y0 + r * 14, page)
+                            for r, row in enumerate(rows) for c, t in enumerate(row)],
+                     page_num=page)
+
+    def test_aligned_rows_are_a_region(self):
+        from lib.pdf.flag import text_regions
+        blk = self._rows([["Thread", "Chunks", "Output"], ["0", "0-1", "two buckets"],
+                          ["1", "2-3", "one bucket"]], page=2)
+        assert [r[2] for r in text_regions([blk])] == ["3 rows aligned in columns"]
+
+    def test_contents_lines_are_not_a_region(self):
+        from lib.pdf.flag import text_regions
+        blk = self._rows([["Introduction", "3"], ["Design", "5"], ["Wording", "9"]], page=2)
+        assert text_regions([blk]) == []
+
+    def test_code_with_comment_column_is_not_a_region(self):
+        from lib.pdf.flag import text_regions
+        blk = self._rows([["int a;", "// first"], ["int b;", "// second"],
+                          ["int c;", "// third"]], page=2)
+        assert text_regions([blk]) == []
+
+    def test_rejected_non_table_reading_is_not_a_region(self):
+        from lib.pdf.flag import rejected_regions
+        c = _cand("rules", [["1.", "first"], ["2.", "second"]])
+        c.flags = ["numbered-list"]
+        assert rejected_regions([c], []) == []
+        c.flags = ["ragged-columns"]
+        assert len(rejected_regions([c], [])) == 1
+
+    def test_marked_section_keeps_text_and_gets_marker(self):
+        from lib.pdf.flag import flag_possible_tables
+        ln = _line("Thread Chunks Output", 50, 100)
+        sec = Section(kind=SectionKind.PARAGRAPH, text="Thread Chunks Output", lines=[ln])
+        assert flag_possible_tables([sec], [(0, (40, 90, 400, 130), "3 rows aligned", 3)]) == 1
+        md = emit_markdown({}, [sec])
+        assert "<!-- tomd:uncertain:" in md and "Thread Chunks Output" in md
+        assert "may be a table" in emit_prompts([sec])
+
+    def test_page_sized_box_is_not_marked(self):
+        from lib.pdf.flag import flag_possible_tables
+        secs = [Section(kind=SectionKind.PARAGRAPH, text=f"p{i}",
+                        lines=[_line(f"p{i}", 50, 100 + 20 * i)]) for i in range(8)]
+        assert flag_possible_tables(secs, [(0, (40, 90, 400, 300), "rules", 2)]) == 0
+
+
+def test_lost_header_row_above_agreeing_sources_is_uncertain():
+    # both sources start at "alpha"; the header sits one row above, split
+    # into the table's columns, so it was lost by both
+    body = [["alpha", "fast"], ["beta", "slow"], ["gamma", "slow"]]
+    tomd = TestSelectTables()._tomd_section(body)
+    header = Block(lines=[_line("Name", 50, 80), _line("Value", 200, 80)], page_num=0)
+    cells = Block(lines=[ln for r in _cand("grid", body).rows for c in r for ln in c], page_num=0)
+    out = select_tables([tomd], [_cand("rules", body)], [], [header, cells])
+    assert out[0].confidence == Confidence.UNCERTAIN
+    assert "lost" in out[0].metadata["table_note"]
+    caption = Block(lines=[_line("Table 1 - Values", 50, 80)], page_num=0)
+    out = select_tables([tomd], [_cand("rules", body)], [], [caption, cells])
+    assert out[0].confidence == Confidence.HIGH
