@@ -241,3 +241,11 @@ class TestPartialReading:
         out = select_tables([self._tomd_section(self._ROWS[1:3])], [],
                             [_cand("tags", self._ROWS)], [])
         assert out[0].confidence == Confidence.UNCERTAIN
+
+
+def test_damaged_text_layer_marks_table_uncertain_with_note():
+    rows = [["Symbol", "Meaning"], ["ᵃ", "Marginal benefit"], ["ᵄ(ᵆ)", "Beneficiaries"]]
+    out = select_tables([], [_cand("grid", rows)], [], [])
+    assert out[0].confidence == Confidence.UNCERTAIN
+    assert "damaged" in out[0].metadata["table_note"]
+    assert "damaged" in emit_prompts(out)

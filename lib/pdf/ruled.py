@@ -42,6 +42,7 @@ _RULE_JOIN_GAP = 2.0      # Word draws one segment per cell; join them
 _RULE_MERGE_Y = 3.5       # booktabs double rules collapse to one
 _RULE_SAME_X = 3.0
 _MIN_RULES = 3            # top + mid + bottom
+_CONTINUATION_TOP = 0.2   # a 2-rule fragment this near the page top may continue a table
 _PER_ROW_RULES = 5        # at least this many rules: one rule per row (booktabs has 3)
 _HEADER_PADDING = 1.5     # a table's shaded header box is this much taller than its text
 _HEADER_ABOVE = 16.0      # height of a header line above a double rule
@@ -55,7 +56,8 @@ _ZERO_WIDTH = frozenset("\u200b\u200c\u200d\u2060\ufeff")
 _CAPTION_INDENT = 4.0     # captions start this far left of padded cell text
 _CAPTION_SPACE = 3.0      # a prose band this many times taller than its text
 _OVERPRINT = 1.0          # a char starting this far left of the previous one
-_RAISE = 2.0              # a superscript sits this far above its neighbour, top and bottom
+_RAISE = 2.0              # a superscript's bottom sits this far above its neighbour's,
+_RAISE_TOP = 1.0          # and its top at least this far (code text shares the line's top)
 _MAX_MARK = 8             # longest raised run treated as a superscript mark
 
 
@@ -115,6 +117,11 @@ def _page_words(raw: dict) -> list[tuple]:
                         # text jumps back: another column's text drawn over
                         # this one (an overrunning identifier) - new word
                         flush(False)
+                    elif cur and classify_monospace(sp.get("font", "")) != classify_monospace(cur[-1][2]):
+                        # code font meets body font with no space: a code
+                        # identifier running into the next column. Split;
+                        # no space is inserted, so "noexcept," reads the same.
+                        flush(False)
                     cur.append((c, bb, sp.get("font", ""), sp.get("size", 0.0),
                                 sp.get("flags", 0), sp.get("color", 0)))
             flush(False)
@@ -144,7 +151,7 @@ def _chars_to_lines(chars: list[tuple], page_num: int) -> list[Line]:
         # smaller than a vertically overlapping character and shifted up
         # against it at both top and bottom: a superscript
         return any(o[3] > c[3] and min(o[1][3], c[1][3]) > max(o[1][1], c[1][1])
-                   and o[1][1] - c[1][1] > _RAISE and o[1][3] - c[1][3] > _RAISE
+                   and o[1][1] - c[1][1] > _RAISE_TOP and o[1][3] - c[1][3] > _RAISE
                    for o in chars if not o[0].isspace())
     small = [c for c in chars if raised(c)]       # including the mark's own spaces
     # Reference marks are short ("[10]"); a long raised run is a line of
@@ -296,7 +303,7 @@ def _horizontal_rules(drawings) -> list[tuple[float, float, float, bool]]:
     return sorted(tuple(r) for r in rules if r[2] - r[1] >= _RULE_MIN_LEN)
 
 
-def _rule_groups(rules):
+def _rule_groups(rules, min_rules: int = _MIN_RULES):
     """Group rules sharing an x-extent. Returns [(rules, header_above)].
 
     header_above marks the IEEE/revtex style: the header line sits above a
@@ -317,7 +324,7 @@ def _rule_groups(rules):
         else:
             groups.append([tuple(rule)])
     return [(g, doubled.get(gi, False)) for gi, g in enumerate(groups)
-            if len(g) >= (_MIN_RULES - 1 if doubled.get(gi) else _MIN_RULES)]
+            if len(g) >= (min_rules - 1 if doubled.get(gi) else min_rules)]
 
 
 def _text_lines(words):
@@ -433,7 +440,7 @@ def _raised(words: list) -> list:
         return []
     return [w for w in words if len(w[4]) <= _MAX_MARK and any(
         b[5][0][3] > w[5][0][3] and min(b[3], w[3]) > max(b[1], w[1])
-        and b[1] - w[1] > _RAISE and b[3] - w[3] > _RAISE for b in words)]
+        and b[1] - w[1] > _RAISE_TOP and b[3] - w[3] > _RAISE for b in words)]
 
 
 def _is_caption_band(lw: list, cell_left: float, band_height: float = 0.0) -> bool:
@@ -465,7 +472,8 @@ def _is_caption_band(lw: list, cell_left: float, band_height: float = 0.0) -> bo
     return band_height > _CAPTION_SPACE * text_h
 
 
-def _rule_band_tables(page_num, words_all, group, header_above) -> list[TableCandidate]:
+def _rule_band_tables(page_num, words_all, group, header_above,
+                      min_rows: int = 2) -> list[TableCandidate]:
     ys = [g[0] for g in group]
     x0 = min(g[1] for g in group) - 2
     x1 = max(g[2] for g in group) + 2
@@ -504,10 +512,13 @@ def _rule_band_tables(page_num, words_all, group, header_above) -> list[TableCan
                 continue                    # a caption is never a row
             segments[-1].append((top, bot))
         else:
-            segments[-1].extend((a - 1, b + 1) for a, b, _ in _text_lines(bw))
+            # one row per text line; superscript marks are not lines of their own
+            raised = _raised(bw)
+            plain = [w for w in bw if not any(w is r for r in raised)] or bw
+            segments[-1].extend((a - 1, b + 1) for a, b, _ in _text_lines(plain))
     out = []
     for bands in segments:
-        t = _bands_to_table(page_num, in_x, bands, x0, x1, header_above)
+        t = _bands_to_table(page_num, in_x, bands, x0, x1, header_above, min_rows)
         if t is not None:
             out.append(t)
     return out
@@ -524,12 +535,13 @@ def _has_column_gap(ws) -> bool:
     return False
 
 
-def _bands_to_table(page_num, in_x, bands, x0, x1, header_above) -> TableCandidate | None:
-    if len(bands) < 2:
+def _bands_to_table(page_num, in_x, bands, x0, x1, header_above,
+                    min_rows: int = 2) -> TableCandidate | None:
+    if len(bands) < min_rows:
         return None
     row_words = [[w for w in in_x if a <= (w[1] + w[3]) / 2 <= b] for a, b in bands]
     # Prose between rules (quotations, notes) has no column gaps at all.
-    if sum(1 for ws in row_words if _has_column_gap(ws)) < 2:
+    if sum(1 for ws in row_words if _has_column_gap(ws)) < min_rows:
         return None
     seps = _column_starts(row_words)
     if len(seps) < 2:
@@ -558,7 +570,7 @@ def _bands_to_table(page_num, in_x, bands, x0, x1, header_above) -> TableCandida
             cells[sum(1 for s in seps if w[0] >= s) - 1].append(w)
         rows.append([_chars_to_lines(_word_chars(cw), page_num) for cw in cells])
     rows = _drop_empty(rows)
-    if len(rows) < 2 or max(len(r) for r in rows) < 2:
+    if len(rows) < min_rows or max(len(r) for r in rows) < 2:
         return None
     return TableCandidate("rules", rows, {page_num: (x0, top, x1, bands[-1][1])})
 
@@ -582,12 +594,26 @@ def extract_ruled_tables(page, page_num: int) -> list[TableCandidate]:
     words = _page_words(raw)
     tables = _grid_tables(page, page_num, chars, drawings)
     grids = [t.bboxes[page_num] for t in tables]
-    for group, header_above in _rule_groups(_horizontal_rules(drawings)):
+    # Rules that are part of a grid already found belong to it, not to a
+    # rule-band table of the same width further down the page.
+    rules = [r for r in _horizontal_rules(drawings)
+             if not any(g[1] - 2 <= r[0] <= g[3] + 2 and r[1] < g[2] and r[2] > g[0] for g in grids)]
+    for group, header_above in _rule_groups(rules):
         bb = (min(r[1] for r in group), group[0][0] - (_HEADER_ABOVE if header_above else 0),
               max(r[2] for r in group), group[-1][0])
         if any(_overlaps(bb, g) for g in grids):
             continue
         tables.extend(_rule_band_tables(page_num, words, group, header_above))
+    # The top of a table continued from the previous page: two rules near the
+    # top of the page around a row or two. Kept only if select_tables can
+    # stitch it to the table ending the previous page.
+    for group, header_above in _rule_groups(rules, min_rules=2):
+        if len(group) != 2 or header_above or group[0][0] > _CONTINUATION_TOP * page.rect.height:
+            continue
+        for t in _rule_band_tables(page_num, words, group, False, min_rows=1):
+            if not any(_overlaps(t.bboxes[page_num], o.bboxes[page_num]) for o in tables):
+                t.flags.append("continuation-fragment")
+                tables.append(t)
     if tables:
         _log.debug("Page %d: %d ruled table(s)", page_num, len(tables))
     return tables
