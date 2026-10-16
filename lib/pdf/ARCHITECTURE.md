@@ -317,6 +317,7 @@ The table pipeline (independent readers and their evidence, selection, verificat
 | `table.py` | Text-position tables; selection across table sources | `detect_tables`, `select_tables`, `remove_table_regions`, `table_flags` | ~560 |
 | `ruled.py` | Tables from ruling lines and shaded rows | `extract_ruled_tables` | ~430 |
 | `tagged.py` | Tables from PDF accessibility tags | `extract_tagged_tables` | ~210 |
+| `poll.py` | WG21 poll result tables (SF F N A SA) | `extract_poll_tables` | ~100 |
 | `structure.py` | Comparison, heading/list/code classification | `compare_extractions`, `structure_sections` | ~939 |
 | `emit.py` | Markdown and prompts generation | `emit_markdown`, `emit_prompts` | ~401 |
 | `wg21.py` | WG21 metadata extraction | `extract_metadata_from_blocks` | ~199 |

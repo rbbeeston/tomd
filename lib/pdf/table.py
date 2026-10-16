@@ -242,11 +242,12 @@ def detect_tables(blocks: list[Block]) -> tuple[list[Section], list[Block]]:
 # --------------------------------------------------------------------------
 
 # When sources disagree the primary is chosen in this order. Tags are the
-# author's own markup; a grid ruled in both directions is the next most
+# author's own markup; a WG21 poll (poll.py) is an exact fixed pattern; a
+# grid ruled in both directions is the next most
 # direct evidence; horizontal-rule tables have ambiguous columns; text
 # positions are the weakest signal. Tags from a structure tree that MuPDF
 # reports as malformed rank just below the grid.
-_SOURCE_PRIORITY = {"tags": 0, "grid": 1, "tags-malformed": 2, "rules": 3, "tomd": 4}
+_SOURCE_PRIORITY = {"tags": 0, "poll": 1, "grid": 2, "tags-malformed": 3, "rules": 4, "tomd": 5}
 
 
 def _priority(c: TableCandidate) -> int:
@@ -254,6 +255,7 @@ def _priority(c: TableCandidate) -> int:
         return _SOURCE_PRIORITY["tags-malformed"]
     return _SOURCE_PRIORITY[c.source]
 _GROUP_OVERLAP = 0.3       # vertical overlap (share of the smaller table)
+_SAME_REGION = 0.5         # half of an alternative must lie within the primary
 _CELL_AGREE = 0.85         # whitespace-free similarity for "same cell"
 _STITCH_X_TOL = 6.0        # page-continued tables keep their x-extent
 _REGION_MARGIN = 2.0
@@ -402,6 +404,20 @@ def _text_outside(blocks: list[Block], page: int, below: float | None = None,
     return False
 
 
+def _same_region(primary: TableCandidate, other: TableCandidate) -> bool:
+    """At least half of `other` lies within the primary's rows on a shared page.
+
+    A partial reading of the table (tomd stopping early) still counts as
+    another reading; a box drawn around the table, mostly outside it, does not.
+    """
+    for pg in set(primary.bboxes) & set(other.bboxes):
+        x, y = primary.bboxes[pg], other.bboxes[pg]
+        inter = min(x[3], y[3]) - max(x[1], y[1])
+        if inter >= _SAME_REGION * max(y[3] - y[1], 1.0):
+            return True
+    return False
+
+
 def stitch_pages(cands: list[TableCandidate], blocks: list[Block]) -> list[TableCandidate]:
     """Join a table that ends one page with one that starts the next page.
 
@@ -484,10 +500,11 @@ def _to_section(cand: TableCandidate, confidence: Confidence,
 def select_tables(tomd_sections: list[Section],
                   ruled: list[TableCandidate],
                   tagged: list[TableCandidate],
-                  blocks: list[Block]) -> list[Section]:
+                  blocks: list[Block],
+                  polls: list[TableCandidate] = ()) -> list[Section]:
     """Choose one table per region from the three extractors.
 
-    Primary version by source priority (tags, ruling lines, text positions),
+    Primary version by source priority (tags, polls, ruling lines, text positions),
     skipping versions that fail the rule checks. Confidence:
       - another source agrees cell for cell        -> HIGH
       - only one source found the table            -> HIGH
@@ -497,38 +514,37 @@ def select_tables(tomd_sections: list[Section],
     version is dropped, so its blocks flow back into normal processing.
     """
     tomd = [candidate_from_section(s) for s in tomd_sections]
-    cands = tagged + stitch_pages(ruled, blocks) + tomd
+    cands = tagged + list(polls) + stitch_pages(ruled, blocks) + tomd
     for c in cands:
         c.flags = c.flags + table_flags(c)
 
-    groups: list[list[TableCandidate]] = []
-    for c in cands:
-        hit = [g for g in groups if any(_overlap(c, d) >= _GROUP_OVERLAP for d in g)]
-        if not hit:
-            groups.append([c])
-            continue
-        merged = [c] + [d for g in hit for d in g]
-        groups = [g for g in groups if g not in hit] + [merged]
-
+    # Greedy selection: take the best remaining candidate, settle everything
+    # that overlaps it, repeat. (Grouping by overlap first would chain
+    # separate tables together through one large box that overlaps them all.)
+    remaining = sorted(cands, key=_priority)
     out: list[Section] = []
-    for g in groups:
-        g.sort(key=_priority)
-        good = [c for c in g if not _is_bad(c)]
+    while True:
+        good = [c for c in remaining if not _is_bad(c)]
         if not good:
-            _log.debug("Dropping table candidates on page %d: %s",
-                       g[0].pages[0], [(c.source, c.flags) for c in g])
-            continue
+            break
         primary = good[0]
-        others = [c for c in g if c is not primary and c.source != primary.source]
-        if not others:
-            conf = Confidence.HIGH
-        elif any(candidates_agree(primary, o) for o in others):
+        settled = [c for c in remaining
+                   if c is primary or _overlap(c, primary) >= _GROUP_OVERLAP]
+        # Alternatives are other sources' readings of the same region: they
+        # must pass the rule checks and lie mostly within the primary. A box
+        # drawn around a poll is not another reading of the poll.
+        others = [c for c in settled if c is not primary and c.source != primary.source
+                  and not _is_bad(c) and _same_region(primary, c)]
+        if not others or any(candidates_agree(primary, o) for o in others):
             conf = Confidence.HIGH
         else:
             conf = Confidence.UNCERTAIN
         out.append(_to_section(primary, conf, others))
         _log.debug("Table p%d %dx%d from %s: %s", primary.pages[0], *primary.shape,
                    primary.source, conf.value)
+        remaining = [c for c in remaining if not any(c is x for x in settled)]
+    for c in remaining:
+        _log.debug("Dropping %s table candidate on page %d: %s", c.source, c.pages[0], c.flags)
     return out
 
 

@@ -16,6 +16,7 @@ from .structure import compare_extractions, structure_sections
 from .table import detect_tables, select_tables, remove_table_regions
 from .ruled import extract_ruled_tables
 from .tagged import extract_tagged_tables
+from .poll import extract_poll_tables
 from .wg21 import extract_metadata_from_blocks
 from .emit import emit_markdown, emit_prompts
 from .types import Section, SectionKind, is_readable
@@ -168,6 +169,7 @@ def _run_pipeline(path: Path) -> PipelineResult:
         all_spatial_blocks = []
         all_edge_items = []
         all_ruled_tables = []
+        all_poll_tables = []
 
         for pg_num in range(result.page_count):
             page = doc[pg_num]
@@ -192,8 +194,9 @@ def _run_pipeline(path: Path) -> PipelineResult:
             # Independent table sources, compared with detect_tables() below.
             try:
                 all_ruled_tables.extend(extract_ruled_tables(page, pg_num))
+                all_poll_tables.extend(extract_poll_tables(page, pg_num))
             except Exception as e:  # never let a table source break conversion
-                _log.warning("Ruled table extraction failed on page %d: %s", pg_num, e)
+                _log.warning("Table extraction failed on page %d: %s", pg_num, e)
 
         try:
             tagged_tables = extract_tagged_tables(doc)
@@ -258,7 +261,7 @@ def _run_pipeline(path: Path) -> PipelineResult:
 
     tomd_tables, _ = detect_tables(all_mupdf_blocks)
     table_sections = select_tables(tomd_tables, all_ruled_tables, tagged_tables,
-                                   all_mupdf_blocks)
+                                   all_mupdf_blocks, all_poll_tables)
     if table_sections:
         _log.info("Selected %d table(s)", len(table_sections))
         all_mupdf_blocks = remove_table_regions(all_mupdf_blocks, table_sections)
