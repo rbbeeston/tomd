@@ -1,0 +1,897 @@
+{
+ "paper": "p4182r1",
+ "tables": [
+  {
+   "id": "p4182r1-t1",
+   "pages": [
+    0
+   ],
+   "rows": [
+    [
+     "Document Number:",
+     "P4182R1"
+    ],
+    [
+     "Date:",
+     "2026-05-01"
+    ],
+    [
+     "Intent:",
+     "Inform"
+    ],
+    [
+     "Audience:",
+     "SG14, EWG, LEWG"
+    ],
+    [
+     "Reply-to:",
+     "Mungo Gill mungo.gill@me.com"
+    ]
+   ],
+   "group": null,
+   "source": "typed",
+   "note": "title-page metadata block",
+   "scope": "front-matter"
+  },
+  {
+   "id": "p4182r1-t2",
+   "pages": [
+    2
+   ],
+   "rows": [
+    [
+     "Category",
+     "Coro",
+     "TLS",
+     "PMR",
+     "Heap",
+     "Hosted"
+    ],
+    [
+     "Desktop (Linux, Windows, macOS)",
+     "Yes",
+     "Yes",
+     "Yes",
+     "Yes",
+     "Full"
+    ],
+    [
+     "Mobile (iOS, Android)",
+     "Yes",
+     "Yes",
+     "Yes",
+     "Yes",
+     "Full"
+    ],
+    [
+     "Game consoles (Xbox, PS5)",
+     "Yes",
+     "Yes",
+     "Yes",
+     "Yes",
+     "Full"
+    ],
+    [
+     "Full RTOS (QNX, Zephyr, VxWorks)",
+     "Yes",
+     "Yes",
+     "Hosted PMR",
+     "Yes",
+     "Partial to full"
+    ],
+    [
+     "Lightweight RTOS (FreeRTOS, Pico)",
+     "Partial",
+     "No",
+     "No",
+     "Yes",
+     "Freestanding"
+    ],
+    [
+     "Bare metal (Cortex-M, RISC-V)",
+     "Partial",
+     "No",
+     "No",
+     "Rare",
+     "Freestanding"
+    ],
+    [
+     "GPU device code (CUDA, SYCL)",
+     "No",
+     "No",
+     "No",
+     "No",
+     "N/A"
+    ]
+   ],
+   "group": "g2",
+   "source": "typed",
+   "note": "Table A",
+   "scope": "table"
+  },
+  {
+   "id": "p4182r1-t3",
+   "pages": [
+    3
+   ],
+   "rows": [
+    [
+     "Category",
+     "Exc",
+     "Alloc",
+     "RT",
+     "TLSctx"
+    ],
+    [
+     "Desktop (Linux, Windows, macOS)",
+     "Typically on",
+     "Heap + PMR",
+     "Best effort",
+     "Static TLS"
+    ],
+    [
+     "Mobile (iOS, Android)",
+     "Typically on",
+     "Heap + PMR",
+     "Best effort",
+     "Static TLS"
+    ],
+    [
+     "Game consoles (Xbox, PS5)",
+     "Often off",
+     "Arenas common",
+     "Best effort",
+     "Static or vendor"
+    ],
+    [
+     "Full RTOS (QNX, Zephyr, VxWorks)",
+     "Varies",
+     "Pools common",
+     "Soft to hard RT",
+     "Static TLS"
+    ],
+    [
+     "Lightweight RTOS (FreeRTOS, Pico)",
+     "Typically off",
+     "Static pools",
+     "Soft RT",
+     "N/A"
+    ],
+    [
+     "Bare metal (Cortex-M, RISC-V)",
+     "Typically off",
+     "Static only",
+     "Hard or none",
+     "N/A"
+    ],
+    [
+     "GPU device code (CUDA, SYCL)",
+     "N/A",
+     "Device heaps differ",
+     "SIMT",
+     "N/A"
+    ]
+   ],
+   "group": "g3",
+   "source": "typed",
+   "note": "Table B; caption and legend excluded",
+   "scope": "table"
+  },
+  {
+   "id": "p4182r1-t4",
+   "pages": [
+    4
+   ],
+   "rows": [
+    [
+     "Field",
+     "Value"
+    ],
+    [
+     "Platform category",
+     "Desktop (Linux, Windows, macOS)"
+    ],
+    [
+     "C++20 coroutines (in practice)",
+     "Yes"
+    ],
+    [
+     "thread_local available",
+     "Yes"
+    ],
+    [
+     "Hosted <memory_resource>",
+     "Yes"
+    ],
+    [
+     "General-purpose heap worth customising",
+     "Yes"
+    ],
+    [
+     "Hosted standard-library profile",
+     "Full"
+    ],
+    [
+     "Exceptions in typical shipping builds",
+     "Typically on. Most shipping desktop binaries leave exceptions enabled unless a product or studio policy turns them off"
+    ],
+    [
+     "Hot-path allocation style",
+     "Heap plus PMR"
+    ],
+    [
+     "Scheduling class",
+     "Best effort. General-purpose OS scheduling (not a hard real-time kernel guarantee)"
+    ],
+    [
+     "Thread-local storage access pattern",
+     "Static TLS. Thread-local objects live in the loader-managed TLS block for the process or main modules. On Windows, DLLs can still pay an extra indirection as discussed in P4127R0 [1] Section 9.2"
+    ]
+   ],
+   "group": "g4",
+   "source": "typed",
+   "note": "Field/Value schema table; footnote paragraph below excluded",
+   "scope": "table"
+  },
+  {
+   "id": "p4182r1-t5",
+   "pages": [
+    5
+   ],
+   "rows": [
+    [
+     "Field",
+     "Value"
+    ],
+    [
+     "Platform category",
+     "Mobile (iOS, Android)"
+    ],
+    [
+     "C++20 coroutines (in practice)",
+     "Yes"
+    ],
+    [
+     "thread_local available",
+     "Yes"
+    ],
+    [
+     "Hosted <memory_resource>",
+     "Yes"
+    ],
+    [
+     "General-purpose heap worth customising",
+     "Yes"
+    ],
+    [
+     "Hosted standard-library profile",
+     "Full"
+    ],
+    [
+     "Exceptions in typical shipping builds",
+     "Typically on"
+    ],
+    [
+     "Hot-path allocation style",
+     "Heap plus PMR"
+    ],
+    [
+     "Scheduling class",
+     "Best effort"
+    ],
+    [
+     "Thread-local storage access pattern",
+     "Static TLS"
+    ]
+   ],
+   "group": "g5",
+   "source": "typed",
+   "note": "Field/Value schema table; footnote paragraph below excluded",
+   "scope": "table"
+  },
+  {
+   "id": "p4182r1-t6",
+   "pages": [
+    6
+   ],
+   "rows": [
+    [
+     "Field",
+     "Value"
+    ],
+    [
+     "Platform category",
+     "Game consoles (Xbox, PS5)"
+    ],
+    [
+     "C++20 coroutines (in practice)",
+     "Yes"
+    ],
+    [
+     "thread_local available",
+     "Yes"
+    ],
+    [
+     "Hosted <memory_resource>",
+     "Yes"
+    ],
+    [
+     "General-purpose heap worth customising",
+     "Yes"
+    ],
+    [
+     "Hosted standard-library profile",
+     "Full"
+    ],
+    [
+     "Exceptions in typical shipping builds",
+     "Often off. Many titles compile with exceptions disabled for size and determinism even though the toolchain supports them"
+    ],
+    [
+     "Hot-path allocation style",
+     "Arenas common. Frame and transient data served from arena or pool allocators rather than unbounded heap traffic on hot paths"
+    ],
+    [
+     "Scheduling class",
+     "Best effort"
+    ],
+    [
+     "Thread-local storage access pattern",
+     "Static or vendor. Access path can be the usual static TLS block or a vendor-specific runtime detail not visible in public documentation"
+    ]
+   ],
+   "group": "g6",
+   "source": "typed",
+   "note": "Field/Value schema table; footnote paragraph below excluded",
+   "scope": "table"
+  },
+  {
+   "id": "p4182r1-t7",
+   "pages": [
+    7
+   ],
+   "rows": [
+    [
+     "Field",
+     "Value"
+    ],
+    [
+     "Platform category",
+     "Full RTOS (QNX, Zephyr, VxWorks)"
+    ],
+    [
+     "C++20 coroutines (in practice)",
+     "Yes"
+    ],
+    [
+     "thread_local available",
+     "Yes"
+    ],
+    [
+     "Hosted <memory_resource>",
+     "Hosted PMR (platform-supplied). May appear as part of the platform-provided hosted subset, not necessarily a full desktop-class library layout. P4127R0 [1] Section 9.1 records the PMR column as Hosted for this row"
+    ],
+    [
+     "General-purpose heap worth customising",
+     "Yes"
+    ],
+    [
+     "Hosted standard-library profile",
+     "Partial to full. From slim RTOS images through near-desktop library surface"
+    ],
+    [
+     "Exceptions in typical shipping builds",
+     "Varies. Automotive and industrial certification: some builds forbid exceptions entirely, others allow them in non-safety paths"
+    ],
+    [
+     "Hot-path allocation style",
+     "Pools common"
+    ],
+    [
+     "Scheduling class",
+     "Soft to hard real-time. Spans best-effort timing guarantees through kernels with bounded response times up to formally verified schedules"
+    ],
+    [
+     "Thread-local storage access pattern",
+     "Static TLS"
+    ]
+   ],
+   "group": "g7",
+   "source": "typed",
+   "note": "Field/Value schema table; footnote paragraph below excluded",
+   "scope": "table"
+  },
+  {
+   "id": "p4182r1-t8",
+   "pages": [
+    8
+   ],
+   "rows": [
+    [
+     "Field",
+     "Value"
+    ],
+    [
+     "Platform category",
+     "Lightweight RTOS (FreeRTOS, Pico)"
+    ],
+    [
+     "C++20 coroutines (in practice)",
+     "Partial"
+    ],
+    [
+     "thread_local available",
+     "No"
+    ],
+    [
+     "Hosted <memory_resource>",
+     "No"
+    ],
+    [
+     "General-purpose heap worth customising",
+     "Yes"
+    ],
+    [
+     "Hosted standard-library profile",
+     "Freestanding"
+    ],
+    [
+     "Exceptions in typical shipping builds",
+     "Typically off. Many embedded build configurations use -fno-exceptions or equivalent"
+    ],
+    [
+     "Hot-path allocation style",
+     "Static pools. Fixed blocks and explicit allocators instead of a polymorphic PMR surface"
+    ],
+    [
+     "Scheduling class",
+     "Soft real-time. Typical RTOS latency goals without claiming a single certification level"
+    ],
+    [
+     "Thread-local storage access pattern",
+     "Not applicable"
+    ]
+   ],
+   "group": null,
+   "source": "typed",
+   "note": "Lightweight RTOS schema; no group covered it",
+   "scope": "table"
+  },
+  {
+   "id": "p4182r1-t9",
+   "pages": [
+    9
+   ],
+   "rows": [
+    [
+     "Field",
+     "Value"
+    ],
+    [
+     "Platform category",
+     "Bare metal (Cortex-M, RISC-V)"
+    ],
+    [
+     "C++20 coroutines (in practice)",
+     "Partial"
+    ],
+    [
+     "thread_local available",
+     "No"
+    ],
+    [
+     "Hosted <memory_resource>",
+     "No"
+    ],
+    [
+     "General-purpose heap worth customising",
+     "Rare. Many firmware images use only static storage and stack. Any heap is often a small custom arena"
+    ],
+    [
+     "Hosted standard-library profile",
+     "Freestanding"
+    ],
+    [
+     "Exceptions in typical shipping builds",
+     "Typically off"
+    ],
+    [
+     "Hot-path allocation style",
+     "Static only. Dominantly static and stack storage on hot paths"
+    ],
+    [
+     "Scheduling class",
+     "Hard real-time or none. Strict cycle-bound firmware is one case; bring-up or lab setups where no RTOS schedule applies are the other"
+    ],
+    [
+     "Thread-local storage access pattern",
+     "Not applicable"
+    ]
+   ],
+   "group": "g8",
+   "source": "typed",
+   "note": "Field/Value schema table; footnote paragraph below excluded",
+   "scope": "table"
+  },
+  {
+   "id": "p4182r1-t10",
+   "pages": [
+    10
+   ],
+   "rows": [
+    [
+     "Field",
+     "Value"
+    ],
+    [
+     "Platform category",
+     "GPU device code (CUDA, SYCL)"
+    ],
+    [
+     "C++20 coroutines (in practice)",
+     "No"
+    ],
+    [
+     "thread_local available",
+     "No"
+    ],
+    [
+     "Hosted <memory_resource>",
+     "No"
+    ],
+    [
+     "General-purpose heap worth customising",
+     "No"
+    ],
+    [
+     "Hosted standard-library profile",
+     "Not applicable"
+    ],
+    [
+     "Exceptions in typical shipping builds",
+     "Not applicable"
+    ],
+    [
+     "Hot-path allocation style",
+     "Device heaps differ. Local and dynamic memory on accelerators follow vendor-specific models (device local, shared, unified memory policies) rather than std::pmr on the host"
+    ],
+    [
+     "Scheduling class",
+     "SIMT. Device-side parallel execution model (contrast with host preemption and threading)"
+    ],
+    [
+     "Thread-local storage access pattern",
+     "Not applicable"
+    ]
+   ],
+   "group": "g9",
+   "source": "typed",
+   "note": "Field/Value schema table; footnote paragraph below excluded",
+   "scope": "table"
+  },
+  {
+   "id": "p4182r1-t11",
+   "pages": [
+    11
+   ],
+   "rows": [
+    [
+     "Toolchain",
+     "Coro",
+     "TLS",
+     "Host",
+     "Exc",
+     "PMR"
+    ],
+    [
+     "GCC (g++)",
+     "Yes",
+     "Platform ABI",
+     "Both hosted and freestanding",
+     "Typically on (hosted)",
+     "Yes (hosted libstdc++)"
+    ],
+    [
+     "Clang",
+     "Yes",
+     "Platform ABI",
+     "Both hosted and freestanding",
+     "Typically on (hosted)",
+     "Yes (libc++ / libstdc++)"
+    ],
+    [
+     "MSVC",
+     "Yes",
+     "Windows TLS model",
+     "Hosted Windows primary",
+     "Typically on",
+     "Yes"
+    ],
+    [
+     "Arm GNU Toolchain (bare-metal)",
+     "Yes with -fcoroutines where available",
+     "No TLS on typical MCU",
+     "Freestanding",
+     "Typically off in embedded",
+     "No"
+    ],
+    [
+     "NVIDIA nvcc / host driver",
+     "Host side follows host compiler",
+     "Host",
+     "Host + device split",
+     "Follows host",
+     "Follows host"
+    ],
+    [
+     "EDG C++ front end",
+     "Depends on embedding",
+     "Depends on embedding",
+     "Sold to integrators. No single shipped runtime",
+     "Depends on embedding",
+     "From host or none"
+    ]
+   ],
+   "group": null,
+   "source": "typed",
+   "note": "4.1 Compiler schema; no group covered it",
+   "scope": "table"
+  },
+  {
+   "id": "p4182r1-t12",
+   "pages": [
+    12
+   ],
+   "rows": [
+    [
+     "Field",
+     "Value"
+    ],
+    [
+     "Toolchain family",
+     "GCC (g++)"
+    ],
+    [
+     "C++20 coroutine support",
+     "Yes"
+    ],
+    [
+     "thread_local code generation",
+     "Platform ABI. Follows the psABI for the selected target (ELF static TLS, PE TLS slots, and so on), not a vendor-specific scheme"
+    ],
+    [
+     "Hosted versus freestanding profile",
+     "Both hosted and freestanding. One front end with different runtimes: the same g++ can target a full Linux rootfs or a bare-metal link where only freestanding headers apply"
+    ],
+    [
+     "Exceptions (typical default)",
+     "Typically on (hosted). Many embedded builds add -fno-exceptions explicitly"
+    ],
+    [
+     "PMR in shipped standard library",
+     "Yes (hosted libstdc++). Complete <memory_resource> support from GCC 9.1 onward [6]"
+    ]
+   ],
+   "group": "g12",
+   "source": "typed",
+   "note": "GCC schema; tomd caught only last 2 rows (g12)",
+   "scope": "table"
+  },
+  {
+   "id": "p4182r1-t13",
+   "pages": [
+    13
+   ],
+   "rows": [
+    [
+     "Field",
+     "Value"
+    ],
+    [
+     "Toolchain family",
+     "Clang"
+    ],
+    [
+     "C++20 coroutine support",
+     "Yes"
+    ],
+    [
+     "thread_local code generation",
+     "Platform ABI. Same meaning as for GCC: TLS lowering follows the platform binary interface"
+    ],
+    [
+     "Hosted versus freestanding profile",
+     "Both hosted and freestanding. Also used for bare-metal and kernel targets"
+    ],
+    [
+     "Exceptions (typical default)",
+     "Typically on (hosted)"
+    ],
+    [
+     "PMR in shipped standard library",
+     "Yes (libc++ or libstdc++, link-time choice). <memory_resource> floors are Clang 16 with libc++ and GCC 9.1 libstdc++ in cppreference's table [6]"
+    ]
+   ],
+   "group": "g13+g14",
+   "source": "typed",
+   "note": "Clang schema; tomd split it into g13 (rows 1-3) and g14 (rows 5-6)",
+   "scope": "table"
+  },
+  {
+   "id": "p4182r1-t14",
+   "pages": [
+    13
+   ],
+   "rows": [
+    [
+     "Field",
+     "Value"
+    ],
+    [
+     "Toolchain family",
+     "MSVC"
+    ],
+    [
+     "C++20 coroutine support",
+     "Yes"
+    ],
+    [
+     "thread_local code generation",
+     "Windows TLS model. thread_local in DLLs can use the slow path described in P4127R0 [1] Section 9.2, unlike a single static link"
+    ],
+    [
+     "Hosted versus freestanding profile",
+     "Hosted Windows primary. Targets user-mode Windows toolchains with the full CRT, not every experimental or kernel target MSVC can be aimed at"
+    ],
+    [
+     "Exceptions (typical default)",
+     "Typically on"
+    ],
+    [
+     "PMR in shipped standard library",
+     "Yes"
+    ]
+   ],
+   "group": "g15+g16",
+   "source": "typed",
+   "note": "MSVC schema; tomd split it into g15 and g16",
+   "scope": "table"
+  },
+  {
+   "id": "p4182r1-t15",
+   "pages": [
+    14
+   ],
+   "rows": [
+    [
+     "Field",
+     "Value"
+    ],
+    [
+     "Toolchain family",
+     "Arm GNU Toolchain (bare-metal)"
+    ],
+    [
+     "C++20 coroutine support",
+     "Yes with -fcoroutines where available. Same floor as upstream GCC (GCC 10 for P0912R5 [5]). Some triples still need -fcoroutines or a newer GCC build; depends on multilib and whether the feature is exposed for that triple"
+    ],
+    [
+     "thread_local code generation",
+     "No TLS on typical MCU. Cortex-M images usually omit thread-local storage because there is no threads model in the same sense as POSIX"
+    ],
+    [
+     "Hosted versus freestanding profile",
+     "Freestanding"
+    ],
+    [
+     "Exceptions (typical default)",
+     "Typically off in embedded. The usual -fno-exceptions default or project policy for size"
+    ],
+    [
+     "PMR in shipped standard library",
+     "No"
+    ]
+   ],
+   "group": "g17",
+   "source": "typed",
+   "note": "Arm GNU schema; tomd caught only last rows (g17), merged size into next row",
+   "scope": "table"
+  },
+  {
+   "id": "p4182r1-t16",
+   "pages": [
+    15
+   ],
+   "rows": [
+    [
+     "Field",
+     "Value"
+    ],
+    [
+     "Toolchain family",
+     "NVIDIA nvcc with host driver"
+    ],
+    [
+     "C++20 coroutine support",
+     "Determined by selected host compiler"
+    ],
+    [
+     "thread_local code generation",
+     "Determined by selected host compiler"
+    ],
+    [
+     "Hosted versus freestanding profile",
+     "Host environment plus device compilation (split). Device translation units follow NVIDIA's rules for each architecture; see NVIDIA documentation for the supported language subset"
+    ],
+    [
+     "Exceptions (typical default)",
+     "Determined by host toolchain"
+    ],
+    [
+     "PMR in shipped standard library",
+     "Determined by host standard library"
+    ]
+   ],
+   "group": "g10",
+   "source": "typed",
+   "note": "Field/Value schema table; footnote paragraph below excluded",
+   "scope": "table"
+  },
+  {
+   "id": "p4182r1-t17",
+   "pages": [
+    16
+   ],
+   "rows": [
+    [
+     "Field",
+     "Value"
+    ],
+    [
+     "Toolchain family",
+     "EDG C++ front end"
+    ],
+    [
+     "C++20 coroutine support",
+     "Depends on embedding"
+    ],
+    [
+     "thread_local code generation",
+     "Depends on embedding"
+    ],
+    [
+     "Hosted versus freestanding profile",
+     "Sold to integrators. No single shipped runtime or OS target bundled with the front end alone"
+    ],
+    [
+     "Exceptions (typical default)",
+     "Depends on embedding"
+    ],
+    [
+     "PMR in shipped standard library",
+     "From host standard library or none. PMR matches the hosted library when one is linked; bare-metal integrations often ship without it"
+    ]
+   ],
+   "group": "g11",
+   "source": "typed",
+   "note": "Field/Value schema table; footnote paragraph below excluded",
+   "scope": "table"
+  }
+ ],
+ "not_tables": [
+  {
+   "group": "g1",
+   "pages": [
+    1
+   ],
+   "reason": "revision history headings/bullets and disclosure prose, not a table"
+  }
+ ],
+ "missed_by_all": [
+  "p4182r1-t1",
+  "p4182r1-t8",
+  "p4182r1-t11"
+ ],
+ "checked_pages": "all",
+ "source_pdf": "https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2026/p4182r1.pdf"
+}

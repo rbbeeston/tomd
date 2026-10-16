@@ -1,0 +1,379 @@
+{
+ "paper": "p4133r0",
+ "tables": [
+  {
+   "id": "p4133r0-t1",
+   "pages": [
+    0
+   ],
+   "rows": [
+    [
+     "Document Number:",
+     "P4133R0"
+    ],
+    [
+     "Date:",
+     "2026-07-12"
+    ],
+    [
+     "Intent:",
+     "Inform"
+    ],
+    [
+     "Audience:",
+     "WG21"
+    ],
+    [
+     "Reply-to:",
+     "Vinnie Falco vinnie.falco@gmail.com"
+    ]
+   ],
+   "group": null,
+   "source": "typed",
+   "note": "unruled metadata block in shaded box",
+   "scope": "front-matter"
+  },
+  {
+   "id": "p4133r0-t2",
+   "pages": [
+    7
+   ],
+   "rows": [
+    [
+     "Term",
+     "Meaning"
+    ],
+    [
+     "Coordination Problem",
+     "The class of problem that justifies standardization: a concept everybody needs but every library implements differently"
+    ],
+    [
+     "Complexity Budget",
+     "The finite resource of specification the standard can carry. Every addition spends it"
+    ],
+    [
+     "The GitHub Test",
+     "The threshold question: what does standardization deliver that downloading the library does not"
+    ],
+    [
+     "Reach Test",
+     "The audience question: how large is the constituency that collects the benefit"
+    ],
+    [
+     "Return on Complexity (ROC)",
+     "Value delivered per unit of Complexity Budget spent"
+    ],
+    [
+     "Interaction Tax",
+     "The permanent ongoing cost each component imposes on everything standardized after it"
+    ],
+    [
+     "Standardization Penalty",
+     "The immediate loss of value on entry: the component can no longer compete or evolve in the marketplace"
+    ],
+    [
+     "Standardization Dividend",
+     "The net payout to the community: gross benefit times reach, minus committee cost, Penalty, and Tax"
+    ]
+   ],
+   "group": "g1",
+   "source": "edited:ruled1",
+   "note": "Table 1 instruments",
+   "scope": "table"
+  },
+  {
+   "id": "p4133r0-t3",
+   "pages": [
+    10
+   ],
+   "rows": [
+    [
+     "Version",
+     "Published ISO pages",
+     "Working draft",
+     "Draft pages",
+     "Library share of clause text"
+    ],
+    [
+     "C++98",
+     "732",
+     "-",
+     "-",
+     "-"
+    ],
+    [
+     "C++11",
+     "1338",
+     "N3337 [42]",
+     "1324",
+     "66%"
+    ],
+    [
+     "C++17",
+     "1605",
+     "N4659 [43]",
+     "1622",
+     "68%"
+    ],
+    [
+     "C++20",
+     "-",
+     "N4861 [44]",
+     "1834",
+     "72%"
+    ],
+    [
+     "C++23",
+     "-",
+     "N4950 [45]",
+     "2134",
+     "75%"
+    ],
+    [
+     "C++26 WD",
+     "-",
+     "N5046 [46]",
+     "2679",
+     "77%"
+    ]
+   ],
+   "group": "g2",
+   "source": "edited:ruled2",
+   "note": "Table 2",
+   "scope": "table"
+  },
+  {
+   "id": "p4133r0-t4",
+   "pages": [
+    11
+   ],
+   "rows": [
+    [
+     "Feature",
+     "Standardized",
+     "libstdc++",
+     "libc++",
+     "MSVC STL"
+    ],
+    [
+     "GC interface",
+     "C++11",
+     "never",
+     "never",
+     "never"
+    ],
+    [
+     "Special math",
+     "C++17 (TR1 2005)",
+     "GCC 6.1 (2016)",
+     "20 of 21 \"Not Started\" [53]",
+     "complete in VS 2022 17.3 (2022)"
+    ],
+    [
+     "Ranges",
+     "C++20",
+     "GCC 10 (2020)",
+     "~Clang 15 (2022)",
+     "VS 2019 16.10 (2021)"
+    ],
+    [
+     "std::format",
+     "C++20",
+     "GCC 13 (2023)",
+     "Clang 17 (2023)",
+     "VS 2019 16.10 (2021)"
+    ],
+    [
+     "std::generator",
+     "C++23",
+     "GCC 14 (2024)",
+     "not implemented",
+     "19.43 (2025)"
+    ],
+    [
+     "std::execution",
+     "C++26 WD",
+     "none",
+     "none",
+     "none"
+    ]
+   ],
+   "group": "g3",
+   "source": "edited:ruled3",
+   "note": "Table 3",
+   "scope": "table"
+  },
+  {
+   "id": "p4133r0-t5",
+   "pages": [
+    13
+   ],
+   "rows": [
+    [
+     "Implementation",
+     "Time (seconds)"
+    ],
+    [
+     "RE2",
+     "10.35"
+    ],
+    [
+     "CTRE",
+     "11.11"
+    ],
+    [
+     "PCRE2",
+     "16.92"
+    ],
+    [
+     "boost::regex",
+     "20.37"
+    ],
+    [
+     "BSD egrep (baseline)",
+     "21.92"
+    ],
+    [
+     "std::regex (libc++)",
+     "1655 (28 minutes)"
+    ]
+   ],
+   "group": "g4",
+   "source": "edited:tomd1",
+   "note": "Table 4",
+   "scope": "table"
+  },
+  {
+   "id": "p4133r0-t6",
+   "pages": [
+    15
+   ],
+   "rows": [
+    [
+     "Feature",
+     "In {fmt} since",
+     "In the standard",
+     "Lag"
+    ],
+    [
+     "print to stdout",
+     "~2014",
+     "std::print, C++23",
+     "~9 years"
+    ],
+    [
+     "Range and tuple formatting",
+     "pre-2020",
+     "C++23, partial",
+     "3+ years"
+    ],
+    [
+     "fmt::join",
+     "pre-2020",
+     "not in any standard as of C++26",
+     "6+ years and counting"
+    ],
+    [
+     "Named arguments",
+     "early {fmt}",
+     "not in any standard",
+     "10+ years and counting"
+    ]
+   ],
+   "group": "g5",
+   "source": "edited:ruled5",
+   "note": "Table 5",
+   "scope": "table"
+  },
+  {
+   "id": "p4133r0-t7",
+   "pages": [
+    17
+   ],
+   "rows": [
+    [
+     "Component",
+     "Defect recognized",
+     "Outcome"
+    ],
+    [
+     "vector<bool>",
+     "LWG issue 96 [96] opened 1998",
+     "Closed not-a-defect: \"Attempts to fix this directly have not been tractable, and removing it has not been tractable\""
+    ],
+    [
+     "valarray",
+     "Its designers ended involvement before C++98 shipped, per the record collected in this discussion [97]",
+     "A proposed redesign arrived as standardization was closing and was not taken up. The component is unchanged since"
+    ],
+    [
+     "initializer_list",
+     "Fix proposals in 2008 and 2015",
+     "2024 answer on the public std-proposals list [98]: \"nope, no plans, nothing can be done\""
+    ],
+    [
+     "optional<T&>",
+     "Cut from C++17 over an assignment-semantics deadlock",
+     "Landed in C++26, roughly 15 years after the same debate in Boost (P1683R0 [99])"
+    ],
+    [
+     "strstream",
+     "Deprecated at birth in C++98",
+     "Removed in C++26, almost 30 years later (P2867R1 [100])"
+    ],
+    [
+     "iostreams",
+     "N4412 [101] catalogs the shortcomings (2015)",
+     "Coexists with printf and std::format: three parallel formatting systems specified simultaneously"
+    ]
+   ],
+   "group": "g6",
+   "source": "edited:ruled6",
+   "note": "Table 6",
+   "scope": "table"
+  },
+  {
+   "id": "p4133r0-t8",
+   "pages": [
+    20
+   ],
+   "rows": [
+    [
+     "Requirement",
+     "Establishes",
+     "Form"
+    ],
+    [
+     "Field reports from years of real deployment",
+     "B, and the domain velocity behind the Penalty",
+     "The bulk of the paper"
+    ],
+    [
+     "Reach census with scaling class",
+     "N, and whether value scales as N or N-squared",
+     "Surveys, dependency counts, cross-library interface evidence"
+    ],
+    [
+     "Complexity estimate",
+     "k",
+     "Wording size, name count, interaction survey"
+    ],
+    [
+     "Docket comparison",
+     "lambda",
+     "Why this proposal over the alternatives competing for the same budget"
+    ]
+   ],
+   "group": "g7",
+   "source": "edited:ruled7",
+   "note": "Table 7",
+   "scope": "table"
+  }
+ ],
+ "not_tables": [],
+ "missed_by_all": [
+  "p4133r0-t1"
+ ],
+ "checked_pages": "all",
+ "source_pdf": "https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2026/p4133r0.pdf"
+}

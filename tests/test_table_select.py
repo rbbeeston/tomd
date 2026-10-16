@@ -205,3 +205,17 @@ class TestPollTables:
     def test_counts_must_sit_under_the_columns(self):
         counts = [(300 + 30 * i, 114, t) for i, t in enumerate(["1", "2", "3", "4", "5"])]
         assert self._polls(self._header() + counts) == [[self._HEAD]]
+
+
+def test_standalone_dash_at_cell_line_break_keeps_the_break():
+    spans = [make_span('recent churn" -'), make_span("\n"), make_span("remove for C++26")]
+    assert _render_cell_spans(spans) == 'recent churn" -<br>remove for C++26'
+
+
+def test_text_in_table_region_but_not_in_table_is_kept():
+    """Words inside a table's area that no cell captured stay as text."""
+    table = select_tables([], [_cand("grid", _GOOD)], [], [])
+    stray = _line("Weak Consensus", 210, 121)
+    captured = _line("alpha", 52, 121)
+    out = remove_table_regions([Block(lines=[captured, stray], page_num=0)], table)
+    assert [ln.text for b in out for ln in b.lines] == ["Weak Consensus"]

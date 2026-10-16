@@ -1,0 +1,481 @@
+{
+ "paper": "p4047r0",
+ "tables": [
+  {
+   "id": "p4047r0-t1",
+   "pages": [
+    0
+   ],
+   "rows": [
+    [
+     "Document Number:",
+     "P4047R0"
+    ],
+    [
+     "Date:",
+     "2026-05-01"
+    ],
+    [
+     "Intent:",
+     "Inform"
+    ],
+    [
+     "Audience:",
+     "WG21"
+    ],
+    [
+     "Reply-to:",
+     "Vinnie Falco vinnie.falco@gmail.com"
+    ]
+   ],
+   "group": null,
+   "source": "typed",
+   "note": "unruled metadata block in shaded box",
+   "scope": "front-matter"
+  },
+  {
+   "id": "p4047r0-t2",
+   "pages": [
+    2
+   ],
+   "rows": [
+    [
+     "#",
+     "Prediction",
+     "Source",
+     "Date",
+     "Outcome"
+    ],
+    [
+     "T1",
+     "P2300 unlikely for C++23 given size of the proposal",
+     "Adelstein Lelbach, CppCon 2021 [2]",
+     "2021",
+     "Confirmed"
+    ],
+    [
+     "T2",
+     "\"merge most of the foundational bits [P2300] early in the C++26 cycle\"",
+     "Voutilainen P0592R5 [3]",
+     "2022",
+     "Confirmed"
+    ],
+    [
+     "T3",
+     "\"not going to be in a timeframe conducive to inclusion in C++23\" (re: language changes P2300 needs)",
+     "P2469R0 [4]",
+     "2021-10",
+     "Confirmed"
+    ],
+    [
+     "T4",
+     "Networking TS should ship for C++23",
+     "P2469R0 [4]",
+     "2021-10",
+     "Unconfirmed - neither Net TS nor any networking shipped"
+    ],
+    [
+     "T5",
+     "Stop Networking TS for C++23, focus on P2300",
+     "Voutilainen P2464R0 [5]",
+     "2021",
+     "Confirmed - Net TS stopped; P2300 proceeded"
+    ]
+   ],
+   "group": "g1",
+   "source": "edited:ruled1",
+   "note": "Timeline",
+   "scope": "table"
+  },
+  {
+   "id": "p4047r0-t3",
+   "pages": [
+    3
+   ],
+   "rows": [
+    [
+     "#",
+     "Prediction",
+     "Source",
+     "Date",
+     "Outcome"
+    ],
+    [
+     "S1",
+     "Stack overflow from reentrant completion without executors is \"user-hostile default behaviour\"",
+     "P2469R0 [4]",
+     "2021-10",
+     "Confirmed - Müller P3801R0 [6] (2025), Kühl P3796R0 [7]"
+    ],
+    [
+     "S2",
+     "P2300 design \"insufficiently paranoid to be suited to internet-facing software development\"",
+     "P2480R0 [8]",
+     "2021-10",
+     "Partially confirmed - networking deferred to C++29"
+    ],
+    [
+     "S3",
+     "set_error channel confusion - scheduling errors vs. I/O errors",
+     "P2469R0 [4]",
+     "2021-10",
+     "Confirmed - still unresolved"
+    ],
+    [
+     "S4",
+     "\"P2300 will likely require language changes to work effectively\" - tail calls, trampolines",
+     "P2469R0 [4]",
+     "2021-10",
+     "Confirmed - P2583R4 [9] documents symmetric transfer gap (2026)"
+    ],
+    [
+     "S5",
+     "Tail call concerns documented before P2300",
+     "Nishanov P1362R0 [10]",
+     "2019",
+     "Confirmed - still open"
+    ]
+   ],
+   "group": "g2",
+   "source": "edited:ruled2",
+   "note": "Safety and Correctness",
+   "scope": "table"
+  },
+  {
+   "id": "p4047r0-t4",
+   "pages": [
+    3
+   ],
+   "rows": [
+    [
+     "#",
+     "Prediction",
+     "Source",
+     "Date",
+     "Outcome"
+    ],
+    [
+     "C1",
+     "tag_invoke as the customization mechanism for sender algorithms",
+     "P2300R0-R5, P2403R0 [11]",
+     "2020-2022",
+     "Unconfirmed - abandoned; replaced by transform_sender (P2999R3 [12])"
+    ],
+    [
+     "C2",
+     "transform_sender as the customization mechanism",
+     "P2999R3 [12]",
+     "2024",
+     "Unconfirmed - P3303R1 [13] \"Fixing,\" P3718R0 [14] \"Fixing Again,\" then P3826R5 [15] proposes removal"
+    ],
+    [
+     "C3",
+     "\"the customization mechanism has seen a fair bit of recent churn\" - remove for C++26, restore in C++29",
+     "Niebler P3826R0 [15]",
+     "2025-10",
+     "Pending - proposed"
+    ]
+   ],
+   "group": "g3",
+   "source": "edited:ruled3",
+   "note": "Customization Mechanism; ruled split wrapped lines into rows",
+   "scope": "table"
+  },
+  {
+   "id": "p4047r0-t5",
+   "pages": [
+    4
+   ],
+   "rows": [
+    [
+     "#",
+     "Prediction",
+     "Source",
+     "Date",
+     "Outcome"
+    ],
+    [
+     "U1",
+     "\">90% of all async code in the future should be coroutines\"",
+     "Niebler, \"Structured Concurrency\" [16]",
+     "2020-11",
+     "Shifted - by 2024: \"returning a sender is a great choice\" [17]"
+    ],
+    [
+     "U2",
+     "\"senders are like iterators when STL emerged\" - universal adoption predicted",
+     "Kühl, quoted in P2300R3-R10",
+     "2021-25",
+     "Unconfirmed - no equivalent adoption curve"
+    ],
+    [
+     "U3",
+     "SG1 \"no consensus\" that one grand unified model is needed (4-9-5-5-1)",
+     "P2453R0 [18]",
+     "2021-09",
+     "Confirmed - poll happened; direction proceeded regardless"
+    ],
+    [
+     "U4",
+     "\"Networking should be based on sender/receiver model\" - weak consensus (17-11-10-4-6)",
+     "P2453R0 [18]",
+     "2021-10",
+     "Unconfirmed - no sender-based networking exists; deferred to C++29"
+    ],
+    [
+     "U5",
+     "Production library chose awaitables over senders for usability",
+     "Prokoptsev, CppCon 2024 [19]",
+     "2024",
+     "Confirmed"
+    ],
+    [
+     "U6",
+     "\"C++26 will still not have a standard coroutine task type\"",
+     "Niebler P3826R0 [15]",
+     "2025-10",
+     "Pending"
+    ]
+   ],
+   "group": "g4",
+   "source": "edited:ruled4",
+   "note": "Universality and Scope; ruled4 merged this and the Domain Viability table",
+   "scope": "table"
+  },
+  {
+   "id": "p4047r0-t6",
+   "pages": [
+    4
+   ],
+   "rows": [
+    [
+     "#",
+     "Prediction",
+     "Source",
+     "Date",
+     "Outcome"
+    ],
+    [
+     "D1",
+     "Sender/receiver deployed in shipping Facebook products, \"monthly users number in the billions\"",
+     "Niebler P2470R0 [20]",
+     "2021",
+     "Confirmed"
+    ],
+    [
+     "D2",
+     "NVIDIA \"fully invested in P2300... we plan to ship in production sometime next year\"",
+     "NVIDIA statement in P2470R0 [20]",
+     "2021",
+     "Confirmed - nvexec shipped"
+    ],
+    [
+     "D3",
+     "Bloomberg experimentation with sender/receiver",
+     "P2470R0 [20]",
+     "2021",
+     "Confirmed"
+    ]
+   ],
+   "group": "g4",
+   "source": "typed",
+   "note": "Domain Viability; second table inside ruled4 group",
+   "scope": "table"
+  },
+  {
+   "id": "p4047r0-t7",
+   "pages": [
+    5
+   ],
+   "rows": [
+    [
+     "#",
+     "Prediction",
+     "Source",
+     "Date",
+     "Outcome"
+    ],
+    [
+     "N1",
+     "\"The C++ Standard can't access the Internet. This is embarrassing and long overdue.\"",
+     "P2469R0 [4]",
+     "2021-10",
+     "Confirmed - still true"
+    ],
+    [
+     "N2",
+     "\"We don't have a composable approach proposal [for networking] at this point\"",
+     "Voutilainen P0592R5 [3]",
+     "2022",
+     "Confirmed - still true"
+    ],
+    [
+     "N3",
+     "Chair's note: \"In the short term, this poll result doesn't mean much. We don't have a paper in hand that proposes networking based on the P2300 model.\"",
+     "P2453R0 [18]",
+     "2021-10",
+     "Confirmed - still no such paper"
+    ]
+   ],
+   "group": "g5",
+   "source": "edited:ruled5",
+   "note": "Networking",
+   "scope": "table"
+  },
+  {
+   "id": "p4047r0-t8",
+   "pages": [
+    5
+   ],
+   "rows": [
+    [
+     "#",
+     "Prediction",
+     "Source",
+     "Date",
+     "Outcome"
+    ],
+    [
+     "M1",
+     "\"many algorithms clearly labeled 'Not yet implemented' in libunifex\"",
+     "P2469R0 [4]",
+     "2021-10",
+     "Confirmed - libunifex archived; 50+ post-approval items in C++26 WD [21]"
+    ],
+    [
+     "M2",
+     "P2300 task type concerns: stack overflow, allocator, error handling",
+     "Müller P3801R0 [6], Kühl P3796R1 [7]",
+     "2025",
+     "Confirmed - 16 open issues documented by task author"
+    ]
+   ],
+   "group": "g6",
+   "source": "edited:ruled6",
+   "note": "Implementation Maturity",
+   "scope": "table"
+  },
+  {
+   "id": "p4047r0-t9",
+   "pages": [
+    6
+   ],
+   "rows": [
+    [
+     "Category",
+     "Predictions",
+     "Confirmed",
+     "Unconfirmed",
+     "Shifted / Partial",
+     "Pending"
+    ],
+    [
+     "Timeline",
+     "5",
+     "4",
+     "1",
+     "0",
+     "0"
+    ],
+    [
+     "Safety / Correctness",
+     "5",
+     "4",
+     "0",
+     "1",
+     "0"
+    ],
+    [
+     "Customization Mechanism",
+     "3",
+     "0",
+     "2",
+     "0",
+     "1"
+    ],
+    [
+     "Universality / Scope",
+     "6",
+     "2",
+     "2",
+     "1",
+     "1"
+    ],
+    [
+     "Domain Viability",
+     "3",
+     "3",
+     "0",
+     "0",
+     "0"
+    ],
+    [
+     "Networking",
+     "3",
+     "3",
+     "0",
+     "0",
+     "0"
+    ],
+    [
+     "Implementation Maturity",
+     "2",
+     "2",
+     "0",
+     "0",
+     "0"
+    ],
+    [
+     "Total",
+     "27",
+     "18",
+     "5",
+     "2",
+     "2"
+    ]
+   ],
+   "group": "g7",
+   "source": "edited:ruled7",
+   "note": "Scorecard; ruled7 merged Unconfirmed/Shifted columns and the Conclusion table",
+   "scope": "table"
+  },
+  {
+   "id": "p4047r0-t10",
+   "pages": [
+    6
+   ],
+   "rows": [
+    [
+     "Predictive",
+     "Not Predictive"
+    ],
+    [
+     "Safety and correctness concerns",
+     "Universality claims"
+    ],
+    [
+     "Domain viability (where deployed)",
+     "Customization mechanism design"
+    ],
+    [
+     "Networking gap",
+     "Timeline estimates (all sides)"
+    ],
+    [
+     "Implementation maturity concerns",
+     ""
+    ]
+   ],
+   "group": "g7",
+   "source": "edited:tomd1",
+   "note": "Conclusion Predictive/Not Predictive; tomd1 dropped last row",
+   "scope": "table"
+  }
+ ],
+ "not_tables": [],
+ "missed_by_all": [
+  "p4047r0-t1"
+ ],
+ "checked_pages": "all",
+ "source_pdf": "https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2026/p4047r0.pdf"
+}

@@ -263,6 +263,7 @@ _REGION_MARGIN = 2.0
 _TRAIL_OP_RE = re.compile(r"(&&|\|\||==|!=|>=|<=|::|[,(<\[{=]|\s[+\-*/])\s*$")
 _LEAD_CONT_RE = re.compile(r"^\s*(&&|\|\||[)>\]},.;]|::)")
 _PAGE_NUM_CELL_RE = re.compile(r"^\d{1,4}$")
+_WORD_RE = re.compile(r"\w+")
 _REF_LABEL_RE = re.compile(r"(^|\S)\[[A-Z][A-Za-z0-9.+_-]{1,29}\]$")    # [N2529], [P3847R1], [Smith20]
 
 
@@ -301,9 +302,18 @@ def table_flags(cand: TableCandidate) -> list[str]:
     body = rows[1:] if len(rows) > 2 else rows
     filled = [sum(1 for c in r if c) for r in body]
     mode = Counter(filled).most_common(1)[0][0]
-    ragged = sum(1 for f in filled if f != mode)
+    # A misread grid shows rows with an empty key cell (a wrapped line taken
+    # for a row) or with more cells than usual. Empty cells further right are
+    # normal ("TLS | (none found) | ").
+    keyed = sum(1 for r in body if r and r[0]) >= len(body) / 2
+    ragged = sum(1 for r, f in zip(body, filled)
+                 if f > mode or (keyed and r and not r[0]) or (f == 1 and mode >= 3))
     if ragged / len(body) > 0.2:
         flags.append("ragged-columns")
+    # Two rows with a gap: too little evidence for a grid (fragments of a
+    # framed text box). Real two-row tables are full.
+    if len(rows) == 2 and any(not c for r in rows for c in r + [""] * (ncol - len(r))):
+        flags.append("sparse-two-rows")
     cells = [c for r in rows for c in r] + [""] * sum(ncol - len(r) for r in rows)
     if sum(1 for c in cells if not c) / max(1, len(cells)) > 0.4:
         flags.append("empty-cells")
@@ -328,11 +338,14 @@ def table_flags(cand: TableCandidate) -> list[str]:
         flags.append("toc-like")                    # "References | 5"
     elif (ncol >= 2 and len(rows) >= 3
             and sum(1 for c in last if _PAGE_NUM_CELL_RE.match(c)) >= 0.8 * len(rows)):
-        flags.append("toc-like")
+        # page numbers in a table of contents never go down; counts do
+        nums = [int(c) for c in last if _PAGE_NUM_CELL_RE.match(c)]
+        if all(a <= b for a, b in zip(nums, nums[1:])):
+            flags.append("toc-like")
     if first and all(c.strip() in BULLET_CHARS or c.strip("\u200b ") in BULLET_CHARS
                      for c in first):
         flags.append("bullet-list")                 # "● | item text"
-    if last and len(last) >= 0.8 * len(rows) and all(c.startswith("//") for c in last):
+    if len(last) >= 2 and all(c.startswith("//") for c in last):
         flags.append("code-comment-column")         # "Fun fun; | // exposition only"
     # (a label may arrive glued to the previous entry's URL: "...pdf[N2550]")
     if first and len(first) >= 0.5 * len(rows) and all(_REF_LABEL_RE.search(c) for c in first):
@@ -343,7 +356,7 @@ def table_flags(cand: TableCandidate) -> list[str]:
 BAD_TABLE_FLAGS = frozenset({"ragged-columns", "empty-cells", "split-code",
                              "constant-first-column", "toc-like", "bullet-list",
                              "code-comment-column", "reference-list",
-                             "single-cell-rows"})
+                             "single-cell-rows", "sparse-two-rows"})
 # Tags are explicit markup: an empty column or an empty corner is the
 # author's choice there, not an extraction error.
 _TAG_EXEMPT_FLAGS = frozenset({"ragged-columns", "empty-cells"})
@@ -549,7 +562,18 @@ def select_tables(tomd_sections: list[Section],
 
 
 def remove_table_regions(blocks: list[Block], tables: list[Section]) -> list[Block]:
-    """Drop the lines that fall inside any chosen table's region."""
+    """Drop the lines that fall inside any chosen table's region.
+
+    A line inside the region whose text is not in the table is kept, so it
+    stays in the document as ordinary text: never lose words to a table whose
+    cells missed them.
+    """
+    table_words = set(_WORD_RE.findall(" ".join(sec.text for sec in tables)))
+
+    def captured(ln: Line) -> bool:
+        words = _WORD_RE.findall(ln.text)
+        return not words or sum(w in table_words for w in words) >= 0.5 * len(words)
+
     regions: dict[int, list[tuple]] = {}
     for sec in tables:
         per_page: dict[int, list] = {}
@@ -569,7 +593,8 @@ def remove_table_regions(blocks: list[Block], tables: list[Section]) -> list[Blo
             continue
         keep = [ln for ln in blk.lines
                 if not any(r[0] <= (ln.bbox[0] + ln.bbox[2]) / 2 <= r[2]
-                           and r[1] <= (ln.bbox[1] + ln.bbox[3]) / 2 <= r[3] for r in rs)]
+                           and r[1] <= (ln.bbox[1] + ln.bbox[3]) / 2 <= r[3] for r in rs)
+                or not captured(ln)]
         if len(keep) == len(blk.lines):
             out.append(blk)
         elif keep:

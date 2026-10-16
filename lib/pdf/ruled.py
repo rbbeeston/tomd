@@ -37,7 +37,7 @@ _MUPDF_ITALIC_BIT = 1 << 1
 
 _RULE_MAX_THICK = 2.5     # a "rule" is a line or a very thin filled rect
 _RULE_MIN_LEN = 40.0
-_FILL_MAX_HEIGHT = 60.0   # taller filled boxes are panels, not row shading
+_FILL_MAX_HEIGHT = 90.0   # taller filled boxes are panels, not row shading (3-line headers fit)
 _RULE_JOIN_GAP = 2.0      # Word draws one segment per cell; join them
 _RULE_MERGE_Y = 3.5       # booktabs double rules collapse to one
 _RULE_SAME_X = 3.0
@@ -46,11 +46,16 @@ _PER_ROW_RULES = 5        # at least this many rules: one rule per row
 _HEADER_ABOVE = 16.0      # height of a header line above a double rule
 _COL_GAP_MIN = 1.5        # x range no word covers separates columns...
 _COL_GAP_EM = 0.6         # ...if this share of a line height wide, or if
-_COL_GAP_PAIRS = 3        #    this many distinct word pairs straddle it
+_COL_GAP_PAIRS = 3        #    this many distinct rows straddle it
 _COL_START_TOL = 3.0      # word starts within this distance share a column
 _COL_START_SUPPORT = 0.6  # a column start must occur in this share of rows
 _LINE_Y_TOL = 3.0         # characters within this y distance share a line
+_ZERO_WIDTH = frozenset("\u200b\u200c\u200d\u2060\ufeff")
 _CAPTION_INDENT = 4.0     # captions start this far left of padded cell text
+_CAPTION_SPACE = 3.0      # a prose band this many times taller than its text
+_OVERPRINT = 1.0          # a char starting this far left of the previous one
+_RAISE = 2.0              # a superscript sits this far above its neighbour, top and bottom
+_MAX_MARK = 8             # longest raised run treated as a superscript mark
 
 
 # --------------------------------------------------------------------------
@@ -104,7 +109,12 @@ def _page_words(raw: dict) -> list[tuple]:
                     if c.isspace():
                         flush(True)
                         continue
-                    cur.append((c, tuple(ch["bbox"]), sp.get("font", ""), sp.get("size", 0.0),
+                    bb = tuple(ch["bbox"])
+                    if cur and bb[0] < cur[-1][1][2] - _OVERPRINT:
+                        # text jumps back: another column's text drawn over
+                        # this one (an overrunning identifier) - new word
+                        flush(False)
+                    cur.append((c, bb, sp.get("font", ""), sp.get("size", 0.0),
                                 sp.get("flags", 0), sp.get("color", 0)))
             flush(False)
     return words
@@ -113,25 +123,57 @@ def _page_words(raw: dict) -> list[tuple]:
 def _word_chars(ws: list[tuple]) -> list[tuple]:
     """Characters of a cell's words, with the PDF's spaces between them."""
     out: list[tuple] = []
-    for _, _, lw in _text_lines(ws):
-        lw = sorted(lw, key=lambda w: w[0])
-        for i, w in enumerate(lw):
-            out += w[5]
-            if w[6] and i + 1 < len(lw):
-                last = w[5][-1]
-                out.append((" ", (last[1][2], last[1][1], last[1][2] + 0.01, last[1][3])) + last[2:])
+    for w in ws:
+        out += w[5]
+        if w[6]:   # the PDF has a space after this word; trailing ones are stripped later
+            last = w[5][-1]
+            out.append((" ", (last[1][2], last[1][1], last[1][2] + 0.01, last[1][3])) + last[2:])
     return out
 
 
 def _chars_to_lines(chars: list[tuple], page_num: int) -> list[Line]:
-    """Group characters into Lines of Spans (same font run = one span)."""
+    """Group characters into Lines of Spans (same font run = one span).
+
+    Superscripts (reference marks) are raised, so they would form a line of
+    their own; they join the line whose height they overlap instead and stay
+    after the word they follow.
+    """
+    chars = [c for c in chars if c[0] not in _ZERO_WIDTH]    # invisible: never cell content
+    def raised(c):
+        # smaller than a vertically overlapping character and shifted up
+        # against it at both top and bottom: a superscript
+        return any(o[3] > c[3] and min(o[1][3], c[1][3]) > max(o[1][1], c[1][1])
+                   and o[1][1] - c[1][1] > _RAISE and o[1][3] - c[1][3] > _RAISE
+                   for o in chars if not o[0].isspace())
+    small = [c for c in chars if raised(c)]       # including the mark's own spaces
+    # Reference marks are short ("[10]"); a long raised run is a line of
+    # smaller text above another line, not a superscript.
+    runs: list[list] = []
+    for c in sorted(small, key=lambda c: (round((c[1][1] + c[1][3]) / 4), c[1][0])):
+        if runs and abs((runs[-1][-1][1][1] + runs[-1][-1][1][3]) / 2 - (c[1][1] + c[1][3]) / 2) < 2 \
+                and c[1][0] - runs[-1][-1][1][2] < 3:
+            runs[-1].append(c)
+        else:
+            runs.append([c])
+    small = [c for r in runs if sum(not x[0].isspace() for x in r) <= _MAX_MARK for c in r]
+    normal = [c for c in chars if not any(c is x for x in small)]
     rows: list[list] = []
-    for ch in sorted(chars, key=lambda c: (c[1][1] + c[1][3]) / 2):
+    for ch in sorted(normal, key=lambda c: (c[1][1] + c[1][3]) / 2):
         yc = (ch[1][1] + ch[1][3]) / 2
         if rows and yc - rows[-1][0] < _LINE_Y_TOL:
             rows[-1][1].append(ch)
         else:
             rows.append([yc, [ch]])
+    for ch in small:
+        def overlap(row):
+            top = min(c[1][1] for c in row[1]); bot = max(c[1][3] for c in row[1])
+            return min(bot, ch[1][3]) - max(top, ch[1][1])
+        best = max(rows, key=overlap, default=None)
+        if best is not None and overlap(best) > 0:
+            best[1].append(ch)
+        else:
+            rows.append([(ch[1][1] + ch[1][3]) / 2, [ch]])
+    rows.sort(key=lambda r: r[0])
     lines = []
     for _, row in rows:
         row.sort(key=lambda c: c[1][0])
@@ -296,6 +338,13 @@ def _column_starts(row_words: list[list]) -> list[float]:
     overruns into the next column, which closes the gap in signal 1.
     Returns the sorted x of each column's left boundary (first is -inf).
     """
+    # Superscripts (reference marks) sit after their text and must not
+    # define columns; they are still assigned to cells by position later.
+    kept = []
+    for ws in row_words:
+        raised = _raised(ws)
+        kept.append([w for w in ws if not any(w is r for r in raised)])
+    row_words = [ws for ws in kept if ws] or row_words
     words = [w for ws in row_words for w in ws]
     # A narrow x range that no row covers is a column gap only when rows
     # disagree about what sits on either side of it (distinct word pairs
@@ -314,27 +363,53 @@ def _column_starts(row_words: list[list]) -> list[float]:
     seps = set()
     for i in range(len(merged) - 1):
         g0, g1 = merged[i][1], merged[i + 1][0]
-        pairs = set()
+        # evidence: distinct rows (by their text next to the gap) that have
+        # words on both sides of it on the same line
+        rows_seen = set()
         for ws in row_words:
-            for _, _, lw in _text_lines(ws):
-                left = [w for w in lw if w[2] <= g0 + 0.5]
-                right = [w for w in lw if w[0] >= g1 - 0.5]
-                if left and right:
-                    pairs.add((max(left, key=lambda w: w[2])[4], min(right, key=lambda w: w[0])[4]))
-        if g1 - g0 >= wide or len(pairs) >= _COL_GAP_PAIRS:
+            near = [w for w in ws if merged[i][0] - 0.5 <= w[0] and w[2] <= merged[i + 1][1] + 0.5]
+            straddles = False
+            for _, _, lw in _text_lines(near):
+                if any(w[2] <= g0 + 0.5 for w in lw) and any(w[0] >= g1 - 0.5 for w in lw):
+                    straddles = True
+            if straddles:
+                rows_seen.add(" ".join(w[4] for w in sorted(near, key=lambda w: (round(w[1]), w[0]))))
+        if g1 - g0 >= wide or len(rows_seen) >= _COL_GAP_PAIRS:
             seps.add((g0 + g1) / 2)
 
     starts: Counter[int] = Counter()
     for ws in row_words:
         seen = set()
-        ws = sorted(ws, key=lambda w: w[0])
-        for i, w in enumerate(ws):
-            gap_before = w[0] - ws[i - 1][2] if i else 1e9
-            size = w[3] - w[1]
-            if gap_before > 0.9 * size:
-                k = round(w[0] / _COL_START_TOL)
-                if k not in seen:
-                    seen.add(k); starts[k] += 1
+        for _, _, lw in _text_lines(ws):          # compare words within a line
+            lw = sorted(lw, key=lambda w: w[0])
+            for i, w in enumerate(lw):
+                gap_before = w[0] - lw[i - 1][2] if i else 1e9
+                size = w[3] - w[1]
+                # a visible gap, or text drawn over the previous word's tail
+                # (an identifier overrunning into this column)
+                if gap_before > 0.9 * size or gap_before < -_OVERPRINT:
+                    k = round(w[0] / _COL_START_TOL)
+                    if k not in seen:
+                        seen.add(k); starts[k] += 1
+    # A wide gap in the header (first) row starts a column when some data
+    # row also starts a word there: in short tables with overrunning cells
+    # the header is often the only row whose gaps are visible.
+    # Rows whose text runs across the boundary must start a word right at it
+    # (an overrunning identifier with the next column drawn over it);
+    # otherwise the boundary would cut through ordinary text, as it does for
+    # a centred column.
+    header = sorted(row_words[0], key=lambda w: w[0]) if row_words else []
+    for a, b in zip(header, header[1:]):
+        x = b[0]
+        if b[0] - a[2] < wide:
+            continue
+        body = row_words[1:]
+        starts_here = [any(abs(w[0] - x) <= _COL_START_TOL for w in ws) for ws in body]
+        crosses = [any(w[0] < x - _COL_START_TOL and w[2] > x + _COL_START_TOL for w in ws)
+                   for ws in body]
+        if any(starts_here) and all(s or not c for s, c in zip(starts_here, crosses)):
+            k = round(x / _COL_START_TOL)
+            starts[k] = max(starts[k], len(row_words))
     left = min(w[0] for w in words)
     need = max(2, _COL_START_SUPPORT * len(row_words))
     for k, n in starts.items():
@@ -345,11 +420,40 @@ def _column_starts(row_words: list[list]) -> list[float]:
     return [float("-inf")] + sorted(seps)
 
 
-def _is_caption_band(lw: list, cell_left: float) -> bool:
-    """A band holding a single line that starts left of where cell text
-    starts (cells are padded, captions are not): e.g. "Bounds (3)", the
-    caption of the next table, not a row of this one."""
-    return len(_text_lines(lw)) == 1 and min(w[0] for w in lw) < cell_left - _CAPTION_INDENT
+def _raised(words: list) -> list:
+    """Words that are superscripts: no larger than a word they overlap
+    vertically and shifted up against it at both top and bottom. (Small
+    code-font text sits on the line and is not raised.)"""
+    if not words:
+        return []
+    return [w for w in words if len(w[4]) <= _MAX_MARK and any(
+        b[5][0][3] > w[5][0][3] and min(b[3], w[3]) > max(b[1], w[1])
+        and b[1] - w[1] > _RAISE and b[3] - w[3] > _RAISE for b in words)]
+
+
+def _is_caption_band(lw: list, cell_left: float, band_height: float = 0.0) -> bool:
+    """A band whose every line starts left of where cell text starts (cells
+    are padded; captions and paragraphs are not): e.g. "Bounds (3)", or a
+    paragraph plus the next table's caption - text between two tables that
+    share the rules' width, not a row."""
+    raised = _raised(lw)
+    lw = [w for w in lw if not any(w is r for r in raised)]   # raised marks form their own "line"
+    lines = [sorted(ws, key=lambda w: w[0]) for _, _, ws in _text_lines(lw)]
+    if all(ws[0][0] < cell_left - _CAPTION_INDENT for ws in lines):
+        return True                      # starts at the margin, left of padded cells
+    # Or: a short run of prose (no column-sized gap) that does not start
+    # where cell text starts - a caption indented differently from cells,
+    # e.g. "Scenario 4 - Two Orders Resulting in a Trade".
+    def prose(ws):
+        return all(b[0] - a[2] < 1.5 * (a[3] - a[1]) for a, b in zip(ws, ws[1:]))
+    if len(lines) > 3 or not all(prose(ws) for ws in lines):
+        return False
+    if all(abs(ws[0][0] - cell_left) > _CAPTION_INDENT for ws in lines):
+        return True
+    # A prose band mostly empty space (captions sit in the gap between two
+    # tables); a data row is snug around its text.
+    text_h = sum(max(w[3] for w in ws) - min(w[1] for w in ws) for ws in lines)
+    return band_height > _CAPTION_SPACE * text_h
 
 
 def _rule_band_tables(page_num, words_all, group, header_above) -> list[TableCandidate]:
@@ -376,9 +480,10 @@ def _rule_band_tables(page_num, words_all, group, header_above) -> list[TableCan
         if not bw:
             continue
         if per_row_rules:
-            if _is_caption_band(bw, cell_left) and segments[-1]:
-                segments.append([])         # two tables share the rules' width
-                continue
+            if _is_caption_band(bw, cell_left, bot - top):
+                if segments[-1]:
+                    segments.append([])     # two tables share the rules' width
+                continue                    # a caption is never a row
             segments[-1].append((top, bot))
         else:
             segments[-1].extend((a - 1, b + 1) for a, b, _ in _text_lines(bw))

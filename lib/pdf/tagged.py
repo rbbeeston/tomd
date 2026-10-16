@@ -30,6 +30,7 @@ _MUPDF_BOLD_BIT = 1 << 4
 _MUPDF_ITALIC_BIT = 1 << 1
 _ROW_KINDS = ("THead", "TBody", "TFoot")
 _CELL_KINDS = ("TD", "TH")
+_ZERO_WIDTH = "\u200b\u200c\u200d\u2060\ufeff"
 
 
 def _lines_of(node, page_num: int) -> list[Line]:
@@ -41,7 +42,8 @@ def _lines_of(node, page_num: int) -> list[Line]:
         elif b.get("type") == 0:
             for ln in b.get("lines", []):
                 spans = [Span(
-                    text=sp.get("text", ""), font_name=sp.get("font", ""),
+                    text="".join(c for c in sp.get("text", "") if c not in _ZERO_WIDTH),
+                    font_name=sp.get("font", ""),
                     font_size=sp.get("size", 0.0),
                     bold=bool(sp.get("flags", 0) & _MUPDF_BOLD_BIT),
                     italic=bool(sp.get("flags", 0) & _MUPDF_ITALIC_BIT),
@@ -49,7 +51,7 @@ def _lines_of(node, page_num: int) -> list[Line]:
                     bbox=tuple(sp.get("bbox", (0, 0, 0, 0))),
                     origin=tuple(sp.get("origin", (0, 0))),
                     color=sp.get("color", 0),
-                ) for sp in ln.get("spans", []) if sp.get("text")]
+                ) for sp in ln.get("spans", []) if sp.get("text", "").strip(_ZERO_WIDTH)]
                 if spans and "".join(s.text for s in spans).strip():
                     out.append(Line(spans=spans, bbox=tuple(ln["bbox"]), page_num=page_num))
     return out
