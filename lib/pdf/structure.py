@@ -142,9 +142,10 @@ def compare_extractions(mupdf_blocks: list[Block],
             promoted.add(next_pg)
 
     if promoted:
-        kept = [s for s in sections
-                if not (s.kind == SectionKind.UNCERTAIN
-                        and s.page_num in promoted)]
+        # Rebuild promoted pages from scratch: a page promoted alongside its
+        # uncertain neighbour may already be confident, and re-appending its
+        # blocks without dropping its paragraphs would emit them twice.
+        kept = [s for s in sections if s.page_num not in promoted]
         for pg in sorted(promoted):
             for block in mupdf_by_page.get(pg, []):
                 kept.append(_make_paragraph_section(block))
