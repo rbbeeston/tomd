@@ -258,7 +258,10 @@ def _join_hyphenated(line: str, nxt: str, prefix: str) -> str:
     """
     suffix = re.match(r"[A-Za-z]*", nxt).group(0)
     p = prefix.lower()
-    syllable = p not in COMPOUND_PREFIXES and (len(p) <= 3 or len(suffix) <= 4)
+    # An acronym before the hyphen is a compound ("ABI-" + "independent").
+    acronym = len(prefix) >= 2 and prefix.isupper()
+    syllable = (not acronym and p not in COMPOUND_PREFIXES
+                and (len(p) <= 3 or len(suffix) <= 4))
     return (line[:-1] if syllable else line) + nxt
 
 
@@ -367,8 +370,9 @@ def emit_markdown(metadata: dict, sections: list[Section]) -> str:
         rendered = _render_section_md(sec)
         if not rendered.strip():
             continue
-        if sec.kind == SectionKind.TABLE and sec.confidence == Confidence.UNCERTAIN:
-            # Table sources disagreed: mark it like any uncertain region.
+        if _is_uncertain_table(sec) or "possible_table" in sec.metadata:
+            # Table sources disagreed, or text that looks like an unextracted
+            # table: mark it like any uncertain region, keeping its rendering.
             text_lines = rendered.count("\n") + 1
             text_start = line_num + 2
             parts.append(f"<!-- tomd:uncertain:L{text_start}-L{text_start + text_lines - 1} -->")
@@ -387,13 +391,17 @@ def _is_uncertain_table(sec: Section) -> bool:
     return sec.kind == SectionKind.TABLE and sec.confidence == Confidence.UNCERTAIN
 
 
+def _is_flagged(sec: Section) -> bool:
+    return (sec.kind == SectionKind.UNCERTAIN or _is_uncertain_table(sec)
+            or "possible_table" in sec.metadata)
+
+
 def emit_prompts(sections: list[Section]) -> str | None:
     """Generate the companion prompts file for uncertain regions.
 
     Returns None if there are no uncertain regions.
     """
-    uncertain = [(idx, s) for idx, s in enumerate(sections)
-                 if s.kind == SectionKind.UNCERTAIN or _is_uncertain_table(s)]
+    uncertain = [(idx, s) for idx, s in enumerate(sections) if _is_flagged(s)]
     if not uncertain:
         return None
 
@@ -408,10 +416,9 @@ def emit_prompts(sections: list[Section]) -> str | None:
     for i, (idx, sec) in enumerate(uncertain):
         ctx_before = ""
         ctx_after = ""
-        if idx > 0 and sections[idx - 1].kind != SectionKind.UNCERTAIN and not _is_uncertain_table(sections[idx - 1]):
+        if idx > 0 and not _is_flagged(sections[idx - 1]):
             ctx_before = sections[idx - 1].text[:200].strip()
-        if (idx + 1 < len(sections) and sections[idx + 1].kind != SectionKind.UNCERTAIN
-                and not _is_uncertain_table(sections[idx + 1])):
+        if idx + 1 < len(sections) and not _is_flagged(sections[idx + 1]):
             ctx_after = sections[idx + 1].text[:200].strip()
 
         parts.append(f"## Region {i + 1} (page {sec.page_num})")
@@ -429,7 +436,16 @@ def emit_prompts(sections: list[Section]) -> str | None:
             parts.append(f"> {ctx_before}")
             parts.append("")
 
-        if _is_uncertain_table(sec):
+        if "possible_table" in sec.metadata:
+            parts.append("This text may be a table that was not extracted as one")
+            parts.append(f"({sec.metadata['possible_table']}). If it is a table,")
+            parts.append("rebuild it as one Markdown table; otherwise keep it as it is.")
+            parts.append("")
+            parts.append("```")
+            parts.append(_render_section_md(sec))
+            parts.append("```")
+            parts.append("")
+        elif _is_uncertain_table(sec):
             # One block per table extractor; the first is the one emitted.
             parts.append("This is a table. The extractors below disagree on its rows,")
             parts.append("columns or cell text. Produce one correct Markdown table.")

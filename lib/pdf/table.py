@@ -297,6 +297,106 @@ _DAMAGED_RANGE = (0x1D00, 0x1DBF)   # phonetic extensions: not WG21 text; seen a
                                    # math italics with the last hex digit dropped
 
 
+_ALNUM = re.compile(r"[^\W_]", re.UNICODE)
+
+
+def conservation_error(cand: TableCandidate, blocks: list[Block]) -> str:
+    """Check that the text in the table's area went into its cells exactly once.
+
+    The area is where the cells' own lines sit on each page. Every letter and
+    digit of the page lines centred in that area must appear in the cells as
+    often as on the page: a deficit is text the table lost (a dropped row,
+    an overprinted word), a surplus is text it duplicated. Compared as
+    character counts, so line breaks, hyphenation and spacing do not matter.
+    Returns "" when conserved, else a note for the prompt.
+    """
+    area: dict[int, list[float]] = {}
+    for row in cand.rows:
+        for cell in row:
+            for ln in cell:
+                b = area.get(ln.page_num)
+                area[ln.page_num] = (list(ln.bbox) if b is None else
+                                     [min(b[0], ln.bbox[0]), min(b[1], ln.bbox[1]),
+                                      max(b[2], ln.bbox[2]), max(b[3], ln.bbox[3])])
+    if not area:
+        return ""
+    page_chars: Counter[str] = Counter()
+    for blk in blocks:
+        r = area.get(blk.page_num)
+        if r is None:
+            continue
+        for ln in blk.lines:
+            xc, yc = (ln.bbox[0] + ln.bbox[2]) / 2, (ln.bbox[1] + ln.bbox[3]) / 2
+            if r[0] - 1 <= xc <= r[2] + 1 and r[1] - 1 <= yc <= r[3] + 1:
+                page_chars.update(_ALNUM.findall(ln.text))
+    if not page_chars:
+        return ""                     # the area's lines are not in the block stream
+    cell_chars = Counter(_ALNUM.findall(" ".join(" ".join(r) for r in cand.text_rows())))
+    lost = sum((page_chars - cell_chars).values())
+    extra = sum((cell_chars - page_chars).values())
+    if lost or extra:
+        return (f"Text conservation failed: {lost} characters on the page are not in "
+                f"any cell and {extra} appear in cells more often than on the page.")
+    if _aligned_neighbour_row(cand, blocks):
+        return ("A row of text just above or below the table is split into the "
+                "table's columns: it may be a header or row the table lost.")
+    return ""
+
+
+_NEIGHBOUR_PITCH = 1.6     # look this many row pitches above and below the table
+_SEGMENT_GAP = 10.0        # spans further apart than this are separate cells
+
+
+def _aligned_neighbour_row(cand: TableCandidate, blocks: list[Block]) -> bool:
+    """A text row just outside the table whose pieces fall in 2+ of its columns.
+
+    Both sources can lose the same row (a header drawn outside the tagged
+    table, a row above the first rule), and then they agree on a wrong
+    table. A caption is one piece; a lost row splits at the column gaps.
+    """
+    cols: dict[int, list[float]] = {}
+    tops: list[float] = []
+    for row in cand.rows:
+        ys = [ln.bbox[1] for cell in row for ln in cell]
+        if ys:
+            tops.append(min(ys))
+        for c, cell in enumerate(row):
+            for ln in cell:
+                b = cols.get(c)
+                cols[c] = ([ln.bbox[0], ln.bbox[2]] if b is None else
+                           [min(b[0], ln.bbox[0]), max(b[1], ln.bbox[2])])
+    if len(cols) < 2 or len(tops) < 2 or len(cand.pages) != 1:
+        return False
+    page = cand.pages[0]
+    tops.sort()
+    pitch = sorted(b - a for a, b in zip(tops, tops[1:]))[(len(tops) - 1) // 2]
+    x0 = min(v[0] for v in cols.values())
+    x1 = max(v[1] for v in cols.values())
+    y0 = min(ln.bbox[1] for r in cand.rows for cell in r for ln in cell)
+    y1 = max(ln.bbox[3] for r in cand.rows for cell in r for ln in cell)
+    bands = ((y0 - _NEIGHBOUR_PITCH * pitch, y0 - 0.5), (y1 + 0.5, y1 + _NEIGHBOUR_PITCH * pitch))
+    for lo, hi in bands:
+        spans = sorted((s for blk in blocks if blk.page_num == page for ln in blk.lines
+                        for s in ln.spans if s.text.strip()
+                        and lo <= (s.bbox[1] + s.bbox[3]) / 2 <= hi
+                        and x0 - 2 <= (s.bbox[0] + s.bbox[2]) / 2 <= x1 + 2),
+                       key=lambda s: s.bbox[0])
+        segs: list[list[float]] = []
+        for sp in spans:
+            if segs and sp.bbox[0] - segs[-1][1] < _SEGMENT_GAP:
+                segs[-1][1] = max(segs[-1][1], sp.bbox[2])
+            else:
+                segs.append([sp.bbox[0], sp.bbox[2]])
+        if len(segs) < 2:
+            continue
+        hit = {c for a, b in segs for c, (ca, cb) in cols.items()
+               if a < cb - 1 and b > ca + 1}
+        if len(hit) >= 2 and all(any(a < cb - 1 and b > ca + 1 for ca, cb in cols.values())
+                                 for a, b in segs):
+            return True
+    return False
+
+
 def _damaged_text(cand: TableCandidate) -> str:
     """Characters showing that the PDF's own text layer is wrong."""
     bad = sorted({ch for row in cand.text_rows() for cell in row for ch in cell
@@ -571,18 +671,23 @@ def select_tables(tomd_sections: list[Section],
                   ruled: list[TableCandidate],
                   tagged: list[TableCandidate],
                   blocks: list[Block],
-                  polls: list[TableCandidate] = ()) -> list[Section]:
+                  polls: list[TableCandidate] = (),
+                  rejected: list[TableCandidate] | None = None) -> list[Section]:
     """Choose one table per region from the three extractors.
 
     Primary version by source priority (tags, polls, ruling lines, text positions),
     skipping versions that fail the rule checks. Confidence:
       - another source agrees cell for cell, or tomd's
         reading is a correct subset of a ruled table -> HIGH
-      - only one source found the table            -> HIGH
+      - only one source found the table            -> UNCERTAIN
       - other sources found it but disagree        -> UNCERTAIN, and every
         version is kept for the prompts file
-    A text-position table that fails the rule checks and has no better
-    version is dropped, so its blocks flow back into normal processing.
+      - the cells lose or duplicate text of the
+        table's area (conservation_error)          -> UNCERTAIN
+    A candidate that fails the rule checks and has no better version is
+    dropped, so its blocks flow back into normal processing. Dropped
+    candidates from the drawing and tag sources are appended to `rejected`
+    when given: their area probably is a table, so flag.py marks it.
     """
     tomd = [candidate_from_section(s) for s in tomd_sections]
     # Continuation fragments (the last rows of a table on the next page) only
@@ -609,26 +714,41 @@ def select_tables(tomd_sections: list[Section],
         # drawn around a poll is not another reading of the poll.
         others = [c for c in settled if c is not primary and c.source != primary.source
                   and not _is_bad(c) and _same_region(primary, c)]
-        if not others or any(candidates_agree(primary, o) or partial_reading(primary, o)
-                             for o in others):
-            conf = Confidence.HIGH
-        else:
+        # HIGH only when an independent source produced the same table.
+        # A single source, however plausible, is UNCERTAIN: measured on fresh
+        # papers, single-source tables carry most silent errors.
+        notes = []
+        # (a tomd reading that is an exact subset of a ruled table counts:
+        # the ruled table's extra rows are the part tomd could not see)
+        exact = any(candidates_agree(primary, o) for o in others)
+        agree = exact or any(partial_reading(primary, o) for o in others)
+        conf = Confidence.HIGH if agree else Confidence.UNCERTAIN
+        if not agree:
+            notes.append("Only one table source produced this table." if not others else
+                         "The table sources disagree; every version is below.")
+        lost = conservation_error(primary, blocks)
+        if lost:
             conf = Confidence.UNCERTAIN
+            notes.append(lost)
         damaged = _damaged_text(primary)
         if damaged:
             conf = Confidence.UNCERTAIN
-        sec = _to_section(primary, conf, others)
-        if damaged:
-            sec.metadata["table_note"] = (
+            notes.append(
                 "The PDF's text layer is damaged in this table (characters such as "
                 f"{damaged} are wrong in the file itself, e.g. math italics written "
                 "without their last hex digit). Read the symbols from the page image.")
+        sec = _to_section(primary, conf, others)
+        if notes:
+            sec.metadata["table_note"] = " ".join(notes)
+        sec.metadata["table_agreement"] = "exact" if exact else "subset" if agree else "none"
         out.append(sec)
         _log.debug("Table p%d %dx%d from %s: %s", primary.pages[0], *primary.shape,
                    primary.source, conf.value)
         remaining = [c for c in remaining if not any(c is x for x in settled)]
     for c in remaining:
         _log.debug("Dropping %s table candidate on page %d: %s", c.source, c.pages[0], c.flags)
+        if rejected is not None and c.source != "tomd":
+            rejected.append(c)
     return out
 
 

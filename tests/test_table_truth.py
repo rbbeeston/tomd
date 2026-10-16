@@ -60,10 +60,8 @@ KNOWN_GAPS = {
     "p3633r0-t1": "held-out not detected (LaTeX)",
     "p3691r1-t8": "held-out partly extracted (LaTeX)",
     "p3691r1-t9": "held-out partly extracted (LaTeX)",
-    "p3813r0-t2": "held-out not detected (macOS)",
     "p3866r0-t1": "held-out not detected (Typst)",
     "p3977r0-t2": "held-out not detected (LaTeX)",
-    "p4016r0-t14": "held-out text nearly right (pypdf)",
     "p4016r0-t16": "held-out partly extracted (pypdf)",
     "p4016r0-t17": "held-out not detected (pypdf)",
     "p4016r0-t20": "held-out mostly wrong (pypdf)",
@@ -89,6 +87,7 @@ KNOWN_FALSE_TABLES = {
     "p3813r0": 1,
     "p4016r0": 3,
     "p4089r1": 1,
+    "p4100r1": 1,      # front-matter key/value block, emitted uncertain
     "p4124r0": 1,
     "p4195r0": 1,
 }
