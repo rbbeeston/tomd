@@ -1,0 +1,307 @@
+{
+ "paper": "p4098r1",
+ "tables": [
+  {
+   "id": "p4098r1-t1",
+   "pages": [
+    0
+   ],
+   "rows": [
+    [
+     "Document Number:",
+     "P4098R1"
+    ],
+    [
+     "Date:",
+     "2026-05-01"
+    ],
+    [
+     "Intent:",
+     "Inform"
+    ],
+    [
+     "Audience:",
+     "WG21"
+    ],
+    [
+     "Reply-to:",
+     "Vinnie Falco vinnie.falco@gmail.com C++ Alliance Proposal Team"
+    ]
+   ],
+   "group": null,
+   "source": "typed",
+   "note": "title-page metadata block; Reply-to value spans 2 lines",
+   "scope": "front-matter"
+  },
+  {
+   "id": "p4098r1-t2",
+   "pages": [
+    2
+   ],
+   "rows": [
+    [
+     "Claim",
+     "Source",
+     "Year",
+     "Evidence"
+    ],
+    [
+     "\"we want to be able to have a single thread pool object that can be used for all of the above use cases. In real world applications, the use cases do not always exist in isolation.\"",
+     "P0285R0 [9]",
+     "2016",
+     "No survey of applications that mix networking and parallel algorithm executors on the same pool. No deployment data showing friction from separate pools."
+    ],
+    [
+     "\"This unified executor proposal serves the use cases of those independent proposals with a single consistent programming model.\"",
+     "P0443R0 [10]",
+     "2016",
+     "No prototype demonstrating that the unified model serves all three use cases. No experiment comparing unified and domain-specific approaches."
+    ],
+    [
+     "\"each facility's unique interface necessitates an entirely different implementation... the problem worsens as the library introduces new functions.\"",
+     "P0761R2 [11]",
+     "2018",
+     "One hypothetical code snippet. P0761R2 Section 2 constructs a parallel_for with an if/else chain over OpenMP, GPU, and thread pool. Authored by the proposal authors, not drawn from a deployed codebase. No measurement from a real standard library implementation."
+    ],
+    [
+     "\"P0443 represents a significant body of compromise and consensus seeking.\"",
+     "P1791R0 [12]",
+     "2019",
+     "The breadth of participation is documented (Google, NVIDIA, Sandia, Codeplay, Facebook, etc.). More than 100 papers. This is evidence of effort. It is not evidence that the unification preserved domain semantics."
+    ],
+    [
+     "\"while they may be essential in a particular domain, they were not universal\"",
+     "P1791R0 [12]",
+     "2019",
+     "The statement is an acknowledgment that domain-specific requirements were removed during unification. No analysis of what each domain lost."
+    ],
+    [
+     "\"some reduction in usability, due to the increased complexity of the unified interface\"",
+     "P2469R0 [13]",
+     "2021",
+     "The authors of the unified proposal acknowledge the cost. No measurement of the magnitude."
+    ]
+   ],
+   "group": "g1",
+   "source": "typed",
+   "note": "ruled split superscript ref into its own column and omitted header; typed from text layer per shaded/ruled rows, checked against crop",
+   "scope": "table"
+  },
+  {
+   "id": "p4098r1-t3",
+   "pages": [
+    3
+   ],
+   "rows": [
+    [
+     "Claim",
+     "Source",
+     "Year",
+     "Evidence"
+    ],
+    [
+     "\"Any errors that happen... are handled in an implementation-defined manner... no generic code can respond to asynchronous errors in a portable way.\"",
+     "P1525R0 [14]",
+     "2019",
+     "Four error-handling strategies documented. Appendix B demonstrates a fallback_executor using the Sender/Receiver error channel. Analysis is under the work framing only (P4095R0 [4] Section 4)."
+    ],
+    [
+     "\"It is not possible to build this kind of non-allocating executor-schedule operation if one-way execute() is the basis operation.\"",
+     "P1525R0 [14]",
+     "2019",
+     "Appendix C demonstrates a thread_dispatcher with zero-allocation scheduling via co_await ex.schedule(). The demonstration is valid under the work framing."
+    ],
+    [
+     "\"we cannot implement schedule generally in terms of one-way execute.\"",
+     "P1525R0 [14]",
+     "2019",
+     "Appendix A demonstrates the reverse: execute implemented in terms of schedule and submit. The asymmetry is demonstrated under the work framing."
+    ],
+    [
+     "\"Eliminate OneWayExecutor, BulkOneWayExecutor, and interface-changing properties.\"",
+     "P1658R0 [15]",
+     "2019",
+     "No analysis of what networking loses when the continuation property is removed. No discussion of the continuation framing."
+    ]
+   ],
+   "group": "g2",
+   "source": "typed",
+   "note": "ruled split superscript ref into its own column and omitted header; typed from text layer per shaded/ruled rows, checked against crop",
+   "scope": "table"
+  },
+  {
+   "id": "p4098r1-t4",
+   "pages": [
+    4
+   ],
+   "rows": [
+    [
+     "Claim",
+     "Source",
+     "Year",
+     "Evidence"
+    ],
+    [
+     "\"SG1 has decided that the Networking TS should not be merged into the C++ working paper before executors go in.\"",
+     "P1256R0 [16]",
+     "2018",
+     "Published decision. The coupling is a fact."
+    ],
+    [
+     "\"How blocked is networking on the executors wording process?\"",
+     "P2130R0 [17]",
+     "2020",
+     "Pablo Halpern's question in the Prague minutes. No published answer quantifying the degree of blockage."
+    ],
+    [
+     "\"we should not standardize the Networking TS as it's currently designed. The problem is the use of a P0443 executor.\"",
+     "P2464R0 [18]",
+     "2021",
+     "The analysis is under the work framing. No analysis under the continuation framing (P4096R0 [5] Section 2)."
+    ],
+    [
+     "\"Stop spending energy on standardizing the Networking TS for C++23.\"",
+     "P2464R0 [18]",
+     "2021",
+     "Published recommendation. The committee acted on it."
+    ]
+   ],
+   "group": "g3",
+   "source": "typed",
+   "note": "ruled split superscript ref into its own column and omitted header; typed from text layer per shaded/ruled rows, checked against crop",
+   "scope": "table"
+  },
+  {
+   "id": "p4098r1-t5",
+   "pages": [
+    5
+   ],
+   "rows": [
+    [
+     "Claim",
+     "Source",
+     "Year",
+     "Evidence"
+    ],
+    [
+     "\"A P0443 executor is not an executor. It's a work-submitter.\"",
+     "P2464R0 [18]",
+     "2021",
+     "P2464R0 provides analysis under the work framing. No analysis under the continuation framing at the time. P4096R0 [5] Section 4 provides the continuation-framing analysis retroactively."
+    ],
+    [
+     "\"it just plain can't handle errors that occur after submission. That's an irrecoverable data loss\"",
+     "P2464R0 [18]",
+     "2021",
+     "P2464R0 provides analysis of the execute(F&&) signature. No timeline analysis of when error information exists. P4096R0 [5] Section 4.3 provides the timeline analysis retroactively."
+    ],
+    [
+     "\"Composing Networking TS completion handlers or asynchronous operations... seems like an ad-hoc and non-generic exercise. Whether they were designed for or ever deployed in larger-scale compositions... I don't know.\"",
+     "P2464R0 [18]",
+     "2021",
+     "Boost.Beast (2017) deployed three layers of composed async operations using hand-written state machines. P2464R0 was right that the Networking TS had no generic algorithmic composition mechanism. P4096R0 [5] Section 4.3 concedes this point."
+    ],
+    [
+     "\"C++ programmers will write thousands of these executors.\"",
+     "P2464R0 [18]",
+     "2021",
+     "No survey of executor implementations. No measurement of how many executors exist in deployed codebases."
+    ]
+   ],
+   "group": "g4",
+   "source": "typed",
+   "note": "ruled split superscript ref into its own column and omitted header; typed from text layer per shaded/ruled rows, checked against crop",
+   "scope": "table"
+  },
+  {
+   "id": "p4098r1-t6",
+   "pages": [
+    6
+   ],
+   "rows": [
+    [
+     "Claim",
+     "Source",
+     "Year",
+     "Evidence"
+    ],
+    [
+     "\"The sender/receiver model (P2300) is a good basis for most asynchronous use cases, including networking, parallelism, and GPUs.\" (SF:24 / WF:16 / N:3 / WA:6 / SA:3)",
+     "P2453R0 [7]",
+     "2021",
+     "Consensus in favor. No published prototype of sender-based networking at the time of the vote. No published deployment of sender-based networking as of 2026."
+    ],
+    [
+     "\"We believe we need one grand unified model for asynchronous execution in the C++ Standard Library\" (SF:4 / WF:9 / N:5 / WA:5 / SA:1)",
+     "P2453R0 [7]",
+     "2021",
+     "No consensus (leaning in favor). The premise was tested by poll and did not achieve consensus."
+    ],
+    [
+     "\"the number of monthly users of sender/receiver-based async APIs number in the billions\"",
+     "P2470R0 [8]",
+     "2021",
+     "Facebook deployment documented. The deployment is for sender/receiver composition and infrastructure, not for networking."
+    ],
+    [
+     "\"NVIDIA is fully invested in P2300 senders/receivers... we plan to ship in production\"",
+     "P2470R0 [8]",
+     "2021",
+     "Published statement. The deployment is for GPU dispatch and heterogeneous execution, not for networking."
+    ],
+    [
+     "\"Networking in the C++ Standard Library should be based on the sender/receiver model\"",
+     "P2452R0 [19]",
+     "2021",
+     "Poll text. No published prototype of sender-based networking at the time. P2762R2 [20] (2023) documents five routing options for compound I/O results, noting the single-argument error channel is \"somewhat limiting.\""
+    ]
+   ],
+   "group": "g5",
+   "source": "typed",
+   "note": "ruled split superscript ref into its own column and omitted header; typed from text layer per shaded/ruled rows, checked against crop",
+   "scope": "table"
+  },
+  {
+   "id": "p4098r1-t7",
+   "pages": [
+    7
+   ],
+   "rows": [
+    [
+     "Claim",
+     "Source",
+     "Year",
+     "Evidence"
+    ],
+    [
+     "\"The Networking TS is baked, P2300 Sender/Receiver is not\"",
+     "P2469R0 [13]",
+     "2021",
+     "The Networking TS was published as an ISO TS in 2018. Boost.Asio has been deployed for over fifteen years. The TS had no TLS, no HTTP, and an unresolved executor dependency (P1256R0 [16])."
+    ],
+    [
+     "\"ASIO has been shipping this for years, and you can find a similar executor in java.util.concurrent.\"",
+     "P2464R0 [18] (citing proponents)",
+     "2021",
+     "Boost.Asio deployment is documented and real. No published survey of how many Asio users rely on custom executors. No published measurement of Asio executor usage beyond networking."
+    ],
+    [
+     "\"some reduction in usability, due to the increased complexity of the unified interface, but the Networking TS can be updated to work with the new executors\"",
+     "P2469R0 [13]",
+     "2021",
+     "The update was never published. No prototype demonstrating the Networking TS working with P0443R14 executors. No prototype demonstrating the Networking TS working with P2300 schedulers."
+    ]
+   ],
+   "group": "g6",
+   "source": "typed",
+   "note": "ruled split superscript ref into its own column and omitted header; typed from text layer per shaded/ruled rows, checked against crop",
+   "scope": "table"
+  }
+ ],
+ "not_tables": [],
+ "missed_by_all": [
+  "p4098r1-t1"
+ ],
+ "checked_pages": "all",
+ "source_pdf": "https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2026/p4098r1.pdf"
+}

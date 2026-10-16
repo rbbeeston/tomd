@@ -1,0 +1,429 @@
+{
+ "paper": "p4127r0",
+ "tables": [
+  {
+   "id": "p4127r0-t1",
+   "pages": [
+    0
+   ],
+   "rows": [
+    [
+     "Document Number:",
+     "P4127R0"
+    ],
+    [
+     "Date:",
+     "2026-05-01"
+    ],
+    [
+     "Intent:",
+     "Inform"
+    ],
+    [
+     "Audience:",
+     "SG1, LEWG"
+    ],
+    [
+     "Reply-to:",
+     "Vinnie Falco vinnie.falco@gmail.com C++ Alliance Proposal Team"
+    ]
+   ],
+   "group": null,
+   "source": "typed",
+   "note": "title-page metadata block",
+   "scope": "front-matter"
+  },
+  {
+   "id": "p4127r0-t2",
+   "pages": [
+    3
+   ],
+   "rows": [
+    [
+     "Customization point",
+     "When it fires",
+     "Before operator new?"
+    ],
+    [
+     "promise_type::operator new",
+     "Frame allocation",
+     "Is operator new"
+    ],
+    [
+     "std::coroutine_traits",
+     "Compile time (selects promise_type)",
+     "Compile time only"
+    ],
+    [
+     "initial_suspend",
+     "After frame creation, before coroutine body",
+     "No"
+    ],
+    [
+     "await_transform",
+     "When parent co_awaits the child's return value",
+     "No"
+    ],
+    [
+     "operator co_await",
+     "Same as await_transform (operand already evaluated)",
+     "No"
+    ],
+    [
+     "await_ready / await_suspend / await_resume",
+     "After await_transform",
+     "No"
+    ],
+    [
+     "final_suspend",
+     "After coroutine body completes",
+     "No"
+    ],
+    [
+     "return_value / return_void",
+     "At co_return",
+     "No"
+    ],
+    [
+     "yield_value",
+     "At co_yield",
+     "No"
+    ],
+    [
+     "unhandled_exception",
+     "On exception",
+     "No"
+    ]
+   ],
+   "group": "g3",
+   "source": "typed",
+   "note": "ruled3 merged columns, missed header",
+   "scope": "table"
+  },
+  {
+   "id": "p4127r0-t3",
+   "pages": [
+    8
+   ],
+   "rows": [
+    [
+     "Mechanism",
+     "Delivers to operator new?",
+     "Reduces to"
+    ],
+    [
+     "Parameter list",
+     "Yes",
+     "Path A"
+    ],
+    [
+     "coroutine_traits",
+     "Compile time only",
+     "Path A"
+    ],
+    [
+     "await_transform",
+     "No (too late)",
+     "-"
+    ],
+    [
+     "operator co_await",
+     "No (too late)",
+     "-"
+    ],
+    [
+     "initial_suspend",
+     "No (too late)",
+     "-"
+    ],
+    [
+     "Deferred invocation",
+     "Indirectly",
+     "Path A or B"
+    ],
+    [
+     "Promise-based injection",
+     "No (parent inaccessible)",
+     "Path A"
+    ],
+    [
+     "Sender-env bridge wrapper",
+     "First hop only",
+     "Path A"
+    ],
+    [
+     "Thread-local storage",
+     "Yes",
+     "Path B"
+    ],
+    [
+     "Global pmr resource",
+     "Yes",
+     "Path B"
+    ],
+    [
+     "Fiber-local storage",
+     "Yes",
+     "Path B"
+    ]
+   ],
+   "group": "g4",
+   "source": "picked:tomd1",
+   "note": "",
+   "scope": "table"
+  },
+  {
+   "id": "p4127r0-t4",
+   "pages": [
+    9
+   ],
+   "rows": [
+    [
+     "Property",
+     "Path A (allocator_arg_t)",
+     "Path B (thread-local)"
+    ],
+    [
+     "Allocator reaches operator new",
+     "Yes",
+     "Yes"
+    ],
+    [
+     "Signature pollution",
+     "Every coroutine in the chain",
+     "None"
+    ],
+    [
+     "Call-site pollution",
+     "Every co_await forwards the allocator",
+     "None"
+    ],
+    [
+     "Hidden state",
+     "None",
+     "Thread-local write-through cache"
+    ],
+    [
+     "Thread migration",
+     "No concern",
+     "Requires restore on resume"
+    ],
+    [
+     "Per-chain scoping",
+     "Explicit in parameters",
+     "Requires protocol discipline"
+    ],
+    [
+     "Ergonomic cost",
+     "High (viral parameter threading)",
+     "Low (transparent to coroutine authors)"
+    ]
+   ],
+   "group": "g5",
+   "source": "picked:tomd2",
+   "note": "",
+   "scope": "table"
+  },
+  {
+   "id": "p4127r0-t5",
+   "pages": [
+    12
+   ],
+   "rows": [
+    [
+     "Choice",
+     "Separately compiled?",
+     "Any allocator?",
+     "Virtual?"
+    ],
+    [
+     "auto alloc",
+     "No",
+     "Yes",
+     "No"
+    ],
+    [
+     "Fixed allocator",
+     "Yes",
+     "PMR only",
+     "Yes"
+    ],
+    [
+     "Path B (no param)",
+     "Yes",
+     "Yes",
+     "Yes"
+    ]
+   ],
+   "group": "g6",
+   "source": "picked:tomd3",
+   "note": "",
+   "scope": "table"
+  },
+  {
+   "id": "p4127r0-t6",
+   "pages": [
+    14
+   ],
+   "rows": [
+    [
+     "Platform category",
+     "Coroutines",
+     "thread_local",
+     "PMR",
+     "Heap"
+    ],
+    [
+     "Desktop (Linux, Windows, macOS)",
+     "Yes",
+     "Yes",
+     "Yes",
+     "Yes"
+    ],
+    [
+     "Mobile (iOS, Android)",
+     "Yes",
+     "Yes",
+     "Yes",
+     "Yes"
+    ],
+    [
+     "Game consoles (Xbox, PS5)",
+     "Yes",
+     "Yes",
+     "Yes",
+     "Yes"
+    ],
+    [
+     "Full RTOS (QNX, Zephyr, VxWorks)",
+     "Yes",
+     "Yes",
+     "Hosted",
+     "Yes"
+    ],
+    [
+     "Lightweight RTOS (FreeRTOS, Pico)",
+     "Partial",
+     "No",
+     "No",
+     "Yes"
+    ],
+    [
+     "Bare metal (Cortex-M, RISC-V)",
+     "Partial",
+     "No",
+     "No",
+     "Rare"
+    ],
+    [
+     "GPU device code (CUDA, SYCL)",
+     "No",
+     "No",
+     "No",
+     "No"
+    ]
+   ],
+   "group": "g10",
+   "source": "picked:tomd4",
+   "note": "",
+   "scope": "table"
+  },
+  {
+   "id": "p4127r0-t7",
+   "pages": [
+    15
+   ],
+   "rows": [
+    [
+     "Context",
+     "Wrong value",
+     "Consequence"
+    ],
+    [
+     "Executor",
+     "Coroutine runs on the wrong thread",
+     "Data races, UB"
+    ],
+    [
+     "Stop token",
+     "Cancellation does not propagate",
+     "Hangs, deadlocks"
+    ],
+    [
+     "Frame allocator",
+     "Frame allocated from a different memory pool",
+     "Suboptimal allocation strategy"
+    ]
+   ],
+   "group": "g7",
+   "source": "edited:tomd5",
+   "note": "tomd5 missed wrapped last row Frame allocator",
+   "scope": "table"
+  },
+  {
+   "id": "p4127r0-t8",
+   "pages": [
+    16
+   ],
+   "rows": [
+    [
+     "Property",
+     "allocator_arg_t",
+     "Thread-local"
+    ],
+    [
+     "Failure mode",
+     "Wrong allocator, program correct",
+     "Wrong allocator, program correct"
+    ],
+    [
+     "Who can cause the failure",
+     "Every application developer at every call site",
+     "Library author writing a custom promise type"
+    ],
+    [
+     "Frequency of opportunity",
+     "Every co_await in every coroutine",
+     "Once per promise type implementation"
+    ],
+    [
+     "Prevention",
+     "Programmer discipline at every call site",
+     "Use the standard promise mixin"
+    ]
+   ],
+   "group": "g9",
+   "source": "edited:tomd6",
+   "note": "tomd6 had only first body row",
+   "scope": "table"
+  }
+ ],
+ "not_tables": [
+  {
+   "group": "g1",
+   "pages": [
+    2
+   ],
+   "reason": "prose page, garbled column fragments"
+  },
+  {
+   "group": "g2",
+   "pages": [
+    3
+   ],
+   "reason": "prose page, garbled column fragments"
+  },
+  {
+   "group": "g8",
+   "pages": [
+    16
+   ],
+   "reason": "prose/code region, garbled column fragments"
+  }
+ ],
+ "missed_by_all": [
+  "p4127r0-t1"
+ ],
+ "checked_pages": "all",
+ "source_pdf": "https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2026/p4127r0.pdf"
+}

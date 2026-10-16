@@ -1,0 +1,119 @@
+{
+ "paper": "p4092r1",
+ "tables": [
+  {
+   "id": "p4092r1-t1",
+   "pages": [
+    0
+   ],
+   "rows": [
+    [
+     "Document Number:",
+     "P4092R1"
+    ],
+    [
+     "Date:",
+     "2026-05-01"
+    ],
+    [
+     "Intent:",
+     "Inform"
+    ],
+    [
+     "Audience:",
+     "LEWG"
+    ],
+    [
+     "Reply-to:",
+     "Vinnie Falco vinnie.falco@gmail.com Steve Gerbino steve@gerbino.co C++ Alliance Proposal Team"
+    ]
+   ],
+   "group": null,
+   "source": "typed",
+   "note": "unruled title-page metadata block; multi-line Reply-to joined",
+   "scope": "front-matter"
+  },
+  {
+   "id": "p4092r1-t2",
+   "pages": [
+    3
+   ],
+   "rows": [
+    [
+     "Region",
+     "What the code sees"
+    ],
+    [
+     "Above the floor",
+     "error_code alone - composition works"
+    ],
+    [
+     "Below the floor",
+     "(error_code, size_t) - both values intact"
+    ]
+   ],
+   "group": "g2",
+   "source": "picked:tomd1",
+   "note": "ruled2 merged following prose and lost header",
+   "scope": "table"
+  },
+  {
+   "id": "p4092r1-t3",
+   "pages": [
+    4
+   ],
+   "rows": [
+    [
+     "Property",
+     "execution::task",
+     "Bridge"
+    ],
+    [
+     "Routine I/O errors become exceptions",
+     "Yes (via AS-EXCEPT-PTR)",
+     "No"
+    ],
+    [
+     "Type-erased dispatch",
+     "Yes (promise continuation)",
+     "No"
+    ],
+    [
+     "Allocation beyond coroutine frame",
+     "Yes (inner coroutine frame)",
+     "No"
+    ],
+    [
+     "Requires std::execution::task",
+     "-",
+     "No"
+    ]
+   ],
+   "group": "g4",
+   "source": "picked:tomd2",
+   "note": "",
+   "scope": "table"
+  }
+ ],
+ "not_tables": [
+  {
+   "group": "g1",
+   "pages": [
+    2
+   ],
+   "reason": "body prose with inline code below a code listing"
+  },
+  {
+   "group": "g3",
+   "pages": [
+    4
+   ],
+   "reason": "body prose (6. The Narrowest Abstraction)"
+  }
+ ],
+ "missed_by_all": [
+  "p4092r1-t1"
+ ],
+ "checked_pages": "all",
+ "source_pdf": "https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2026/p4092r1.pdf"
+}

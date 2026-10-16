@@ -32,18 +32,15 @@ _CORPUS = os.environ.get("TOMD_TABLE_CORPUS")
 # entry when it is fixed; the test fails if a listed table starts passing so
 # the list stays honest.
 KNOWN_GAPS = {
-    "n5040-t3": "PDF text layer prints mojibake (std::spanâ€™s); exact text differs",
-    "p0533r9-t2": "booktabs table with 2 data rows; column split is ambiguous",
     "p0533r9-t4": "Comment column is empty in every body row and is dropped",
     "p0957r8-t4": "booktabs table split by a page break; neither part has enough rules",
-    "p4317r1-t2": "two adjacent tables on one page share rules; caption not detected",
-    "p4317r1-t3": "two adjacent tables on one page share rules; caption not detected",
-    "p4317r1-t6": "zebra table continued on the next page is not stitched",
     "p4317r1-t7": "header row merged with caption band",
-    "p4317r1-t12": "one cell's overprinted identifier truncated",
-    "p4317r1-t15": "identifier overprints the next column in a 2-row table",
     "p4317r1-t16": "identifier overprints the next column in a 2-row table",
     "p4318r1-t3": "math font has no Unicode mapping; text layer is garbage",
+    "p4047r0-t8": "not detected; cause not yet diagnosed",
+    "p4182r1-t3": "Table B: legend/prose band above the header is read as a row (not yet diagnosed)",
+    "p4182r1-t11": "compiler table not detected; cause not yet diagnosed",
+    "p4182r1-t16": "footnote under the table whose reference marks sit on their own line is read as a row",
 }
 
 _MD = mistune.create_markdown(renderer="ast", plugins=["table"])

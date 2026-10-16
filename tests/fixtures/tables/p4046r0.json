@@ -1,0 +1,570 @@
+{
+ "paper": "p4046r0",
+ "tables": [
+  {
+   "id": "p4046r0-t1",
+   "pages": [
+    0
+   ],
+   "rows": [
+    [
+     "Document Number:",
+     "P4046R0"
+    ],
+    [
+     "Date:",
+     "2026-05-01"
+    ],
+    [
+     "Intent:",
+     "Inform"
+    ],
+    [
+     "Audience:",
+     "WG21"
+    ],
+    [
+     "Reply-to:",
+     "Vinnie Falco vinnie.falco@gmail.com C++ Alliance Proposal Team"
+    ]
+   ],
+   "group": null,
+   "source": "typed",
+   "note": "unruled metadata block in shaded box; Reply-to value wraps to 2nd line",
+   "scope": "front-matter"
+  },
+  {
+   "id": "p4046r0-t2",
+   "pages": [
+    4
+   ],
+   "rows": [
+    [
+     "Document",
+     "Knowledge Transmitted"
+    ],
+    [
+     "SD-3 [2], SD-4 [3], SD-5 [4]",
+     "Procedure, logistics"
+    ],
+    [
+     "SD-7 [5]",
+     "Formatting, submission"
+    ],
+    [
+     "How to Submit a Proposal [6]",
+     "Process steps"
+    ]
+   ],
+   "group": "g1",
+   "source": "edited:ruled1",
+   "note": "Procedural Documents; ruled1 merged both page-5 tables and lost header",
+   "scope": "table"
+  },
+  {
+   "id": "p4046r0-t3",
+   "pages": [
+    4
+   ],
+   "rows": [
+    [
+     "Document",
+     "Knowledge Transmitted"
+    ],
+    [
+     "SD-8 [7]",
+     "What breaking changes WG21 reserves"
+    ],
+    [
+     "SD-9 [8]",
+     "Default positions on [[nodiscard]], noexcept, etc."
+    ],
+    [
+     "SD-10 [9]",
+     "References to principles (briefly)"
+    ]
+   ],
+   "group": "g1",
+   "source": "picked:tomd1",
+   "note": "Policy Documents; second table in g1",
+   "scope": "table"
+  },
+  {
+   "id": "p4046r0-t4",
+   "pages": [
+    5
+   ],
+   "rows": [
+    [
+     "Document",
+     "Knowledge Transmitted"
+    ],
+    [
+     "P2000R5: Direction for ISO C++",
+     "Vision, priorities"
+    ],
+    [
+     "P0592R5: Bold Overall Plan",
+     "Feature roadmaps"
+    ]
+   ],
+   "group": "g2",
+   "source": "picked:tomd2",
+   "note": "Direction Documents",
+   "scope": "table"
+  },
+  {
+   "id": "p4046r0-t5",
+   "pages": [
+    11
+   ],
+   "rows": [
+    [
+     "Expert",
+     "Knowledge Held"
+    ],
+    [
+     "Bjarne Stroustrup",
+     "Design coherence judgment, connection between proposals and philosophy"
+    ],
+    [
+     "Howard Hinnant",
+     "Library standardization outcomes, field experience principle"
+    ],
+    [
+     "Nico Josuttis",
+     "Integration requirements, historical case studies"
+    ],
+    [
+     "Alisdair Meredith",
+     "Exception hierarchy rationale, design decisions across standards"
+    ]
+   ],
+   "group": null,
+   "source": "typed",
+   "note": "3.5 The Pattern experts table; no group",
+   "scope": "table"
+  },
+  {
+   "id": "p4046r0-t6",
+   "pages": [
+    21
+   ],
+   "rows": [
+    [
+     "Rule File",
+     "Input",
+     "Output",
+     "Purpose"
+    ],
+    [
+     "WG21_CAPTURE.md [20]",
+     "Interview transcript",
+     "*.know.md",
+     "Extract principles and experiences from a single source"
+    ],
+    [
+     "WG21_MERGE.md [21]",
+     "Multiple *.know.md files",
+     "merged.know.md",
+     "Retain only principles corroborated by 2+ independent sources"
+    ],
+    [
+     "WG21_JUDGE.md [22]",
+     "merged.know.md + focus",
+     "WG21_EVAL_*.md",
+     "Generate a paper-scoring model from merged principles"
+    ]
+   ],
+   "group": "g7",
+   "source": "edited:tomd3",
+   "note": "Rule File Inventory; tomd3 misplaced wrapped Purpose lines",
+   "scope": "table"
+  },
+  {
+   "id": "p4046r0-t7",
+   "pages": [
+    23
+   ],
+   "rows": [
+    [
+     "Stage",
+     "Location",
+     "Description"
+    ],
+    [
+     "Source data",
+     "inputs/",
+     "Original interview transcripts"
+    ],
+    [
+     "Extraction rule",
+     "rules/WG21_CAPTURE.md",
+     "Extracts principles from transcripts"
+    ],
+    [
+     "Synthesized knowledge",
+     "knowledge/*.know.md",
+     "Distilled principles and experiences"
+    ],
+    [
+     "Merge rule",
+     "rules/WG21_MERGE.md",
+     "Combines knowledge files"
+    ],
+    [
+     "Merged knowledge",
+     "knowledge/merged.know.md",
+     "11 corroborated principles"
+    ],
+    [
+     "Model generator",
+     "rules/WG21_JUDGE.md",
+     "Generates evaluation models from knowledge"
+    ],
+    [
+     "Evaluation model",
+     "rules/WG21_EVAL_GENERAL.md",
+     "11 scoring criteria, 14/22 threshold"
+    ],
+    [
+     "Evaluations",
+     "evaluations/",
+     "Paper assessments"
+    ]
+   ],
+   "group": null,
+   "source": "typed",
+   "note": "repository processing chain; no group",
+   "scope": "table"
+  },
+  {
+   "id": "p4046r0-t8",
+   "pages": [
+    28
+   ],
+   "rows": [
+    [
+     "#",
+     "Criterion",
+     "Score"
+    ],
+    [
+     "1",
+     "Political Fragility Kills Proposals",
+     "0-2"
+    ],
+    [
+     "2",
+     "Standardize Proven Practice",
+     "0-2"
+    ],
+    [
+     "3",
+     "Complexity Threatens C++",
+     "0-2"
+    ],
+    [
+     "4",
+     "Consensus Collaboration Produces Great Things",
+     "0-2"
+    ],
+    [
+     "5",
+     "Implementation Validates Design",
+     "0-2"
+    ],
+    [
+     "6",
+     "Innovation Requires External Incubation",
+     "0-2"
+    ],
+    [
+     "7",
+     "Institutional Knowledge Degrades Without Capture",
+     "0-2"
+    ],
+    [
+     "8",
+     "Library Complexity Belongs in the Language",
+     "0-2"
+    ],
+    [
+     "9",
+     "Permissive Licensing Maximizes Adoption",
+     "0-2"
+    ],
+    [
+     "10",
+     "Standardize What Was Previously Impossible",
+     "0-2"
+    ],
+    [
+     "11",
+     "Without Agreed Principles, Decisions Drift",
+     "0-2"
+    ],
+    [
+     "",
+     "TOTAL",
+     "X/22"
+    ]
+   ],
+   "group": "g4",
+   "source": "edited:ruled4",
+   "note": "Appendix A Scoring",
+   "scope": "table"
+  },
+  {
+   "id": "p4046r0-t9",
+   "pages": [
+    35
+   ],
+   "rows": [
+    [
+     "#",
+     "Criterion",
+     "Source Principle"
+    ],
+    [
+     "1",
+     "Political Fragility Kills Proposals",
+     "M1"
+    ],
+    [
+     "2",
+     "Standardize Proven Practice",
+     "M2"
+    ],
+    [
+     "3",
+     "Complexity Threatens C++",
+     "M3"
+    ],
+    [
+     "4",
+     "Consensus Collaboration Produces Great Things",
+     "M4"
+    ],
+    [
+     "5",
+     "Implementation Validates Design",
+     "M5"
+    ],
+    [
+     "6",
+     "Innovation Requires External Incubation",
+     "M6"
+    ],
+    [
+     "7",
+     "Institutional Knowledge Degrades Without Capture",
+     "M7"
+    ],
+    [
+     "8",
+     "Library Complexity Belongs in the Language",
+     "M8"
+    ],
+    [
+     "9",
+     "Permissive Licensing Maximizes Adoption",
+     "M9"
+    ],
+    [
+     "10",
+     "Standardize What Was Previously Impossible",
+     "M10"
+    ],
+    [
+     "11",
+     "Without Agreed Principles, Decisions Drift",
+     "M11"
+    ]
+   ],
+   "group": null,
+   "source": "typed",
+   "note": "Appendix A Source Traceability; no group",
+   "scope": "table"
+  },
+  {
+   "id": "p4046r0-t10",
+   "pages": [
+    36
+   ],
+   "rows": [
+    [
+     "#",
+     "Criterion",
+     "Score",
+     ""
+    ],
+    [
+     "1",
+     "Political Fragility Kills Proposals",
+     "1",
+     "PARTIAL"
+    ],
+    [
+     "2",
+     "Standardize Proven Practice",
+     "1",
+     "PARTIAL"
+    ],
+    [
+     "3",
+     "Complexity Threatens C++",
+     "2",
+     "PASS"
+    ],
+    [
+     "4",
+     "Consensus Collaboration Produces Great Things",
+     "1",
+     "PARTIAL"
+    ],
+    [
+     "5",
+     "Implementation Validates Design",
+     "2",
+     "PASS"
+    ],
+    [
+     "6",
+     "Innovation Requires External Incubation",
+     "2",
+     "PASS"
+    ],
+    [
+     "7",
+     "Institutional Knowledge Degrades Without Capture",
+     "2",
+     "PASS"
+    ],
+    [
+     "8",
+     "Library Complexity Belongs in the Language",
+     "1",
+     "PARTIAL"
+    ],
+    [
+     "9",
+     "Permissive Licensing Maximizes Adoption",
+     "1",
+     "PARTIAL"
+    ],
+    [
+     "10",
+     "Standardize What Was Previously Impossible",
+     "2",
+     "PASS"
+    ],
+    [
+     "11",
+     "Without Agreed Principles, Decisions Drift",
+     "2",
+     "PASS"
+    ],
+    [
+     "",
+     "TOTAL",
+     "17/22",
+     ""
+    ]
+   ],
+   "group": "g5",
+   "source": "edited:ruled5",
+   "note": "Appendix B Scoring; 4th column (PASS/PARTIAL) has empty header",
+   "scope": "table"
+  },
+  {
+   "id": "p4046r0-t11",
+   "pages": [
+    44
+   ],
+   "rows": [
+    [
+     "#",
+     "Criterion",
+     "Source Principle"
+    ],
+    [
+     "1",
+     "Political Fragility Kills Proposals",
+     "M1"
+    ],
+    [
+     "2",
+     "Standardize Proven Practice",
+     "M2"
+    ],
+    [
+     "3",
+     "Complexity Threatens C++",
+     "M3"
+    ],
+    [
+     "4",
+     "Consensus Collaboration Produces Great Things",
+     "M4"
+    ],
+    [
+     "5",
+     "Implementation Validates Design",
+     "M5"
+    ],
+    [
+     "6",
+     "Innovation Requires External Incubation",
+     "M6"
+    ],
+    [
+     "7",
+     "Institutional Knowledge Degrades Without Capture",
+     "M7"
+    ],
+    [
+     "8",
+     "Library Complexity Belongs in the Language",
+     "M8"
+    ],
+    [
+     "9",
+     "Permissive Licensing Maximizes Adoption",
+     "M9"
+    ],
+    [
+     "10",
+     "Standardize What Was Previously Impossible",
+     "M10"
+    ],
+    [
+     "11",
+     "Without Agreed Principles, Decisions Drift",
+     "M11"
+    ]
+   ],
+   "group": "g6",
+   "source": "edited:ruled6",
+   "note": "Appendix B Source Traceability",
+   "scope": "table"
+  }
+ ],
+ "not_tables": [
+  {
+   "group": "g3",
+   "pages": [
+    10
+   ],
+   "reason": "inline code spans in a Source: line of body text, not a table"
+  }
+ ],
+ "missed_by_all": [
+  "p4046r0-t1",
+  "p4046r0-t5",
+  "p4046r0-t7",
+  "p4046r0-t9"
+ ],
+ "checked_pages": "all",
+ "source_pdf": "https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2026/p4046r0.pdf"
+}

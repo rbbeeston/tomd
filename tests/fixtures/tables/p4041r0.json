@@ -1,0 +1,352 @@
+{
+ "paper": "p4041r0",
+ "tables": [
+  {
+   "id": "p4041r0-t1",
+   "pages": [
+    0
+   ],
+   "rows": [
+    [
+     "Document Number:",
+     "P4041R0"
+    ],
+    [
+     "Date:",
+     "2026-05-01"
+    ],
+    [
+     "Intent:",
+     "Inform"
+    ],
+    [
+     "Audience:",
+     "LEWG"
+    ],
+    [
+     "Reply-to:",
+     "Vinnie Falco vinnie.falco@gmail.com"
+    ]
+   ],
+   "group": null,
+   "source": "typed",
+   "note": "unruled title-page metadata block",
+   "scope": "front-matter"
+  },
+  {
+   "id": "p4041r0-t2",
+   "pages": [
+    3
+   ],
+   "rows": [
+    [
+     "Category",
+     "Papers / Issues",
+     "Count"
+    ],
+    [
+     "Removals",
+     "P3682R0 [8], P3149R11 [9] (replacing ensure_started)",
+     "2"
+    ],
+    [
+     "Rewrites",
+     "P3481R5 [10] (bulk)",
+     "1"
+    ],
+    [
+     "Architectural fixes",
+     "P3887R1 [11], P3557R3 [12]",
+     "2"
+    ],
+    [
+     "Wording omnibus",
+     "P3396R1 [13]",
+     "1"
+    ],
+    [
+     "Post-adoption adds",
+     "P3433R1 [14], P3284R4 [15], P3570R2 [16], P3552R3 [17], P2079R10 [18], P3149R11 [9], P3927R0 [19]",
+     "7"
+    ],
+    [
+     "LWG defects",
+     "4190 [36], 4206 [37], 4215 [38], 4356 [39], 4368 [40]",
+     "5"
+    ],
+    [
+     "NB ballot",
+     "US 255-384 [41], US 253-386 [42], US 254-385 [43], US 261-391 [44]",
+     "4"
+    ]
+   ],
+   "group": null,
+   "source": "typed",
+   "note": "4.1 Changes by Category; superscript ref marks kept as [n]",
+   "scope": "table"
+  },
+  {
+   "id": "p4041r0-t3",
+   "pages": [
+    3
+   ],
+   "rows": [
+    [
+     "Origin",
+     "Items",
+     "Count"
+    ],
+    [
+     "Sender Sub-Language",
+     "P2855R1, P2999R3, P3175R3, P3187R1, P3303R1, P3373R2, P3557R3, P3570R2, P3682R0, P3718R0, P3826R3, P3941R1, LWG 4190, 4206, 4215, 4368",
+     "16"
+    ],
+    [
+     "Sender Integration",
+     "P3927R0, P3950R0, D3980R0 [20], LWG 4356, US 255-384, US 253-386, US 254-385, US 261-391",
+     "8"
+    ],
+    [
+     "Coroutine-Intrinsic",
+     "-",
+     "0"
+    ]
+   ],
+   "group": null,
+   "source": "typed",
+   "note": "4.2 Direction of Change; second table on same page",
+   "scope": "table"
+  },
+  {
+   "id": "p4041r0-t4",
+   "pages": [
+    5
+   ],
+   "rows": [
+    [
+     "Boundary",
+     "Sender Model Requires",
+     "Coroutine/I/O Cost"
+    ],
+    [
+     "Error channels",
+     "Compile-time channel routing",
+     "(error_code, size_t) cannot route through three channels"
+    ],
+    [
+     "Error returns",
+     "Separate set_error channel",
+     "co_yield with_error(ec); reverses established co_yield semantics"
+    ],
+    [
+     "Frame allocator",
+     "Deferred execution via connect/start",
+     "promise_type::operator new fires before sender machinery"
+    ],
+    [
+     "Symmetric transfer",
+     "Struct composition with void completions",
+     "coroutine_handle<>-returning await_suspend unreachable"
+    ]
+   ],
+   "group": "g1",
+   "source": "edited:ruled1",
+   "note": "header row added",
+   "scope": "table"
+  },
+  {
+   "id": "p4041r0-t5",
+   "pages": [
+    6
+   ],
+   "rows": [
+    [
+     "Date",
+     "Event"
+    ],
+    [
+     "February 2020 (Prague)",
+     "Partial success raised during P1678R2 [25] review. LEWG polls SF:7/F:14/N:9/A:3/SA:0. No resolution."
+    ],
+    [
+     "February 2021 (SG4 telecon)",
+     "Participant states sender/receivers have a loss: no success/partial-success."
+    ],
+    [
+     "July-October 2021 (LEWG)",
+     "Debated across five telecons. LEWG outcome document: \"Better explain how partial success works with senders/receivers.\""
+    ],
+    [
+     "August 2021",
+     "Kohlhoff publishes P2430R0 [24]."
+    ],
+    [
+     "2022-2024",
+     "Six revisions through P2300R10 [7]. Three-channel model unchanged."
+    ],
+    [
+     "2023",
+     "Kühl's P2762R2 [26] preserves Asio's (error_code, size_t) convention."
+    ],
+    [
+     "November 2023 (Kona)",
+     "SG4 polls that networking must use the sender model (SF:5/F:5/N:1/A:0/SA:1)."
+    ],
+    [
+     "November 2024 (Wroclaw)",
+     "Channel question resurfaces during P0260 (Concurrent Queues). Debated across two face-to-face meetings."
+    ],
+    [
+     "February 2025 (Hagenberg)",
+     "Concurrent queue channel question remained open. Poll to reopen withdrawn."
+    ],
+    [
+     "2025-2026",
+     "P3570R2 [16] documents optional<T> / channel model mismatch."
+    ]
+   ],
+   "group": "g2",
+   "source": "edited:ruled2",
+   "note": "header row added; superscript [n] moved to its printed position",
+   "scope": "table"
+  },
+  {
+   "id": "p4041r0-t6",
+   "pages": [
+    7
+   ],
+   "rows": [
+    [
+     "Library",
+     "Symmetric Transfer",
+     "Error Delivery",
+     "Async Model"
+    ],
+    [
+     "cppcoro [49] (Baker)",
+     "coroutine_handle<>",
+     "co_return / exceptions",
+     "Coroutine-native"
+    ],
+    [
+     "folly::coro [50] (Meta)",
+     "coroutine_handle<>",
+     "Exceptions",
+     "Coroutine-native"
+    ],
+    [
+     "Boost.Cobalt [51] (Morgenstern)",
+     "coroutine_handle<>",
+     "co_return / exceptions",
+     "Coroutine-native"
+    ],
+    [
+     "libcoro [52] (Baldwin)",
+     "coroutine_handle<>",
+     "co_return / exceptions",
+     "Coroutine-native"
+    ],
+    [
+     "Boost.Asio (Kohlhoff)",
+     "N/A",
+     "Error codes via as_tuple",
+     "Completion-token"
+    ],
+    [
+     "asyncpp [53] (Kardos)",
+     "Event-based",
+     "co_return / exceptions",
+     "Coroutine-native"
+    ]
+   ],
+   "group": null,
+   "source": "typed",
+   "note": "7. Established Practice",
+   "scope": "table"
+  },
+  {
+   "id": "p4041r0-t7",
+   "pages": [
+    8
+   ],
+   "rows": [
+    [
+     "Domain",
+     "Project",
+     "Status"
+    ],
+    [
+     "TCP networking",
+     "senders-io [54]",
+     "19 stars. \"Still very experimental.\" Requires non-main stdexec branch."
+    ],
+    [
+     "HTTP",
+     "fuchsia [55]",
+     "2 stars, 0 forks. Last commit August 2023."
+    ],
+    [
+     "TLS",
+     "(none found)",
+     ""
+    ],
+    [
+     "File I/O",
+     "senders-io [54]",
+     "Experimental. Documentation sections empty."
+    ],
+    [
+     "Database clients",
+     "(none found)",
+     ""
+    ],
+    [
+     "DNS resolution",
+     "(none found)",
+     ""
+    ],
+    [
+     "Signal handling",
+     "(none found)",
+     ""
+    ],
+    [
+     "Bare metal / embedded",
+     "Intel cpp-baremetal-senders-and-receivers [56]",
+     "288 stars. P2300 subset. \"Coroutines are not considered at all.\""
+    ],
+    [
+     "GPU / heterogeneous",
+     "stdexec [48]",
+     "1,300+ stars. Reference implementation. Active."
+    ],
+    [
+     "HFT / low-latency",
+     "(reported, proprietary)",
+     "Cannot be independently verified."
+    ]
+   ],
+   "group": "g3",
+   "source": "edited:ruled3",
+   "note": "header row added; superscript [n] after project name; tomd split it into 3 fragments",
+   "scope": "table"
+  }
+ ],
+ "not_tables": [
+  {
+   "group": "g4",
+   "pages": [
+    9
+   ],
+   "reason": "body text (9. Open Question / Acknowledgments prose)"
+  }
+ ],
+ "missed_by_all": [
+  "p4041r0-t1",
+  "p4041r0-t2",
+  "p4041r0-t3",
+  "p4041r0-t6"
+ ],
+ "checked_pages": "all",
+ "source_pdf": "https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2026/p4041r0.pdf"
+}

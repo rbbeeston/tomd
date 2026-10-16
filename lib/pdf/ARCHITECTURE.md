@@ -157,7 +157,11 @@ Tables follow the same rule as text: independent extractions are compared and ag
 - Grid tables: `page.find_tables(strategy="lines")` for tables ruled in both directions.
 - Rule-band tables (booktabs, ReportLab): horizontal rules and the edges of shaded row boxes that share an x-extent form a group; rows are the bands between them (booktabs top/mid/bottom rules: one row per text line). A band holding a single line that starts left of the padded cell text is a caption and splits the group into two tables. The revtex style (header above a doubled rule, rule above each row) is recognised.
 - Columns: x ranges no word covers (accepted when wide, or when 3+ distinct word pairs straddle them) plus x positions where a word starts after a gap in 60% of rows (survives text overrunning into the next column).
-- Cell text is rebuilt from the page's own character runs, so every character belongs to one word even where columns overprint, and the PDF's spaces are kept. Fonts, bold, italic and monospace survive.
+- Cell text is rebuilt from the page's own character runs, so every character belongs to one word even where columns overprint (text that jumps back in x starts a new word), and the PDF's spaces are kept. Fonts, bold, italic and monospace survive.
+- Superscript reference marks (smaller, shifted up at top and bottom, at most 8 characters) are attached to the line they belong to, so `P3481R5 [10]` keeps its order, and they never define columns or caption lines.
+- Caption bands are not rows: a band is a caption when every line starts left of the padded cell text, or when it holds at most three lines of prose that either start off the cell-text edge or leave the band mostly empty. A caption between rules of the same width splits them into separate tables.
+- Header-row gaps define a column when every row whose text crosses that x starts a word exactly there (an overrunning identifier with the next column drawn over it); a centred column does not qualify.
+- Shaded boxes up to 90pt tall count as row bounds (multi-line headers); taller boxes are panels.
 
 **T16. Tagged-PDF tables**
 - `tagged.py:extract_tagged_tables`
@@ -171,11 +175,11 @@ Tables follow the same rule as text: independent extractions are compared and ag
 **T16a. Selection and confidence**
 - `table.py:select_tables`
 - Ruled candidates continued on the next page are stitched (`stitch_pages`: same columns and x-extent, no text after the first part or before the second; a repeated header row is dropped).
-- Rule checks (`table_flags`): ragged columns, empty cells, cells that look like split code, constant first column, TOC, bullet list, code-comment column, reference list, single-cell rows. Tags are exempt from the ragged/empty checks.
+- Rule checks (`table_flags`): ragged columns (rows with an empty key cell, more cells than usual, or a single cell in a 3+ column table), empty cells, cells that look like split code, constant first column, TOC (ascending page numbers), bullet list, code-comment column, reference list, single-cell rows, sparse two-row tables. Tags are exempt from the ragged/empty checks.
 - Candidates are grouped by position. The primary is the first candidate without a bad flag in the order tags, poll, grid, malformed tags, rule-band, text positions.
 - Confidence: HIGH when another source agrees cell for cell or no other source saw the table; UNCERTAIN when another source's reading disagrees. Only readings that pass the rule checks and lie mostly within the primary's rows count (a box drawn around a poll is not a reading of it). Uncertain tables keep those versions for the prompts file.
 - A text-position table that fails the checks and has no better version is dropped and its blocks flow back into normal processing (e.g. code synopses with a highlighted keyword column become code).
-- `remove_table_regions` removes the chosen tables' lines from both the MuPDF and spatial paths.
+- `remove_table_regions` removes the chosen tables' lines from both the MuPDF and spatial paths, except lines whose words the table did not capture: text is never lost to a table.
 
 **T16b. Table section insertion**
 - `__init__.py:_run_pipeline`

@@ -1,0 +1,664 @@
+{
+ "paper": "p4100r1",
+ "tables": [
+  {
+   "id": "p4100r1-t1",
+   "pages": [
+    0
+   ],
+   "rows": [
+    [
+     "Document Number:",
+     "P4100R1"
+    ],
+    [
+     "Date:",
+     "2026-05-01"
+    ],
+    [
+     "Intent:",
+     "Inform"
+    ],
+    [
+     "Audience:",
+     "LEWG"
+    ],
+    [
+     "Reply-to:",
+     "Vinnie Falco vinnie.falco@gmail.com Steve Gerbino steve@cppalliance.org Michael Vandeberg michael@cppalliance.org Mungo Gill mungo@cppalliance.org Mohammad Nejati mohammad@cppalliance.org C++ Alliance Proposal Team"
+    ]
+   ],
+   "group": null,
+   "source": "typed",
+   "note": "title-page metadata block",
+   "scope": "front-matter"
+  },
+  {
+   "id": "p4100r1-t2",
+   "pages": [
+    3
+   ],
+   "rows": [
+    [
+     "Library",
+     "Role",
+     "Status"
+    ],
+    [
+     "Capy",
+     "Abstract layer: execution model, buffer concepts, stream concepts, concurrency primitives",
+     "Published. Pure C++20. No platform dependency"
+    ],
+    [
+     "Corosio",
+     "Platform layer: sockets, timers, DNS, TLS, signals",
+     "Published. IOCP, epoll, kqueue, select. Requires Capy"
+    ]
+   ],
+   "group": null,
+   "source": "typed",
+   "note": "2.1 Capy/Corosio table; shaded header, zebra",
+   "scope": "table"
+  },
+  {
+   "id": "p4100r1-t3",
+   "pages": [
+    3
+   ],
+   "rows": [
+    [
+     "Library",
+     "Role",
+     "Status"
+    ],
+    [
+     "Boost.Http",
+     "HTTP/1.1 server, sans-I/O",
+     "In development. Compiled once against any_stream, ABI-stable"
+    ],
+    [
+     "Boost.Burl",
+     "HTTP client",
+     "In development"
+    ],
+    [
+     "Boost.Beast2",
+     "Successor to Boost.Beast",
+     "In development"
+    ],
+    [
+     "Boost.WebSocket",
+     "WebSocket protocol, sans-I/O",
+     "Planned"
+    ]
+   ],
+   "group": "g12",
+   "source": "edited:tomd1",
+   "note": "tomd1 missed last row Boost.WebSocket",
+   "scope": "table"
+  },
+  {
+   "id": "p4100r1-t4",
+   "pages": [
+    3
+   ],
+   "rows": [
+    [
+     "Library",
+     "Author",
+     "Status"
+    ],
+    [
+     "Boost.MySQL",
+     "Ruben Perez",
+     "v2 planned on Capy/Corosio; Redis proof-of-concept validates the path"
+    ],
+    [
+     "Boost.Redis",
+     "Marcelo Zimbres Silva",
+     "Experimental port completed; conversion reports published on the Boost Developers Mailing List. Early benchmark results in Section 2.3"
+    ],
+    [
+     "Boost.Postgres",
+     "(upcoming)",
+     "Building on Corosio from day one"
+    ]
+   ],
+   "group": "g13",
+   "source": "edited:tomd2",
+   "note": "tomd2 had only first row; added Boost.Redis, Boost.Postgres",
+   "scope": "table"
+  },
+  {
+   "id": "p4100r1-t5",
+   "pages": [
+    4
+   ],
+   "rows": [
+    [
+     "Client",
+     "Normalised time"
+    ],
+    [
+     "boost_redis_corosio",
+     "1.00"
+    ],
+    [
+     "boost_redis_asio_cb",
+     "1.35"
+    ],
+    [
+     "boost_redis_asio_co",
+     "1.73"
+    ],
+    [
+     "redis_rs (Rust)",
+     "4.62"
+    ],
+    [
+     "go_redis (Go)",
+     "22.33"
+    ]
+   ],
+   "group": "g1",
+   "source": "typed",
+   "note": "ruled1 garbled",
+   "scope": "table"
+  },
+  {
+   "id": "p4100r1-t6",
+   "pages": [
+    5
+   ],
+   "rows": [
+    [
+     "Problem",
+     "Why C++-specific",
+     "Coroutine resolution"
+    ],
+    [
+     "Template explosion",
+     "Go has no templates",
+     "coroutine_handle<> type erasure eliminates template metaprogramming"
+    ],
+    [
+     "Compile times",
+     "Rust does not have this problem at C++ scale",
+     "any_stream compiles once and ships as a binary"
+    ],
+    [
+     "Allocation control",
+     "Python has no user-facing allocator model",
+     "Frame allocator propagation gives users control where it matters"
+    ],
+    [
+     "ABI stability",
+     "The committee's twenty-year wound",
+     "any_stream's ABI is a vtable - the same contract since 1983"
+    ]
+   ],
+   "group": "g2",
+   "source": "typed",
+   "note": "ruled2 merged columns and missed header",
+   "scope": "table"
+  },
+  {
+   "id": "p4100r1-t7",
+   "pages": [
+    7
+   ],
+   "rows": [
+    [
+     "Ecosystem",
+     "Read",
+     "Write",
+     "Buffer",
+     "Scatter/gather"
+    ],
+    [
+     "BSD (1983)",
+     "read()",
+     "write()",
+     "void* + len",
+     "readv/writev"
+    ],
+    [
+     "POSIX",
+     "readv()",
+     "writev()",
+     "iovec",
+     "iovec[]"
+    ],
+    [
+     "Asio",
+     "async_read_some()",
+     "async_write_some()",
+     "const_buffer",
+     "ConstBufferSequence"
+    ],
+    [
+     "Go",
+     "io.Reader",
+     "io.Writer",
+     "[]byte",
+     "io.ReadFrom"
+    ],
+    [
+     "Rust",
+     "AsyncRead",
+     "AsyncWrite",
+     "&[u8]",
+     "vectored"
+    ],
+    [
+     ".NET",
+     "Stream.ReadAsync()",
+     "Stream.WriteAsync()",
+     "Memory<byte>",
+     "ReadOnlySequence<byte>"
+    ],
+    [
+     "Ours",
+     "ReadStream::read_some()",
+     "WriteStream::write_some()",
+     "const_buffer",
+     "ConstBufferSequence"
+    ]
+   ],
+   "group": "g3",
+   "source": "edited:ruled3",
+   "note": "added header row",
+   "scope": "table"
+  },
+  {
+   "id": "p4100r1-t8",
+   "pages": [
+    9
+   ],
+   "rows": [
+    [
+     "Property",
+     "Abstract",
+     "Concrete",
+     "Native"
+    ],
+    [
+     "Compilation speed",
+     "Fastest",
+     "Fast",
+     "Slowest (platform headers + templates)"
+    ],
+    [
+     "Separate compilation",
+     "Yes",
+     "Yes",
+     "No"
+    ],
+    [
+     "Call overhead",
+     "Virtual dispatch",
+     "Virtual dispatch",
+     "None (direct / inlined)"
+    ],
+    [
+     "API surface",
+     "Protocol-agnostic (bytes)",
+     "Full protocol-specific API",
+     "Same as concrete, fully inlined"
+    ],
+    [
+     "Use case",
+     "Libraries, generic algorithms",
+     "Application code",
+     "Hot paths, benchmarks"
+    ]
+   ],
+   "group": "g4",
+   "source": "edited:ruled4",
+   "note": "added header; dropped caption row; wrapped cell",
+   "scope": "table"
+  },
+  {
+   "id": "p4100r1-t9",
+   "pages": [
+    10
+   ],
+   "rows": [
+    [
+     "#",
+     "Paper",
+     "Abstraction"
+    ],
+    [
+     "1",
+     "IoAwaitable Protocol",
+     "Coroutine execution protocol, executor model"
+    ],
+    [
+     "2",
+     "Coroutine Task",
+     "task<T>, launch functions, thread_pool, system_context"
+    ],
+    [
+     "3",
+     "Executor Utilities",
+     "strand, any_executor"
+    ],
+    [
+     "4",
+     "I/O Buffer Ranges",
+     "Byte-region descriptors and range-based scatter/gather concepts"
+    ],
+    [
+     "5",
+     "Dynamic Buffer",
+     "Growable byte buffer with prepare/commit/data/consume"
+    ],
+    [
+     "6",
+     "Stream Concepts",
+     "Coroutine stream concepts for async byte I/O"
+    ],
+    [
+     "7",
+     "Combinators",
+     "when_all, when_any"
+    ]
+   ],
+   "group": null,
+   "source": "typed",
+   "note": "7.1 Stage One table",
+   "scope": "table"
+  },
+  {
+   "id": "p4100r1-t10",
+   "pages": [
+    10
+   ],
+   "rows": [
+    [
+     "#",
+     "Paper",
+     "Abstraction"
+    ],
+    [
+     "8",
+     "Timers",
+     "Async timer operations"
+    ],
+    [
+     "9",
+     "Signals",
+     "Async signal handling"
+    ],
+    [
+     "10",
+     "Files",
+     "Async file I/O"
+    ],
+    [
+     "11",
+     "TCP",
+     "Sockets, acceptors, endpoints, IP addresses"
+    ],
+    [
+     "12",
+     "DNS",
+     "Async name resolution"
+    ],
+    [
+     "13",
+     "UDP",
+     "Datagram sockets"
+    ],
+    [
+     "14",
+     "TLS",
+     "Transport security wrappers"
+    ]
+   ],
+   "group": null,
+   "source": "typed",
+   "note": "7.2 Stage Two table",
+   "scope": "table"
+  },
+  {
+   "id": "p4100r1-t11",
+   "pages": [
+    17
+   ],
+   "rows": [
+    [
+     "Quarter",
+     "Paper",
+     "Milestone"
+    ],
+    [
+     "Q1 2026",
+     "IoAwaitable Protocol",
+     "P4003R1 published"
+    ],
+    [
+     "Q2 2026",
+     "IoAwaitable Protocol",
+     "First LEWG review at Brno"
+    ],
+    [
+     "Q3 2026",
+     "Coroutine Task",
+     "Paper published"
+    ],
+    [
+     "Q3 2026",
+     "Executor Utilities",
+     "Paper published"
+    ],
+    [
+     "Q3 2026",
+     "I/O Buffer Ranges",
+     "Paper published"
+    ],
+    [
+     "Q3 2026",
+     "Dynamic Buffer",
+     "Paper published"
+    ],
+    [
+     "Q4 2026",
+     "Coroutine Task",
+     "LEWG review"
+    ],
+    [
+     "Q4 2026",
+     "Stream Concepts",
+     "Paper published"
+    ],
+    [
+     "Q4 2026",
+     "Combinators",
+     "Paper published"
+    ],
+    [
+     "Q4 2026",
+     "Executor Utilities",
+     "LEWG review"
+    ],
+    [
+     "Q4 2026",
+     "I/O Buffer Ranges",
+     "LEWG review"
+    ],
+    [
+     "Q4 2026",
+     "Dynamic Buffer",
+     "LEWG review"
+    ]
+   ],
+   "group": "g9",
+   "source": "picked:tomd3",
+   "note": "",
+   "scope": "table"
+  },
+  {
+   "id": "p4100r1-t12",
+   "pages": [
+    18
+   ],
+   "rows": [
+    [
+     "Quarter",
+     "Paper",
+     "Milestone"
+    ],
+    [
+     "Q1 2027",
+     "Stream Concepts",
+     "LEWG review"
+    ],
+    [
+     "Q1 2027",
+     "Combinators",
+     "LEWG review"
+    ],
+    [
+     "Q1 2027",
+     "Timers",
+     "Paper published"
+    ],
+    [
+     "Q2 2027",
+     "Signals, Files",
+     "Papers published"
+    ],
+    [
+     "Q2 2027",
+     "Timers",
+     "LEWG review"
+    ]
+   ],
+   "group": "g10",
+   "source": "picked:tomd4",
+   "note": "g10 covers three stacked tables on p18; 11.2",
+   "scope": "table"
+  },
+  {
+   "id": "p4100r1-t13",
+   "pages": [
+    18
+   ],
+   "rows": [
+    [
+     "Quarter",
+     "Paper",
+     "Milestone"
+    ],
+    [
+     "Q3 2027",
+     "TCP, DNS",
+     "Papers published"
+    ],
+    [
+     "Q3 2027",
+     "Signals, Files",
+     "LEWG review"
+    ],
+    [
+     "Q4 2027",
+     "UDP",
+     "Paper published"
+    ],
+    [
+     "Q4 2027",
+     "TCP",
+     "LEWG review"
+    ]
+   ],
+   "group": "g10",
+   "source": "picked:tomd5",
+   "note": "g10 second stacked table; 11.3",
+   "scope": "table"
+  },
+  {
+   "id": "p4100r1-t14",
+   "pages": [
+    18
+   ],
+   "rows": [
+    [
+     "Quarter",
+     "Paper",
+     "Milestone"
+    ],
+    [
+     "Q1 2028",
+     "DNS, UDP",
+     "LEWG review"
+    ],
+    [
+     "Q2 2028",
+     "TLS",
+     "Paper published"
+    ],
+    [
+     "Q3 2028",
+     "TLS",
+     "LEWG review"
+    ],
+    [
+     "Q4 2028",
+     "Full series",
+     "LWG wording review begins"
+    ]
+   ],
+   "group": "g10",
+   "source": "picked:tomd6",
+   "note": "g10 third stacked table; 11.4",
+   "scope": "table"
+  }
+ ],
+ "not_tables": [
+  {
+   "group": "g5",
+   "pages": [
+    13
+   ],
+   "reason": "prose page, garbled column fragments"
+  },
+  {
+   "group": "g6",
+   "pages": [
+    13
+   ],
+   "reason": "prose page, garbled column fragments"
+  },
+  {
+   "group": "g7",
+   "pages": [
+    13
+   ],
+   "reason": "prose page, garbled column fragments"
+  },
+  {
+   "group": "g8",
+   "pages": [
+    14
+   ],
+   "reason": "prose page, garbled column fragments"
+  },
+  {
+   "group": "g11",
+   "pages": [
+    19
+   ],
+   "reason": "code listing and references list"
+  }
+ ],
+ "missed_by_all": [
+  "p4100r1-t1",
+  "p4100r1-t2",
+  "p4100r1-t9",
+  "p4100r1-t10"
+ ],
+ "checked_pages": "all",
+ "source_pdf": "https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2026/p4100r1.pdf"
+}

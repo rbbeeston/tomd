@@ -1,6 +1,7 @@
 """Markdown and companion prompts file generation."""
 
 import logging
+import re
 
 from .. import format_front_matter
 from .cleanup import normalize_whitespace
@@ -266,7 +267,7 @@ def _render_cell_spans(spans: list, suppress_bold: bool = False) -> str:
     out = rendered[:1]
     for r in rendered[1:]:
         # A word hyphenated at the cell's line break is one word: "effect-" + "parameterized".
-        if out[-1].endswith("-") and r[:1].islower():
+        if re.search(r"[A-Za-z]-$", out[-1]) and r[:1].islower():
             out[-1] += r
         else:
             out.append(r)

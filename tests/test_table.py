@@ -242,7 +242,8 @@ class TestOrphanAbsorption:
 
 class TestRemoveTableRegions:
     def _table(self, *lines):
-        return Section(kind=SectionKind.TABLE, text="table",
+        text = " | ".join(ln.text for ln in lines) + " | in"
+        return Section(kind=SectionKind.TABLE, text=text,
                        confidence=Confidence.HIGH, lines=list(lines), page_num=0)
 
     def test_lines_inside_table_removed(self):
