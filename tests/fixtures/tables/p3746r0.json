@@ -1,0 +1,84 @@
+{
+ "paper": "p3746r0",
+ "tables": [
+  {
+   "id": "p3746r0-t1",
+   "pages": [
+    1
+   ],
+   "rows": [
+    [
+     "SF",
+     "F",
+     "N",
+     "A",
+     "SA"
+    ],
+    [
+     "4",
+     "3",
+     "5",
+     "1",
+     "3"
+    ]
+   ],
+   "group": "g1",
+   "source": "verified-draft",
+   "scope": "table",
+   "note": "slide poll table (left column)"
+  },
+  {
+   "id": "p3746r0-t2",
+   "pages": [
+    1
+   ],
+   "rows": [
+    [
+     "SF",
+     "F",
+     "N",
+     "A",
+     "SA"
+    ],
+    [
+     "5",
+     "9",
+     "0",
+     "2",
+     "1"
+    ]
+   ],
+   "group": "g2",
+   "source": "verified-draft",
+   "scope": "table",
+   "note": "slide poll table (right column)"
+  }
+ ],
+ "not_tables": [
+  {
+   "group": "g3",
+   "pages": [
+    6
+   ],
+   "reason": "code listing with insert highlight on slide"
+  },
+  {
+   "group": "g4",
+   "pages": [
+    6
+   ],
+   "reason": "wording text with insert highlight on slide"
+  },
+  {
+   "group": "g5",
+   "pages": [
+    6
+   ],
+   "reason": "code listing with insert/delete highlights on slide"
+  }
+ ],
+ "missed_by_all": [],
+ "checked_pages": "all",
+ "source_pdf": "https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2025/p3746r0.pdf",
+ "set": "heldout-2026-10"
+}

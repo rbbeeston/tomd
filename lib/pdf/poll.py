@@ -10,7 +10,8 @@ source looks for the shape itself.
 A poll is recognised when a text line consists of exactly the five header
 tokens in order. Rows of numbers directly below whose numbers sit under the
 header columns are its counts (up to _MAX_ROWS). A suggested poll with no
-counts yet is emitted as a header-only table. A header followed by text on
+counts yet is emitted with an empty vote row when one is drawn under the
+header, otherwise as a header-only table. A header followed by text on
 the same line ("SF F N A SA: 4 5 1 0 0") is inline prose and is left alone.
 """
 
@@ -18,7 +19,7 @@ import logging
 import re
 
 from .types import TableCandidate
-from .ruled import _page_words, _word_chars, _chars_to_lines, _text_lines
+from .ruled import _page_words, _word_chars, _chars_to_lines, _text_lines, _horizontal_rules
 
 _log = logging.getLogger(__name__)
 
@@ -27,6 +28,7 @@ _ZERO_WIDTH = "​‌‍﻿"
 _COUNT_RE = re.compile(r"^(\d{1,3}|[-–—])$")
 _MAX_ROWS = 3
 _ROW_GAP_RATIO = 2.5      # a count row starts within this many line heights
+_EMPTY_ROW_RATIO = 3.0    # rules this close below the header bound an empty vote row
 
 
 def _clean(text: str) -> str:
@@ -53,6 +55,15 @@ def _strip_zero_width(lines):
     return [ln for ln in lines if ln.spans]
 
 
+def _drawn_empty_row(rules, header_words, bottom, height) -> bool:
+    """Two rules spanning the header just below it: a ruled, empty vote row."""
+    x0 = min(w[0] for w in header_words) - 2
+    x1 = max(w[2] for w in header_words) + 2
+    below = [r for r in rules if bottom - 1 <= r[0] <= bottom + _EMPTY_ROW_RATIO * height
+             and r[1] <= x0 + 5 and r[2] >= x1 - 5]
+    return len(below) >= 2
+
+
 def extract_poll_tables(page, page_num: int) -> list[TableCandidate]:
     """Poll result tables on one page."""
     raw = page.get_text("rawdict", flags=0)
@@ -60,6 +71,7 @@ def extract_poll_tables(page, page_num: int) -> list[TableCandidate]:
     if not any(_clean(w[4]) == "SA" for w in words):
         return []
     lines = _text_lines(words)
+    rules = _horizontal_rules(page.get_drawings())
     out = []
     for i, (top, bot, lw) in enumerate(lines):
         lw = sorted(lw, key=lambda w: w[0])
@@ -82,6 +94,8 @@ def extract_poll_tables(page, page_num: int) -> list[TableCandidate]:
             last_bot = bot2
         table_rows = [[_strip_zero_width(_chars_to_lines(_word_chars(c), page_num)) for c in row]
                       for row in rows]
+        if len(rows) == 1 and _drawn_empty_row(rules, lw, bot, height):
+            table_rows.append([[] for _ in _HEADER])       # a suggested poll's blank vote row
         x0 = min(w[0] for w in lw) - 2
         x1 = max(w[2] for w in lw) + 2
         out.append(TableCandidate("poll", table_rows, {page_num: (x0, top - 1, x1, last_bot + 1)}))

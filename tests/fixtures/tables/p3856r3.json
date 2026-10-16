@@ -1,0 +1,52 @@
+{
+ "paper": "p3856r3",
+ "tables": [
+  {
+   "id": "p3856r3-t1",
+   "pages": [
+    0
+   ],
+   "rows": [
+    [
+     "Document #:",
+     "P3856R3 [Latest] [Status]"
+    ],
+    [
+     "Date:",
+     "2025-11-01"
+    ],
+    [
+     "Project:",
+     "Programming Language C++"
+    ],
+    [
+     "Audience:",
+     "SG7/LEWG"
+    ],
+    [
+     "Reply-to:",
+     "Jagrut Dave (jdave12@bloomberg.net) Alisdair Meredith (ameredith1@bloomberg.net)"
+    ]
+   ],
+   "group": null,
+   "source": "typed",
+   "scope": "front-matter",
+   "note": "title-page metadata block; no group covered it"
+  }
+ ],
+ "not_tables": [
+  {
+   "group": "g1",
+   "pages": [
+    2
+   ],
+   "reason": "shaded code listing (C/C++ sample), not a table"
+  }
+ ],
+ "missed_by_all": [
+  "p3856r3-t1"
+ ],
+ "checked_pages": "all",
+ "source_pdf": "https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2025/p3856r3.pdf",
+ "set": "heldout-2026-10"
+}

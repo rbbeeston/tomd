@@ -1,0 +1,92 @@
+{
+ "paper": "p3887r1",
+ "tables": [
+  {
+   "id": "p3887r1-t1",
+   "pages": [
+    0
+   ],
+   "rows": [
+    [
+     "Document Number:",
+     "P3887R1"
+    ],
+    [
+     "Date:",
+     "2025-11-07"
+    ],
+    [
+     "Reply-to:",
+     "Robert Leahy <rleahy@rleahy.ca>"
+    ],
+    [
+     "Audience:",
+     "LWG"
+    ]
+   ],
+   "group": null,
+   "source": "typed",
+   "scope": "front-matter",
+   "note": "inline 'Label: value' lines (not column-aligned); found by recall scan"
+  },
+  {
+   "id": "p3887r1-t2",
+   "pages": [
+    5
+   ],
+   "rows": [
+    [
+     "SF",
+     "F",
+     "N",
+     "A",
+     "SA"
+    ],
+    [
+     "8",
+     "3",
+     "1",
+     "0",
+     "0"
+    ]
+   ],
+   "group": "g1",
+   "source": "verified-draft",
+   "scope": "table",
+   "note": "SG1 poll, ruled"
+  },
+  {
+   "id": "p3887r1-t3",
+   "pages": [
+    5
+   ],
+   "rows": [
+    [
+     "SF",
+     "F",
+     "N",
+     "A",
+     "SA"
+    ],
+    [
+     "10",
+     "5",
+     "0",
+     "0",
+     "0"
+    ]
+   ],
+   "group": "g2",
+   "source": "verified-draft",
+   "scope": "table",
+   "note": "LEWG poll, ruled"
+  }
+ ],
+ "not_tables": [],
+ "missed_by_all": [
+  "p3887r1-t1"
+ ],
+ "checked_pages": "all",
+ "source_pdf": "https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2025/p3887r1.pdf",
+ "set": "heldout-2026-10"
+}

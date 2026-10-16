@@ -34,6 +34,63 @@ _CORPUS = os.environ.get("TOMD_TABLE_CORPUS")
 KNOWN_GAPS = {
     "p0533r9-t4": "ambiguous: the empty Comment column shows only in the header, \"Pass Comment\" spaced like one two-word header; only a sibling table reveals two columns",
     "p4318r1-t3": "PDF text layer is damaged (math italics written without their last hex digit); not recoverable from text, so the table is marked uncertain with a note",
+    # Held-out set (2026-10): misses measured before any tuning on these papers
+    # and still open after the general fixes; reasons are the measured category.
+    "p2654r1-t2": "held-out text nearly right (LaTeX)",
+    "p2988r12-t7": "held-out partly extracted (LaTeX)",
+    "p2988r12-t9": "held-out partly extracted (LaTeX)",
+    "p3081r2-t2": "held-out text nearly right (Word)",
+    "p3081r2-t3": "held-out partly extracted (Word)",
+    "p3081r2-t4": "held-out text nearly right (Word)",
+    "p3096r12-t2": "held-out partly extracted (LaTeX)",
+    "p3096r12-t4": "held-out mostly wrong (LaTeX)",
+    "p3126r4-t2": "held-out not detected (LaTeX)",
+    "p3430r3-t4": "held-out text nearly right (LaTeX)",
+    "p3430r3-t5": "held-out text nearly right (LaTeX)",
+    "p3430r3-t6": "held-out text nearly right (LaTeX)",
+    "p3430r3-t7": "held-out text nearly right (LaTeX)",
+    "p3430r3-t8": "held-out text nearly right (LaTeX)",
+    "p3430r3-t9": "held-out text nearly right (LaTeX)",
+    "p3550r0-t2": "held-out mostly wrong (LaTeX)",
+    "p3550r0-t3": "held-out mostly wrong (LaTeX)",
+    "p3561r2-t1": "held-out not detected (Ghostscript)",
+    "p3561r2-t2": "held-out partly extracted (Ghostscript)",
+    "p3605r1-t1": "held-out not detected (Chrome/Skia)",
+    "p3605r1-t2": "held-out partly extracted (Chrome/Skia)",
+    "p3633r0-t1": "held-out not detected (LaTeX)",
+    "p3691r1-t8": "held-out partly extracted (LaTeX)",
+    "p3691r1-t9": "held-out partly extracted (LaTeX)",
+    "p3813r0-t2": "held-out not detected (macOS)",
+    "p3866r0-t1": "held-out not detected (Typst)",
+    "p3977r0-t2": "held-out not detected (LaTeX)",
+    "p4016r0-t14": "held-out text nearly right (pypdf)",
+    "p4016r0-t16": "held-out partly extracted (pypdf)",
+    "p4016r0-t17": "held-out not detected (pypdf)",
+    "p4016r0-t20": "held-out mostly wrong (pypdf)",
+    "p4016r0-t3": "held-out mostly wrong (pypdf)",
+    "p4016r0-t4": "held-out not detected (pypdf)",
+    "p4089r1-t2": "held-out not detected (ReportLab)",
+    "p4089r1-t3": "held-out not detected (ReportLab)",
+    "p4089r1-t4": "held-out partly extracted (ReportLab)",
+    "p4089r1-t5": "held-out mostly wrong (ReportLab)",
+    "p4195r0-t6": "held-out mostly wrong (ReportLab)",
+}
+
+# Emitted tables that match no truth table, per paper (exact count). Lower a
+# count when a fix removes one; a new false table fails the test.
+KNOWN_FALSE_TABLES = {
+    "n5057": 1,
+    "p3096r12": 2,
+    "p3550r0": 1,
+    "p3561r2": 1,
+    "p3630r0": 2,
+    "p3691r1": 2,
+    "p3790r2": 1,
+    "p3813r0": 1,
+    "p4016r0": 3,
+    "p4089r1": 1,
+    "p4124r0": 1,
+    "p4195r0": 1,
 }
 
 _MD = mistune.create_markdown(renderer="ast", plugins=["table"])
@@ -125,5 +182,7 @@ def test_tables_match_truth(truth_file: Path):
 
     assert not wrong, f"{truth['paper']}: tables not extracted exactly: {wrong}"
     assert not fixed, f"{truth['paper']}: now correct, remove from KNOWN_GAPS: {fixed}"
-    if truth["paper"] != "p4318r1":  # its garbled-font table matches nothing by text
-        assert not false_tables, f"{truth['paper']}: tables not in the truth set: {false_tables}"
+    allowed = KNOWN_FALSE_TABLES.get(truth["paper"], 0)
+    assert len(false_tables) == allowed, (
+        f"{truth['paper']}: {len(false_tables)} tables not in the truth set "
+        f"(KNOWN_FALSE_TABLES allows {allowed}): {false_tables}")

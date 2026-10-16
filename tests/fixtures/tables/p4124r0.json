@@ -1,0 +1,200 @@
+{
+ "paper": "p4124r0",
+ "tables": [
+  {
+   "id": "p4124r0-t1",
+   "pages": [
+    0
+   ],
+   "rows": [
+    [
+     "Document Number:",
+     "P4124R0"
+    ],
+    [
+     "Date:",
+     "2026-05-01"
+    ],
+    [
+     "Intent:",
+     "Inform"
+    ],
+    [
+     "Audience:",
+     "LEWG, SG1"
+    ],
+    [
+     "Reply-to:",
+     "Vinnie Falco vinnie.falco@gmail.com C++ Alliance Proposal Team"
+    ]
+   ],
+   "group": "g5",
+   "source": "edited:tomd1",
+   "note": "metadata block in shaded box; tomd1 dropped Reply-to row",
+   "scope": "front-matter"
+  },
+  {
+   "id": "p4124r0-t2",
+   "pages": [
+    3
+   ],
+   "rows": [
+    [
+     "#",
+     "Scenario",
+     "Behavior"
+    ],
+    [
+     "1",
+     "All children return !ec",
+     "Return tuple of all results. No cancellation."
+    ],
+    [
+     "2",
+     "One child returns ec, others pending",
+     "Cancel siblings. Propagate error."
+    ],
+    [
+     "3",
+     "Multiple children return ec concurrently",
+     "Each triggers stop (idempotent). First ec wins."
+    ],
+    [
+     "4",
+     "ec == eof, n == 0",
+     "Error. Cancel siblings."
+    ],
+    [
+     "5",
+     "ec != 0, n > 0 (partial transfer)",
+     "Error. Cancel siblings. Values stored as-is. Caller sees ec and knows it failed; partial values are available but not guaranteed meaningful."
+    ],
+    [
+     "6",
+     "Zero-length buffer, ({}, 0)",
+     "Success. No cancellation."
+    ],
+    [
+     "7",
+     "Zero-length buffer, (ec, 0)",
+     "Error (ec reflects stream state). Cancel siblings."
+    ],
+    [
+     "8",
+     "One child throws",
+     "Capture exception. Cancel siblings. Rethrow after all complete."
+    ],
+    [
+     "9",
+     "Multiple children throw",
+     "First exception captured. Others discarded. Rethrow first."
+    ],
+    [
+     "10",
+     "One throws, another returns ec",
+     "Exception wins. Tuple is not accessible."
+    ],
+    [
+     "11",
+     "Parent stop token fires",
+     "Stop requested for children. Children observing stop return operation_aborted; a child already completing may return its own result. First ec wins."
+    ],
+    [
+     "12",
+     "All children fail",
+     "Propagate single error_code (first wins). Not a tuple of failures."
+    ]
+   ],
+   "group": "g1",
+   "source": "edited:ruled1",
+   "note": "added shaded header row missing from ruled1",
+   "scope": "table"
+  },
+  {
+   "id": "p4124r0-t3",
+   "pages": [
+    12
+   ],
+   "rows": [
+    [
+     "Property",
+     "std::execution::when_all",
+     "io_adapt + when_all",
+     "Domain-aware when_all"
+    ],
+    [
+     "Cancels siblings on I/O error",
+     "No",
+     "Yes",
+     "Yes"
+    ],
+    [
+     "Extra allocations per child",
+     "0",
+     "1 (coroutine frame)",
+     "0"
+    ],
+    [
+     "Adapter at every call site",
+     "No",
+     "Yes",
+     "No"
+    ],
+    [
+     "Works for senders",
+     "Yes",
+     "Yes",
+     "Yes (delegates)"
+    ],
+    [
+     "Works for IoAwaitables",
+     "No (blind to errors)",
+     "Yes (with adapter)",
+     "Yes (native)"
+    ],
+    [
+     "Return type for I/O",
+     "tuple on value channel",
+     "tuple on value channel",
+     "io_result<R1, ..., Rn>"
+    ],
+    [
+     "Error type on error channel",
+     "--",
+     "tuple<error_code, T...>",
+     "--"
+    ],
+    [
+     "Downstream upon_error works",
+     "N/A (errors invisible)",
+     "Requires if constexpr",
+     "N/A (errors in io_result)"
+    ]
+   ],
+   "group": "g4",
+   "source": "edited:ruled4",
+   "note": "ruled4 merged section heading into header and split io_result cell into extra column",
+   "scope": "table"
+  }
+ ],
+ "not_tables": [
+  {
+   "group": "g2",
+   "pages": [
+    7
+   ],
+   "reason": "prose numbered list with inline code spans (spurious ruling from code highlights)"
+  },
+  {
+   "group": "g3",
+   "pages": [
+    12
+   ],
+   "reason": "prose paragraph with inline code spans (spurious)"
+  }
+ ],
+ "missed_by_all": [],
+ "checked_pages": "all",
+ "source_pdf": "https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2026/p4124r0.pdf",
+ "set": "heldout-2026-10"
+}

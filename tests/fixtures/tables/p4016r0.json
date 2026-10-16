@@ -1,0 +1,920 @@
+{
+ "paper": "p4016r0",
+ "tables": [
+  {
+   "id": "p4016r0-t1",
+   "pages": [
+    0
+   ],
+   "rows": [
+    [
+     "Document Number:",
+     "P4016R0"
+    ],
+    [
+     "Date:",
+     "2026-02-23"
+    ],
+    [
+     "Target:",
+     "SG6 (Numerics), LEWG"
+    ],
+    [
+     "Reply-to:",
+     "Andrew Drakeford <andrew.drakeford@gmail.com>"
+    ],
+    [
+     "Project:",
+     "Programming Language C++"
+    ]
+   ],
+   "group": "g1",
+   "source": "edited:tomd1",
+   "note": "ruled title-page metadata block; tomd1 dropped the Document Number row; ruled1 swallowed the TOC",
+   "scope": "front-matter"
+  },
+  {
+   "id": "p4016r0-t2",
+   "pages": [
+    3
+   ],
+   "rows": [
+    [
+     "Reader",
+     "Read",
+     "Skim",
+     "Reference as needed"
+    ],
+    [
+     "LEWG reviewer",
+     "Polls, §1, §2, §4, §5",
+     "§3 (design rationale)",
+     "Appendices"
+    ],
+    [
+     "Implementer",
+     "Polls, §4, §5, Appendix B, N",
+     "§3.8 (tree shape rationale)",
+     ""
+    ],
+    [
+     "Numerical analyst",
+     "Polls, §6, §4, §5, Appendix C, K",
+     "Appendix P (throughput data)",
+     ""
+    ]
+   ],
+   "group": "g2",
+   "source": "edited:ruled2",
+   "note": "reading-guide table; ruled2 also captured surrounding page text as rows",
+   "scope": "table"
+  },
+  {
+   "id": "p4016r0-t3",
+   "pages": [
+    6
+   ],
+   "rows": [
+    [
+     "Facility",
+     "Specification model",
+     "Operand order",
+     "Parenthesization",
+     "Unique expression?"
+    ],
+    [
+     "std::accumulate",
+     "Sequential left fold",
+     "Fixed (left-to-right)",
+     "Fixed (left fold)",
+     "Yes"
+    ],
+    [
+     "std::ranges::fold_left / fold_right",
+     "Sequential fold",
+     "Fixed",
+     "Fixed",
+     "Yes"
+    ],
+    [
+     "std::inclusive_scan",
+     "GENERALIZED_NONCOMMUTATIVE_SUM",
+     "Fixed (left-to-right)",
+     "Unspecified",
+     "No — reassociation permitted"
+    ],
+    [
+     "std::exclusive_scan",
+     "GENERALIZED_NONCOMMUTATIVE_SUM",
+     "Fixed (left-to-right)",
+     "Unspecified",
+     "No — reassociation permitted"
+    ],
+    [
+     "std::reduce",
+     "GENERALIZED_SUM",
+     "Unspecified",
+     "Unspecified",
+     "No — reordering + reassociation permitted"
+    ],
+    [
+     "std::transform_reduce",
+     "GENERALIZED_SUM",
+     "Unspecified",
+     "Unspecified",
+     "No — reordering + reassociation permitted"
+    ],
+    [
+     "Proposed canonical_reduce",
+     "Canonical reduction expression (§4)",
+     "Fixed (lane assignment)",
+     "Fixed (canonical tree)",
+     "Yes, for a given lane count L"
+    ]
+   ],
+   "group": "g3",
+   "source": "edited:ruled3",
+   "note": "underscores restored (text layer splits them off)",
+   "scope": "table"
+  },
+  {
+   "id": "p4016r0-t4",
+   "pages": [
+    12
+   ],
+   "rows": [
+    [
+     "Library",
+     "Feature",
+     "Mechanism (documented)",
+     "Scope (typical)"
+    ],
+    [
+     "Intel oneMKL",
+     "Conditional Numerical Reproducibility (CNR)",
+     "Constrains execution paths / pins to a logical ISA",
+     "Reproducibility across specified CPU configurations"
+    ],
+    [
+     "NVIDIA CUB",
+     "Deterministic reduction variants",
+     "Uses a fixed reduction order for deterministic mode",
+     "Reproducibility on the same architecture"
+    ],
+    [
+     "PyTorch / TensorFlow",
+     "Deterministic algorithms flags",
+     "Disables nondeterministic kernels / selects deterministic kernels",
+     "Reproducible training runs (scope varies)"
+    ]
+   ],
+   "group": "g4",
+   "source": "edited:ruled4",
+   "note": "",
+   "scope": "table"
+  },
+  {
+   "id": "p4016r0-t5",
+   "pages": [
+    19
+   ],
+   "rows": [
+    [
+     "Sequence",
+     "Stack",
+     "Operation"
+    ],
+    [
+     "e₀ e₁ e₂ e₃ e₄ e₅ e₆ e₇",
+     "∅",
+     "shift e₀"
+    ],
+    [
+     "e₁ e₂ e₃ e₄ e₅ e₆ e₇",
+     "e₀",
+     "shift e₁"
+    ],
+    [
+     "e₂ e₃ e₄ e₅ e₆ e₇",
+     "e₀ e₁",
+     "reduce a₀ = op(e₀, e₁)"
+    ],
+    [
+     "e₂ e₃ e₄ e₅ e₆ e₇",
+     "a₀",
+     "shift e₂"
+    ],
+    [
+     "e₃ e₄ e₅ e₆ e₇",
+     "a₀ e₂",
+     "shift e₃"
+    ],
+    [
+     "e₄ e₅ e₆ e₇",
+     "a₀ e₂ e₃",
+     "reduce a₁ = op(e₂, e₃)"
+    ],
+    [
+     "e₄ e₅ e₆ e₇",
+     "a₀ a₁",
+     "reduce b₀ = op(a₀, a₁)"
+    ],
+    [
+     "e₄ e₅ e₆ e₇",
+     "b₀",
+     "shift e₄"
+    ],
+    [
+     "e₅ e₆ e₇",
+     "b₀ e₄",
+     "shift e₅"
+    ],
+    [
+     "e₆ e₇",
+     "b₀ e₄ e₅",
+     "reduce a₂ = op(e₄, e₅)"
+    ],
+    [
+     "e₆ e₇",
+     "b₀ a₂",
+     "shift e₆"
+    ],
+    [
+     "e₇",
+     "b₀ a₂ e₆",
+     "shift e₇"
+    ],
+    [
+     "∅",
+     "b₀ a₂ e₆ e₇",
+     "reduce a₃ = op(e₆, e₇)"
+    ],
+    [
+     "∅",
+     "b₀ a₂ a₃",
+     "reduce b₁ = op(a₂, a₃)"
+    ],
+    [
+     "∅",
+     "b₀ b₁",
+     "reduce c₀ = op(b₀, b₁)"
+    ],
+    [
+     "∅",
+     "c₀",
+     "done"
+    ]
+   ],
+   "group": null,
+   "source": "typed",
+   "note": "monospace \"state table\" inside a grey code block (text calls it a table); header underlined with box-drawing rules; not ruled",
+   "scope": "borderline"
+  },
+  {
+   "id": "p4016r0-t6",
+   "pages": [
+    26
+   ],
+   "rows": [
+    [
+     "Facility",
+     "Parallel",
+     "Expression specified",
+     "Notes"
+    ],
+    [
+     "std::accumulate",
+     "No",
+     "Yes (left-fold)",
+     "Fully specified; sequential"
+    ],
+    [
+     "std::reduce",
+     "Yes",
+     "No (generalized sum)",
+     "Unspecified grouping; results may vary for non-associative ops"
+    ],
+    [
+     "HPC frameworks (Kokkos, etc.)",
+     "Yes",
+     "Same-config deterministic; not across thread counts or backends",
+     "Library-internal tree; expression varies with runtime configuration"
+    ],
+    [
+     "oneTBB parallel_reduce / parallel_deterministic_reduce",
+     "Yes",
+     "Schedule-deterministic (not expression-specified)",
+     "Fixed join order with deterministic variant; tree shape is library-defined, not standardized"
+    ],
+    [
+     "Canonical reduction (this proposal)",
+     "Yes",
+     "Yes (§4 tree)",
+     "Fixed parenthesization for chosen topology coordinate L; free scheduling"
+    ]
+   ],
+   "group": "g5",
+   "source": "edited:ruled5",
+   "note": "compound-hyphen line breaks joined (non-associative, library-defined)",
+   "scope": "table"
+  },
+  {
+   "id": "p4016r0-t7",
+   "pages": [
+    27
+   ],
+   "rows": [
+    [
+     "Property",
+     "accumulate",
+     "inclusive_scan / exclusive_scan",
+     "reduce / transform_reduce",
+     "Proposed canonical_reduce"
+    ],
+    [
+     "Specification model",
+     "Sequential left fold",
+     "GENERALIZED_NONCOMMUTATIVE_SUM",
+     "GENERALIZED_SUM",
+     "Canonical reduction expression (§4)"
+    ],
+    [
+     "Operand order",
+     "Fixed (left-to-right)",
+     "Fixed (left-to-right)",
+     "Unspecified (any permutation)",
+     "Fixed (interleaved lane assignment)"
+    ],
+    [
+     "Parenthesization",
+     "Fixed (left fold)",
+     "Unspecified (any split)",
+     "Unspecified (any split)",
+     "Fixed (canonical iterative pairwise-with-carry tree, §4.1)"
+    ],
+    [
+     "Unique expression?",
+     "Yes",
+     "No — reassociation permitted",
+     "No — reordering + reassociation permitted",
+     "Yes, for a given lane count L"
+    ],
+    [
+     "Parallel execution?",
+     "No (inherently sequential)",
+     "Yes",
+     "Yes",
+     "Yes"
+    ],
+    [
+     "User parameter",
+     "—",
+     "—",
+     "—",
+     "Lane count L"
+    ]
+   ],
+   "group": "g6",
+   "source": "edited:ruled6",
+   "note": "caption \"Table: Relationship of proposed facility to existing <numeric> algorithms\"; header row has monospace names; underscores restored",
+   "scope": "table"
+  },
+  {
+   "id": "p4016r0-t8",
+   "pages": [
+    29
+   ],
+   "rows": [
+    [
+     "Use case",
+     "L (double)",
+     "L (float)",
+     "Notes"
+    ],
+    [
+     "Golden reference",
+     "1",
+     "1",
+     "Single tree; for debugging/golden values"
+    ],
+    [
+     "Portability baseline",
+     "2",
+     "4",
+     "SSE/NEON width"
+    ],
+    [
+     "AVX / AVX2",
+     "4",
+     "8",
+     "Desktop/server AVX2"
+    ],
+    [
+     "AVX-512",
+     "8",
+     "16",
+     "AVX-512 servers"
+    ],
+    [
+     "CUDA warp",
+     "32",
+     "32",
+     "32-thread warp; L maps to thread count, not data width"
+    ]
+   ],
+   "group": "g7",
+   "source": "edited:ruled7",
+   "note": "tomd2 kept only 3 middle rows",
+   "scope": "table"
+  },
+  {
+   "id": "p4016r0-t9",
+   "pages": [
+    30
+   ],
+   "rows": [
+    [
+     "Parallelism",
+     "Mechanism",
+     "Typical Scale"
+    ],
+    [
+     "SIMD",
+     "Vector registers, GPU warps",
+     "4–64 lanes"
+    ],
+    [
+     "Threads",
+     "CPU cores, GPU blocks",
+     "4–thousands"
+    ]
+   ],
+   "group": "g8",
+   "source": "edited:ruled8",
+   "note": "",
+   "scope": "table"
+  },
+  {
+   "id": "p4016r0-t10",
+   "pages": [
+    34
+   ],
+   "rows": [
+    [
+     "Property",
+     "Sequential (accumulate/fold_left)",
+     "Parallel (reduce)"
+    ],
+    [
+     "Standard Section",
+     "[accumulate] / [alg.fold]",
+     "[reduce]"
+    ],
+    [
+     "Grouping",
+     "Mandated: Left-to-right",
+     "Generalized Sum (Unspecified)"
+    ],
+    [
+     "Complexity",
+     "O(N) operations",
+     "O(N) operations"
+    ],
+    [
+     "Evaluation Order",
+     "Fully specified",
+     "Not specified"
+    ]
+   ],
+   "group": "g10",
+   "source": "edited:ruled10",
+   "note": "fold_left underscore restored",
+   "scope": "table"
+  },
+  {
+   "id": "p4016r0-t11",
+   "pages": [
+    35
+   ],
+   "rows": [
+    [
+     "Aspect",
+     "std::accumulate",
+     "This Proposal (op(I, R))"
+    ],
+    [
+     "Init handling",
+     "Folded at every step",
+     "Combined once at end"
+    ],
+    [
+     "Structure",
+     "(((init ⊕ a) ⊕ b) ⊕ c)",
+     "init ⊕ tree_reduce(a,b,c,d)"
+    ],
+    [
+     "Init participates in",
+     "N operations",
+     "1 operation"
+    ]
+   ],
+   "group": "g11",
+   "source": "edited:ruled11",
+   "note": "tree_reduce underscore restored",
+   "scope": "table"
+  },
+  {
+   "id": "p4016r0-t12",
+   "pages": [
+    36
+   ],
+   "rows": [
+    [
+     "Algorithm",
+     "Mandated Expression Shape"
+    ],
+    [
+     "std::accumulate",
+     "(((init ⊕ a) ⊕ b) ⊕ c) Linear fold"
+    ],
+    [
+     "This proposal",
+     "init ⊕ ((a ⊕ b) ⊕ (c ⊕ d)) Pairwise reduction tree"
+    ]
+   ],
+   "group": "g12",
+   "source": "verified-draft",
+   "note": "",
+   "scope": "table"
+  },
+  {
+   "id": "p4016r0-t13",
+   "pages": [
+    36
+   ],
+   "rows": [
+    [
+     "Concern",
+     "Resolution"
+    ],
+    [
+     "“Compilers might reassociate the tree”",
+     "Violates as-if rule, same as for std::accumulate"
+    ],
+    [
+     "“What about -ffast-math?”",
+     "User has opted out of IEEE 754; all FP guarantees void"
+    ],
+    [
+     "“Is this proposal different from existing algorithms?”",
+     "No — same conformance model as std::accumulate"
+    ]
+   ],
+   "group": "g13",
+   "source": "edited:ruled13",
+   "note": "curly quotes as printed",
+   "scope": "table"
+  },
+  {
+   "id": "p4016r0-t14",
+   "pages": [
+    38
+   ],
+   "rows": [
+    [
+     "Decision",
+     "Alternatives Considered",
+     "Chosen Approach",
+     "Rationale"
+    ],
+    [
+     "Topology",
+     "Left-fold, blocked, N-ary tree",
+     "Interleaved pairwise reduction tree",
+     "O(log N) depth, SIMD-friendly"
+    ],
+    [
+     "Parameterization",
+     "Fixed constant, byte span, implementation-defined",
+     "User-specified lane count L",
+     "Portable, ABI-independent (see §9.2)"
+    ],
+    [
+     "Init placement",
+     "As leaf, implementation-defined",
+     "Post-reduction op(I, R)",
+     "Algebraic clarity; compatible with the reduce-family API shape (explicit init), while additionally fixing init placement to a single final op(I, R) to keep the canonical tree independent of init ([reduce])."
+    ],
+    [
+     "Split rule",
+     "⌈k/2⌉, variable",
+     "⌊k/2⌋ (normative)",
+     "Unique grouping specification for the chosen iterative pairwise tree"
+    ]
+   ],
+   "group": "g14",
+   "source": "edited:ruled14",
+   "note": "compound-hyphen line breaks joined (SIMD-friendly, ABI-independent)",
+   "scope": "table"
+  },
+  {
+   "id": "p4016r0-t15",
+   "pages": [
+    39
+   ],
+   "rows": [
+    [
+     "L",
+     "double (8B)",
+     "float (4B)",
+     "int32_t (4B)",
+     "Register width"
+    ],
+    [
+     "2",
+     "16 bytes",
+     "8 bytes",
+     "8 bytes",
+     "SSE/NEON (double)"
+    ],
+    [
+     "4",
+     "32 bytes",
+     "16 bytes",
+     "16 bytes",
+     "AVX/SSE (float)"
+    ],
+    [
+     "8",
+     "64 bytes",
+     "32 bytes",
+     "32 bytes",
+     "AVX-512 (double)"
+    ],
+    [
+     "16",
+     "128 bytes",
+     "64 bytes",
+     "64 bytes",
+     "AVX-512 (float)"
+    ]
+   ],
+   "group": "g15",
+   "source": "edited:ruled15",
+   "note": "int32_t underscore restored",
+   "scope": "table"
+  },
+  {
+   "id": "p4016r0-t16",
+   "pages": [
+    44
+   ],
+   "rows": [
+    [
+     "Demonstrator",
+     "Platform",
+     "Purpose",
+     "Arbitrary binary_op?",
+     "Notes"
+    ],
+    [
+     "[GB-SEQ] single-thread reference",
+     "Portable",
+     "Sequential evaluation of the canonical expression (§4)",
+     "Yes (faithful §4 reference)",
+     "Debugger-friendly “golden” comparator; single-threaded only."
+    ],
+    [
+     "[GB-x86-AVX2] single-file x86",
+     "x86-64",
+     "Canonical reduction on x86 with AVX2 codegen; compares against std::accumulate and std::reduce",
+     "No (std::plus<double> only)",
+     "Uses safe feature gating; suitable for “Run”."
+    ],
+    [
+     "[GB-x86-MT] multi-threaded x86",
+     "x86-64",
+     "Deterministic multi-threaded reduction using shift-reduce stack state + deterministic merge",
+     "No (std::plus<double> only)",
+     "Demonstrates schedule-independent, thread-count-independent results."
+    ],
+    [
+     "[GB-x86-MT-PERF] multi-threaded perf",
+     "x86-64",
+     "Production-quality multi-threaded reduction with thread pool and per-lane carry pairwise",
+     "No (std::plus<double> only)",
+     "Thread pool amortizes creation cost; shows throughput scaling."
+    ],
+    [
+     "[GB-x86-MT-EXT] extended correctness",
+     "x86-64",
+     "870 hostile bitwise comparisons: 5 generators × 29 awkward sizes × 3 thread counts × 2 lane widths",
+     "No (std::plus<double> only)",
+     "Strongest evidence: adversarial FP data, all bitwise identical to ST reference under aligned FP settings (e.g., no fast-math / no contraction; see §6). Cross-ISA golden values (AVX2 = AVX-512)."
+    ],
+    [
+     "[GB-NEON] single-file NEON",
+     "AArch64",
+     "Canonical reduction on ARM64 using NEON (exact tree preserved)",
+     "No (std::plus<double> only)",
+     "Prints build-proof macros (__aarch64__, __ARM_NEON, __ARM_NEON_FP)."
+    ],
+    [
+     "[GB-NEON-PERF] NEON performance",
+     "AArch64",
+     "Shift-reduce with 8-block NEON pre-reduction for near-bandwidth throughput",
+     "No (std::plus<double> only)",
+     "8-block straight-line NEON hot loop; carry cascade fires 8× less often."
+    ],
+    [
+     "[GB-CUDA] (optional) CUDA / CUB comparison",
+     "NVCC",
+     "Illustrates canonical topology evaluation on GPU and compares against CUB reduction",
+     "No (std::plus<double> only)",
+     "Heterogeneous “golden result” workflow demonstrator."
+    ]
+   ],
+   "group": "g16",
+   "source": "edited:ruled16",
+   "note": "narrow Notes column: compound-hyphen line breaks joined; macro underscores restored",
+   "scope": "table"
+  },
+  {
+   "id": "p4016r0-t17",
+   "pages": [
+    51
+   ],
+   "rows": [
+    [
+     "Thread",
+     "Chunks",
+     "Blocks",
+     "Output"
+    ],
+    [
+     "0",
+     "0–1",
+     "[0, 256)",
+     "Two buckets at level 7, merged locally"
+    ],
+    [
+     "1",
+     "2–3",
+     "[256, 512)",
+     "Two buckets at level 7, merged locally"
+    ],
+    [
+     "2",
+     "4–5",
+     "[512, 768)",
+     "Two buckets at level 7, merged locally"
+    ],
+    [
+     "3",
+     "6–7",
+     "[768, 1000)",
+     "Bucket at level 7 + remainder (104 blocks)"
+    ]
+   ],
+   "group": "g18",
+   "source": "edited:ruled18",
+   "note": "",
+   "scope": "table"
+  },
+  {
+   "id": "p4016r0-t18",
+   "pages": [
+    53
+   ],
+   "rows": [
+    [
+     "Phase",
+     "Work",
+     "Span (critical path)"
+    ],
+    [
+     "Local reduction",
+     "O(N) total",
+     "O(N/T)"
+    ],
+    [
+     "Ordered merge (sequential)",
+     "O(T · log N)",
+     "O(T · log N)"
+    ],
+    [
+     "Ordered merge (tree-structured)",
+     "O(T · log N)",
+     "O(log T · log N)"
+    ],
+    [
+     "Final fold",
+     "O(log N)",
+     "O(log N)"
+    ]
+   ],
+   "group": "g19",
+   "source": "edited:tomd8",
+   "note": "first of two tables in g19 (ruled19 merged both tables + text into one grid)",
+   "scope": "table"
+  },
+  {
+   "id": "p4016r0-t19",
+   "pages": [
+    53
+   ],
+   "rows": [
+    [
+     "Variant",
+     "Throughput",
+     "vs std::accumulate"
+    ],
+    [
+     "std::accumulate",
+     "5.4 GB/s",
+     "baseline"
+    ],
+    [
+     "std::reduce",
+     "21.4 GB/s",
+     "+297%"
+    ],
+    [
+     "Deterministic ST (L=16, 8-block unroll)",
+     "26.5 GB/s",
+     "+391%"
+    ],
+    [
+     "Deterministic MT (L=16, T=2)",
+     "21.2 GB/s",
+     "+293%"
+    ]
+   ],
+   "group": "g19",
+   "source": "edited:tomd9",
+   "note": "second of two tables in g19 (N.12 performance)",
+   "scope": "table"
+  },
+  {
+   "id": "p4016r0-t20",
+   "pages": [
+    54
+   ],
+   "rows": [
+    [
+     "Property",
+     "Guarantee"
+    ],
+    [
+     "Determinism",
+     "Expression-identical to the single-threaded canonical expression for any T under the specified partition/merge scheme; bitwise identity additionally requires a matching floating-point evaluation model (§6)"
+    ],
+    [
+     "Correctness",
+     "Equivalent to the canonical pairwise tree (argument outlined in Appendix N)"
+    ],
+    [
+     "Efficiency",
+     "O(N) work, O(N/T + T log N) span"
+    ],
+    [
+     "Practicality",
+     "Demonstrated competitive with, and in some configurations faster than, std::reduce with SIMD on the tested platforms/harness"
+    ]
+   ],
+   "group": "g20",
+   "source": "edited:ruled20",
+   "note": "",
+   "scope": "table"
+  }
+ ],
+ "not_tables": [
+  {
+   "group": "g9",
+   "pages": [
+    31
+   ],
+   "reason": "ASCII box diagram and code blocks (B.1-B.4), not a table"
+  },
+  {
+   "group": "g17",
+   "pages": [
+    46
+   ],
+   "reason": "code blocks / compiler-flag boxes"
+  },
+  {
+   "group": "g21",
+   "pages": [
+    56
+   ],
+   "reason": "single code box (L = M / sizeof(value_type)) plus prose"
+  }
+ ],
+ "missed_by_all": [
+  "p4016r0-t5"
+ ],
+ "checked_pages": "all",
+ "source_pdf": "https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2026/p4016r0.pdf",
+ "set": "heldout-2026-10"
+}

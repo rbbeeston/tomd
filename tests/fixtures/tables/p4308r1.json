@@ -1,0 +1,331 @@
+{
+ "paper": "p4308r1",
+ "tables": [
+  {
+   "id": "p4308r1-t1",
+   "pages": [
+    0
+   ],
+   "rows": [
+    [
+     "Document Number:",
+     "P4308R1"
+    ],
+    [
+     "Date:",
+     "2026-08-11"
+    ],
+    [
+     "Intent:",
+     "Inform"
+    ],
+    [
+     "Audience:",
+     "EWG"
+    ],
+    [
+     "Reply-to:",
+     "Vinnie Falco vinnie.falco@gmail.com Ville Voutilainen ville.voutilainen@gmail.com"
+    ]
+   ],
+   "group": "g8",
+   "source": "edited:tomd1",
+   "scope": "front-matter",
+   "note": "title-page metadata block; tomd1 missed Reply-to row"
+  },
+  {
+   "id": "p4308r1-t2",
+   "pages": [
+    6
+   ],
+   "rows": [
+    [
+     "Option",
+     "(1) noexcept value kept",
+     "(2) unwinding",
+     "(3) noexcept meaning kept",
+     "(4) no new exception-handling codegen",
+     "(5) user choice",
+     "(6) no new semantics"
+    ],
+    [
+     "A - propagate",
+     "yes",
+     "yes",
+     "no",
+     "no",
+     "partial",
+     "yes"
+    ],
+    [
+     "B - terminate on escape",
+     "yes",
+     "no",
+     "yes",
+     "yes",
+     "no",
+     "yes"
+    ],
+    [
+     "C - add noexcept semantics",
+     "yes",
+     "yes",
+     "partial",
+     "partial",
+     "yes",
+     "no"
+    ],
+    [
+     "D - implicit non-throwing only",
+     "yes",
+     "no",
+     "yes",
+     "yes",
+     "partial",
+     "no"
+    ],
+    [
+     "0 - value-reporting noexcept",
+     "no",
+     "yes",
+     "yes",
+     "no",
+     "no",
+     "yes"
+    ],
+    [
+     "E - no handler for implicit",
+     "yes",
+     "no",
+     "yes",
+     "yes",
+     "no",
+     "yes"
+    ],
+    [
+     "F - handler then abort",
+     "yes",
+     "no",
+     "yes",
+     "yes",
+     "no",
+     "yes"
+    ],
+    [
+     "G - contract-terminate",
+     "yes",
+     "no",
+     "yes",
+     "yes",
+     "no",
+     "yes"
+    ]
+   ],
+   "group": "g1",
+   "source": "edited:ruled1",
+   "scope": "table",
+   "note": "Table 1 requirements grid; ruled1 missed header row"
+  },
+  {
+   "id": "p4308r1-t3",
+   "pages": [
+    7
+   ],
+   "rows": [
+    [
+     "Option",
+     "Response shape",
+     "Deployment experience"
+    ],
+    [
+     "A - propagate",
+     "throw",
+     "see below"
+    ],
+    [
+     "B - terminate on escape",
+     "terminate",
+     "see below"
+    ],
+    [
+     "C - add noexcept semantics",
+     "throw or terminate (selectable)",
+     "see below"
+    ],
+    [
+     "D - implicit non-throwing only",
+     "terminate",
+     "see below"
+    ],
+    [
+     "0 - value-reporting noexcept",
+     "throw",
+     "see below"
+    ],
+    [
+     "E - no handler for implicit",
+     "trap, no handler",
+     "see below"
+    ],
+    [
+     "F - handler then abort",
+     "abort",
+     "see below"
+    ],
+    [
+     "G - contract-terminate",
+     "contract-terminate",
+     "see below"
+    ]
+   ],
+   "group": "g2",
+   "source": "picked:tomd2",
+   "scope": "table",
+   "note": "Table 2 (deployment column 'see below')"
+  },
+  {
+   "id": "p4308r1-t4",
+   "pages": [
+    16
+   ],
+   "rows": [
+    [
+     "Poll",
+     "Question, abridged",
+     "SF/F/N/A/SA",
+     "Result"
+    ],
+    [
+     "1",
+     "the noexcept operator returns false for such expressions (Option 1)",
+     "0/2/0/7/9",
+     "Consensus against"
+    ],
+    [
+     "2",
+     "contract-violation handlers must be noexcept (Option 2)",
+     "0/1/2/9/7",
+     "Consensus against"
+    ],
+    [
+     "3",
+     "make the throw and the operator's value configurable (Option 3)",
+     "0/2/3/8/6",
+     "Consensus against"
+    ],
+    [
+     "4",
+     "the noexcept operator returns true for such expressions (Option 4)",
+     "5/10/1/2/1",
+     "Consensus"
+    ],
+    [
+     "5",
+     "restrict such checks to semantics that cannot call the handler (Option 5)",
+     "2/3/4/6/3",
+     "No consensus"
+    ],
+    [
+     "6",
+     "unconditionally disallow a throw from such a check, calling std::terminate",
+     "1/1/5/7/3",
+     "Consensus against"
+    ],
+    [
+     "7",
+     "optionally disallow a throw from such a check, calling std::terminate",
+     "3/9/4/0/0",
+     "Consensus"
+    ]
+   ],
+   "group": "g6",
+   "source": "edited:ruled6",
+   "scope": "table",
+   "note": "Table 3 SG21 poll record; ruled6 missed header row"
+  },
+  {
+   "id": "p4308r1-t5",
+   "pages": [
+    18
+   ],
+   "rows": [
+    [
+     "Option",
+     "Response shape",
+     "Deployment experience"
+    ],
+    [
+     "A - propagate",
+     "throw",
+     "none; analogues only - GCC -fnon-call-exceptions [11] lets trapping instructions throw and MSVC /EHa [20] catches such asynchronous faults, but no compiler throws from an implicit UB check"
+    ],
+    [
+     "B - terminate on escape",
+     "terminate",
+     "universal as a response shape - terminate-on-escape from a noexcept boundary is standard since C++11 [21], and C++26 Contracts ship in GCC 16.1 (experimental) [22]"
+    ],
+    [
+     "C - add noexcept semantics",
+     "throw or terminate (selectable)",
+     "prototype - D4298R0 is implemented in the P3850 experimental forks of GCC and Clang on Compiler Explorer, not in a release of either compiler [12]"
+    ],
+    [
+     "D - implicit non-throwing only",
+     "terminate",
+     "terminate response deployed as in B; the implicit-only restriction itself is unimplemented, precedent only (P3100 restricts assume to implicit assertions by the same shape [1])"
+    ],
+    [
+     "0 - value-reporting noexcept",
+     "throw",
+     "none; analogues only - the C++17 noexcept-in-type ABI change shipped with -Wnoexcept-type [15], never applied to a throwing implicit assertion"
+    ],
+    [
+     "E - no handler for implicit",
+     "trap, no handler",
+     "massive-fleet as a response shape - libc++ hardening runs the trap response across hundreds of millions of lines at Google [23], though the E restriction itself is unimplemented as a P3100 feature; EWG reached no consensus to mandate a non-throwing default handler (P3577R0) [24]"
+    ],
+    [
+     "F - handler then abort",
+     "abort",
+     "universal as a response shape - assert is diagnostic then abort() in glibc, musl, the MSVC CRT, and bionic [25], and libc++ hardening deploys the trap form at scale [26]; the integration itself is unimplemented as a P3100 feature"
+    ],
+    [
+     "G - contract-terminate",
+     "contract-terminate",
+     "prototype - GCC 16.1 ships experimental Contracts [22]; the implementation-defined ending is specified and EWG-affirmed [18] [19] [27]"
+    ]
+   ],
+   "group": "g7",
+   "source": "edited:ruled7",
+   "scope": "table",
+   "note": "Table 2 repeated with deployment column filled; superscript refs inline; ruled7 misplaced refs"
+  }
+ ],
+ "not_tables": [
+  {
+   "group": "g3",
+   "pages": [
+    11
+   ],
+   "reason": "inline code highlight spans in prose, not a table"
+  },
+  {
+   "group": "g4",
+   "pages": [
+    14
+   ],
+   "reason": "inline code highlight spans in prose, not a table"
+  },
+  {
+   "group": "g5",
+   "pages": [
+    15
+   ],
+   "reason": "inline code highlight spans in prose, not a table"
+  }
+ ],
+ "missed_by_all": [],
+ "checked_pages": "all",
+ "source_pdf": "https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2026/p4308r1.pdf",
+ "set": "heldout-2026-10"
+}

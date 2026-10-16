@@ -1,0 +1,93 @@
+{
+ "paper": "p3813r0",
+ "tables": [
+  {
+   "id": "p3813r0-t1",
+   "pages": [
+    0
+   ],
+   "rows": [
+    [
+     "Document number:",
+     "P3813R0"
+    ],
+    [
+     "Date:",
+     "2025-09-10"
+    ],
+    [
+     "Project:",
+     "Programming Language C++"
+    ],
+    [
+     "Audience:",
+     "LEWG"
+    ],
+    [
+     "Reply-to:",
+     "Michael Florian Hava1 <mfh.cpp@gmail.com>"
+    ]
+   ],
+   "group": null,
+   "source": "typed",
+   "scope": "front-matter",
+   "note": "unruled metadata block; footnote mark 1 after Hava; missed by all"
+  },
+  {
+   "id": "p3813r0-t2",
+   "pages": [
+    0
+   ],
+   "rows": [
+    [
+     "Before",
+     "Proposed"
+    ],
+    [
+     "task<int> t = …; //is it safe to use t? auto res = sync_wait(t);",
+     "task<int> t = …; contract_assert(not t.valueless()); auto res = sync_wait(t);"
+    ]
+   ],
+   "group": "g1",
+   "source": "edited:tags1",
+   "scope": "table",
+   "note": "Tony Table; single body row of multi-line code; ellipsis is U+2026"
+  }
+ ],
+ "not_tables": [
+  {
+   "group": "g2",
+   "pages": [
+    0
+   ],
+   "reason": "single boxed code sample"
+  },
+  {
+   "group": "g3",
+   "pages": [
+    1
+   ],
+   "reason": "wording box (feature macro with insert/delete + drafting note)"
+  },
+  {
+   "group": "g4",
+   "pages": [
+    1
+   ],
+   "reason": "wording box (class synopsis with insertion)"
+  },
+  {
+   "group": "g5",
+   "pages": [
+    1
+   ],
+   "reason": "wording box with paragraph numbers and insert/delete highlights"
+  }
+ ],
+ "missed_by_all": [
+  "p3813r0-t1"
+ ],
+ "checked_pages": "all",
+ "source_pdf": "https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2025/p3813r0.pdf",
+ "set": "heldout-2026-10"
+}

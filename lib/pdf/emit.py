@@ -5,7 +5,7 @@ import re
 
 from .. import format_front_matter
 from .cleanup import normalize_whitespace
-from .types import Line, Span, Section, SectionKind, Confidence, BULLET_CHARS
+from .types import Line, Span, Section, SectionKind, Confidence, BULLET_CHARS, COMPOUND_PREFIXES
 
 _log = logging.getLogger(__name__)
 
@@ -249,6 +249,19 @@ def _render_wording_section(sec: Section) -> str:
     return f":::{div_class}\n\n{inner}\n\n:::"
 
 
+def _join_hyphenated(line: str, nxt: str, prefix: str) -> str:
+    """Join a cell line ending in "word-" with the next line.
+
+    A syllable break drops the hyphen ("com-" + "patibility"): the part
+    before it is a short fragment or the continuation is short. A compound
+    keeps it ("non-" + "enforced", "effect-" + "parameterized").
+    """
+    suffix = re.match(r"[A-Za-z]*", nxt).group(0)
+    p = prefix.lower()
+    syllable = p not in COMPOUND_PREFIXES and (len(p) <= 3 or len(suffix) <= 4)
+    return (line[:-1] if syllable else line) + nxt
+
+
 def _render_cell_spans(spans: list, suppress_bold: bool = False) -> str:
     """Render a table cell's spans with inline formatting.
 
@@ -264,11 +277,13 @@ def _render_cell_spans(spans: list, suppress_bold: bool = False) -> str:
             parts[-1].append(s)
     rendered = [r for r in (_render_line_spans(Line(spans=p), suppress_bold=suppress_bold).strip()
                             for p in parts if p) if r]
+    if len(rendered) > 1 and all(len(r) == 1 and r.isalpha() for r in rendered):
+        return "".join(rendered)          # letters stacked in a narrow cell: "S" / "F" -> "SF"
     out = rendered[:1]
     for r in rendered[1:]:
-        # A word hyphenated at the cell's line break is one word: "effect-" + "parameterized".
-        if re.search(r"[A-Za-z]-$", out[-1]) and r[:1].islower():
-            out[-1] += r
+        m = re.search(r"([A-Za-z]+)-$", out[-1])
+        if m and r[:1].islower():
+            out[-1] = _join_hyphenated(out[-1], r, m.group(1))
         else:
             out.append(r)
     return "<br>".join(out).replace("|", "\\|")

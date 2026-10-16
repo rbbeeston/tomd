@@ -55,6 +55,7 @@ _LINE_Y_TOL = 3.0         # characters within this y distance share a line
 _ZERO_WIDTH = frozenset("\u200b\u200c\u200d\u2060\ufeff")
 _CAPTION_INDENT = 4.0     # captions start this far left of padded cell text
 _CAPTION_SPACE = 3.0      # a prose band this many times taller than its text
+_MAX_PROSE_ROW_LINES = 6  # more lines of plain prose than this is running text
 _OVERPRINT = 1.0          # a char starting this far left of the previous one
 _RAISE = 2.0              # a superscript's bottom sits this far above its neighbour's,
 _RAISE_TOP = 1.0          # and its top at least this far (code text shares the line's top)
@@ -182,15 +183,28 @@ def _chars_to_lines(chars: list[tuple], page_num: int) -> list[Line]:
         else:
             rows.append([(ch[1][1] + ch[1][3]) / 2, [ch]])
     rows.sort(key=lambda r: r[0])
+    has_spaces = any(c[0] == " " for c in chars)
     lines = []
     for _, row in rows:
-        row.sort(key=lambda c: c[1][0])
+        # by centre, not left edge: in ligatures ("ff", "fi") a zero-width
+        # glyph can start right of the next character's left edge
+        row.sort(key=lambda c: (c[1][0] + c[1][2]) / 2)
+        # A space belongs where there is a gap between two characters of the
+        # line; a stray one (a trailing space of the line above whose box
+        # overlaps this line) would split a word: "ch anges".
+        ink = [c for c in row if not c[0].isspace()]
+        row[:] = [c for c in row if not c[0].isspace() or any(
+            a[1][2] - 1.0 <= (c[1][0] + c[1][2]) / 2 <= b[1][0] + 1.0
+            and b[1][0] - a[1][2] > 0.5
+            for a, b in zip(ink, ink[1:]))]
         spans: list[Span] = []
         prev = None
         for ch in row:
             c, bb, font, size, flags, color = ch
             gap = bb[0] - prev[1][2] if prev else 0.0
-            space = (prev is not None and gap > 0.25 * max(size, 1.0)
+            # Infer a space from a gap only when the PDF encodes none of its
+            # own here (kerned text otherwise gains spaces: "ch anges").
+            space = (not has_spaces and prev is not None and gap > 0.25 * max(size, 1.0)
                      and c != " " and prev[0] != " ")
             same_run = (spans and prev is not None and font == prev[2]
                         and size == prev[3] and flags == prev[4] and color == prev[5])
@@ -239,13 +253,51 @@ def _vertical_rule_count(drawings) -> int:
     return n
 
 
+def _vertical_spans(drawings) -> list[tuple[float, float, float, float]]:
+    """Bounding boxes of groups of vertical rules that overlap in y: the
+    real extent of each ruled grid (section underlines have no verticals)."""
+    vs = []
+    for d in drawings:
+        for it in d["items"]:
+            if it[0] == "l" and abs(it[1].x - it[2].x) < 1.0 and abs(it[1].y - it[2].y) >= 8.0:
+                vs.append((it[1].x, min(it[1].y, it[2].y), it[1].x, max(it[1].y, it[2].y)))
+            elif it[0] == "re" and it[1].width <= _RULE_MAX_THICK and it[1].height >= 8.0:
+                vs.append((it[1].x0, it[1].y0, it[1].x1, it[1].y1))
+    boxes: list[list[float]] = []
+    for x0, y0, x1, y1 in sorted(vs, key=lambda v: v[1]):
+        if boxes and y0 <= boxes[-1][3] + 2.0:
+            b = boxes[-1]
+            b[0], b[2], b[3] = min(b[0], x0), max(b[2], x1), max(b[3], y1)
+        else:
+            boxes.append([x0, y0, x1, y1])
+    return [tuple(b) for b in boxes if b[2] - b[0] > _RULE_MIN_LEN]
+
+
 def _grid_tables(page, page_num, chars, drawings) -> list[TableCandidate]:
     # find_tables is the costliest step of conversion; a grid needs at least
     # two vertical rules, so pages without them are skipped.
     if _vertical_rule_count(drawings) < 2:
         return []
+    out = _grid_tables_in(page, page_num, chars, None)
+    from .table import table_flags, BAD_TABLE_FLAGS
+    if any(set(table_flags(t)) & BAD_TABLE_FLAGS for t in out):
+        # A junk grid (a section underline joined to a real table): look
+        # again inside each area that vertical rules actually span.
+        good = [t for t in out if not set(table_flags(t)) & BAD_TABLE_FLAGS]
+        for x0, y0, x1, y1 in _vertical_spans(drawings):
+            clip = (x0 - 2, y0 - 2, x1 + 2, y1 + 2)
+            if any(_overlaps(clip, t.bboxes[page_num]) for t in good):
+                continue
+            good.extend(t for t in _grid_tables_in(page, page_num, chars, clip)
+                        if not set(table_flags(t)) & BAD_TABLE_FLAGS)
+        out = good + [t for t in out if set(table_flags(t)) & BAD_TABLE_FLAGS]
+    return out
+
+
+def _grid_tables_in(page, page_num, chars, clip) -> list[TableCandidate]:
     out = []
-    for t in page.find_tables(strategy="lines").tables:
+    finder = page.find_tables(strategy="lines", clip=clip) if clip else page.find_tables(strategy="lines")
+    for t in finder.tables:
         rows = []
         for r in t.rows:
             row = []
@@ -460,6 +512,8 @@ def _is_caption_band(lw: list, cell_left: float, band_height: float = 0.0) -> bo
         return all(b[0] - a[2] < 1.5 * (a[3] - a[1]) for a, b in zip(ws, ws[1:]))
     if not all(prose(ws) for ws in lines):
         return False
+    if len(lines) > _MAX_PROSE_ROW_LINES:
+        return True                      # a section of running text, not a row
     if lines[0][0][0] < cell_left - _CAPTION_INDENT:
         return True                      # a legend or note block starting at the margin
     if len(lines) > 3:
@@ -470,6 +524,24 @@ def _is_caption_band(lw: list, cell_left: float, band_height: float = 0.0) -> bo
     # tables); a data row is snug around its text.
     text_h = sum(max(w[3] for w in ws) - min(w[1] for w in ws) for ws in lines)
     return band_height > _CAPTION_SPACE * text_h
+
+
+def _trim_trailing_prose(bw, top, bot, cell_left):
+    """Cut text after a row that starts at the margin and runs on as prose
+    (the paragraph after a table whose last rule is far below)."""
+    lines = _text_lines(bw)
+    cut = None
+    for i in range(len(lines) - 1, 0, -1):
+        ws = sorted(lines[i][2], key=lambda w: w[0])
+        if ws[0][0] < cell_left - _CAPTION_INDENT and all(
+                b[0] - a[2] < 1.5 * (a[3] - a[1]) for a, b in zip(ws, ws[1:])):
+            cut = i
+        else:
+            break
+    if cut is None:
+        return bw, bot
+    new_bot = lines[cut][0] - 0.5
+    return [w for w in bw if (w[1] + w[3]) / 2 < new_bot], new_bot
 
 
 def _rule_band_tables(page_num, words_all, group, header_above,
@@ -505,6 +577,7 @@ def _rule_band_tables(page_num, words_all, group, header_above,
     for top, bot, bw in band_words:
         if not bw:
             continue
+        bw, bot = _trim_trailing_prose(bw, top, bot, cell_left)
         if per_row_rules:
             if _is_caption_band(bw, cell_left, bot - top):
                 if segments[-1]:
@@ -593,6 +666,11 @@ def extract_ruled_tables(page, page_num: int) -> list[TableCandidate]:
     chars = _page_chars(raw)
     words = _page_words(raw)
     tables = _grid_tables(page, page_num, chars, drawings)
+    # Only plausible grids claim their area: find_tables can also build a
+    # junk grid from section underlines and a real table's verticals, which
+    # must not hide the real table from the rule-band reader.
+    from .table import table_flags, BAD_TABLE_FLAGS
+    tables = [t for t in tables if not set(table_flags(t)) & BAD_TABLE_FLAGS]
     grids = [t.bboxes[page_num] for t in tables]
     # Rules that are part of a grid already found belong to it, not to a
     # rule-band table of the same width further down the page.

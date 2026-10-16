@@ -1,0 +1,105 @@
+{
+ "paper": "p3690r1",
+ "tables": [
+  {
+   "id": "p3690r1-t1",
+   "pages": [
+    0
+   ],
+   "rows": [
+    [
+     "Document Number:",
+     "P3690R1"
+    ],
+    [
+     "Date:",
+     "2025-06-17"
+    ],
+    [
+     "Reply-to:",
+     "Olaf Krzikalla <olaf.krzikalla@dlr.de>, Matthias Kretz <m.kretz@gsi.de>"
+    ],
+    [
+     "Audience:",
+     "LWG"
+    ],
+    [
+     "Target:",
+     "C++26"
+    ]
+   ],
+   "group": "g1",
+   "source": "picked:tomd1",
+   "note": "unruled title-page metadata block",
+   "scope": "front-matter"
+  },
+  {
+   "id": "p3690r1-t2",
+   "pages": [
+    1
+   ],
+   "rows": [
+    [
+     "SF",
+     "F",
+     "N",
+     "A",
+     "SA"
+    ],
+    [
+     "11",
+     "15",
+     "1",
+     "0",
+     "0"
+    ]
+   ],
+   "group": null,
+   "source": "typed",
+   "note": "ruled poll: forward P3690R0 to LWG for C++29",
+   "scope": "table"
+  },
+  {
+   "id": "p3690r1-t3",
+   "pages": [
+    1
+   ],
+   "rows": [
+    [
+     "SF",
+     "F",
+     "N",
+     "A",
+     "SA"
+    ],
+    [
+     "14",
+     "10",
+     "2",
+     "0",
+     "0"
+    ]
+   ],
+   "group": null,
+   "source": "typed",
+   "note": "ruled poll: forward P3690R0 to LWG for C++26 (if possible)",
+   "scope": "table"
+  }
+ ],
+ "not_tables": [
+  {
+   "group": "g2",
+   "pages": [
+    2
+   ],
+   "reason": "subsection headings (6.1/6.2 with right-aligned small-caps titles) and prose, not a table"
+  }
+ ],
+ "missed_by_all": [
+  "p3690r1-t2",
+  "p3690r1-t3"
+ ],
+ "checked_pages": "all",
+ "source_pdf": "https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2025/p3690r1.pdf",
+ "set": "heldout-2026-10"
+}

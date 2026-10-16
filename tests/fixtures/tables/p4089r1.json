@@ -1,0 +1,321 @@
+{
+ "paper": "p4089r1",
+ "tables": [
+  {
+   "id": "p4089r1-t1",
+   "pages": [
+    0
+   ],
+   "rows": [
+    [
+     "Document Number:",
+     "P4089R1"
+    ],
+    [
+     "Date:",
+     "2026-05-01"
+    ],
+    [
+     "Intent:",
+     "Inform"
+    ],
+    [
+     "Audience:",
+     "LEWG"
+    ],
+    [
+     "Reply-to:",
+     "Vinnie Falco vinnie.falco@gmail.com C++ Alliance Proposal Team"
+    ]
+   ],
+   "group": "g5",
+   "source": "typed",
+   "scope": "front-matter",
+   "note": "unruled metadata block in shaded box; Reply-to value spans 2 lines (tomd1 missed Reply-to row)"
+  },
+  {
+   "id": "p4089r1-t2",
+   "pages": [
+    3
+   ],
+   "rows": [
+    [
+     "Library A",
+     "Library B"
+    ],
+    [
+     "struct env_a {};",
+     "struct env_b {};"
+    ],
+    [
+     "task<int, env_a> compute();",
+     "task<int, env_b> fetch();"
+    ]
+   ],
+   "group": null,
+   "source": "typed",
+   "scope": "table",
+   "note": "side-by-side code table with shaded header; found by recall scan"
+  },
+  {
+   "id": "p4089r1-t3",
+   "pages": [
+    6
+   ],
+   "rows": [
+    [
+     "GPU domain (nvexec)",
+     "Network domain"
+    ],
+    [
+     "get_stream_provider -> stream_provider*",
+     "get_ssl_context -> ssl::context*"
+    ],
+    [
+     "get_stream -> cudaStream_t",
+     "get_connection_pool -> pool*"
+    ],
+    [
+     "pinned/managed memory resources, stream pool, ...",
+     "..."
+    ]
+   ],
+   "group": "g2",
+   "source": "typed",
+   "scope": "table",
+   "note": "ruled2 split columns; retyped as 2 cols"
+  },
+  {
+   "id": "p4089r1-t4",
+   "pages": [
+    7
+   ],
+   "rows": [
+    [
+     "Concept",
+     "Refines"
+    ],
+    [
+     "scheduler",
+     "queryable, copyable, equality_comparable, ..."
+    ],
+    [
+     "sender",
+     "queryable, move_constructible, ..."
+    ],
+    [
+     "receiver",
+     "queryable, move_constructible, ..."
+    ],
+    [
+     "queryable",
+     ""
+    ]
+   ],
+   "group": "g3",
+   "source": "edited:tomd2",
+   "scope": "table",
+   "note": "last row 'queryable' has empty Refines cell (tomd2 dropped it)"
+  },
+  {
+   "id": "p4089r1-t5",
+   "pages": [
+    7
+   ],
+   "rows": [
+    [
+     "[exec]",
+     "[exec.queryable.concept]"
+    ],
+    [
+     "6,607 lines",
+     "2 lines"
+    ]
+   ],
+   "group": "g3",
+   "source": "picked:tomd3",
+   "scope": "table",
+   "note": ""
+  },
+  {
+   "id": "p4089r1-t6",
+   "pages": [
+    7
+   ],
+   "rows": [
+    [
+     "Nobody",
+     "Somebody"
+    ],
+    [
+     "The parameter is unnecessary.",
+     "The types are incompatible (Section 5.1)."
+    ]
+   ],
+   "group": "g3",
+   "source": "picked:tomd4",
+   "scope": "table",
+   "note": "g3 covers three separate tables on this page"
+  },
+  {
+   "id": "p4089r1-t7",
+   "pages": [
+    9
+   ],
+   "rows": [
+    [
+     "Who",
+     "What"
+    ],
+    [
+     "Everybody (millions)",
+     "Uses coroutines and awaitables defined by the standard library, Boost, and other high-quality libraries"
+    ],
+    [
+     "Power user (10,000)",
+     "Defines new awaitables to customize await for their environment using existing coroutine types"
+    ],
+    [
+     "Expert (1,000)",
+     "Defines new coroutine types"
+    ],
+    [
+     "Cream of the crop (200)",
+     "Defines metafunctions, adapters, and composition utilities for coroutines"
+    ]
+   ],
+   "group": null,
+   "source": "typed",
+   "scope": "table",
+   "note": "found by recall scan"
+  },
+  {
+   "id": "p4089r1-t8",
+   "pages": [
+    10
+   ],
+   "rows": [
+    [
+     "Library",
+     "Declaration",
+     "Params",
+     "Source"
+    ],
+    [
+     "asyncpp",
+     "template<class T> class task",
+     "1",
+     "task.hpp"
+    ],
+    [
+     "Boost.Cobalt",
+     "template<class T> class task",
+     "1",
+     "task.hpp"
+    ],
+    [
+     "Capy",
+     "template<class T = void> struct task",
+     "1",
+     "task.hpp"
+    ],
+    [
+     "cppcoro",
+     "template<typename T> class task",
+     "1",
+     "task.hpp"
+    ],
+    [
+     "aiopp",
+     "template<typename Result> class Task",
+     "1",
+     "task.hpp"
+    ],
+    [
+     "libcoro",
+     "template<typename return_type> class task",
+     "1",
+     "task.hpp"
+    ],
+    [
+     "folly::coro",
+     "template<typename T> class Task",
+     "1",
+     "Task.h"
+    ],
+    [
+     "Boost.Asio",
+     "template<class T, class Executor = any_io_executor> class awaitable",
+     "2",
+     "awaitable.hpp"
+    ],
+    [
+     "P3552R3 (std)",
+     "template<class T, class Environment> class task",
+     "2",
+     "task.hpp"
+    ]
+   ],
+   "group": "g4",
+   "source": "edited:ruled4",
+   "scope": "table",
+   "note": "ruled4 merged Library+Declaration and missed header"
+  },
+  {
+   "id": "p4089r1-t9",
+   "pages": [
+    10
+   ],
+   "rows": [
+    [
+     "Library",
+     "Invariant enforced through promise"
+    ],
+    [
+     "folly::coro",
+     "Cancellation token, fiber scheduler, async stack traces"
+    ],
+    [
+     "Boost.Cobalt",
+     "Intrusive list cancellation, Asio executor binding"
+    ],
+    [
+     "Google Co",
+     "Immovable prvalue-only co_await - prevents dangling references"
+    ],
+    [
+     "Capy",
+     "io_env propagation: executor, stop token, frame allocator"
+    ],
+    [
+     "cppcoro",
+     "Symmetric transfer, lazy start"
+    ],
+    [
+     "C++26 task",
+     "affine scheduler (via get_start_scheduler), sender environment, stop token via connect"
+    ]
+   ],
+   "group": "g4",
+   "source": "picked:tomd5",
+   "scope": "table",
+   "note": "second table in group g4"
+  }
+ ],
+ "not_tables": [
+  {
+   "group": "g1",
+   "pages": [
+    6
+   ],
+   "reason": "prose fragment below the GPU/Network table (inline code spans), not a table"
+  }
+ ],
+ "missed_by_all": [
+  "p4089r1-t2",
+  "p4089r1-t7"
+ ],
+ "checked_pages": "all",
+ "source_pdf": "https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2026/p4089r1.pdf",
+ "set": "heldout-2026-10"
+}

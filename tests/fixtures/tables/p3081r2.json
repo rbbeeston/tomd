@@ -1,0 +1,152 @@
+{
+ "paper": "p3081r2",
+ "tables": [
+  {
+   "id": "p3081r2-t1",
+   "pages": [
+    0
+   ],
+   "rows": [
+    [
+     "Document Number:",
+     "P3081 R2"
+    ],
+    [
+     "Date:",
+     "2025-02-04"
+    ],
+    [
+     "Reply-to:",
+     "Herb Sutter (herb.sutter@gmail.com)"
+    ],
+    [
+     "Audience:",
+     "EWG, LEWG"
+    ]
+   ],
+   "group": null,
+   "source": "typed",
+   "scope": "front-matter",
+   "note": "unruled tab-aligned title-page metadata block; found by recall scan"
+  },
+  {
+   "id": "p3081r2-t2",
+   "pages": [
+    4
+   ],
+   "rows": [
+    [
+     "",
+     "Tactic",
+     "Adoptability / UX",
+     "Manual code changes?"
+    ],
+    [
+     "Fix",
+     "If efficient and feasible, give the code the intended and safe semantics (i.e., make the code do the right and safe thing) “Efficient” can include providing guarantees (or evidence such as binary object comparison) of functionality and performance Such a semantic improvement should always apply to both “enforced” and “non-enforced” mode, so that code that compiles cleanly in both modes means the same thing",
+     "“Holy grail”: Automatically fixes bugs in existing code just by recompiling the code Plus some cases can perform reliable automatic source M modernization",
+     "None ✓"
+    ],
+    [
+     "Reject",
+     "Diagnose violations at compile time, and where possible provide a clear “use this instead” correction This is always “Ill-Formed, Diagnostic Required”",
+     "“If it compiles then it’s safe” Plus some cases can perform reliable automatic source M modernization",
+     "Violations must be addressed by manual or automatic code changes"
+    ],
+    [
+     "Check",
+     "Where necessary, diagnose violations at run time, and let the program customize how violations are handled (ideally the same as contract group violation handlers, once those are available)",
+     "Automatically diagnoses bugs in existing code just by recompiling the code",
+     "None ✓"
+    ]
+   ],
+   "group": "g1",
+   "source": "verified-draft",
+   "scope": "table",
+   "note": "hyphenated line breaks rejoined; 'M' is a highlighted marker glyph"
+  },
+  {
+   "id": "p3081r2-t3",
+   "pages": [
+    5
+   ],
+   "rows": [
+    [
+     "Adoption std:: level for a given profile P",
+     "What parts of P are enabled",
+     "Adoptability",
+     "Safety improvement"
+    ],
+    [
+     "suppress(P)",
+     "None",
+     "n/a — ordinary no-guardrails C++",
+     "None"
+    ],
+    [
+     "apply(P)",
+     "Fix ✓ Check ✓ Modernize ✓ QoI: Optionally also emit Reject as warnings (optional so as not to break warnings-as-errors)",
+     "Zero manual source code changes All existing code still compiles, “It Just Works” Plus offer reliable automatic “fixit” improvements",
+     "Some safety benefits “for free [in terms of manual code changes]”: all automatic fixes and checks applied, all other improvements are non-mandatory suggestions “Just recompile with profiles enabled and start seeing benefit”"
+    ],
+    [
+     "enforce(P)",
+     "Plus Reject ✓",
+     "Plus Reject violations will break the build, and require code changes",
+     "Full safety benefits"
+    ]
+   ],
+   "group": "g2",
+   "source": "verified-draft",
+   "scope": "table",
+   "note": "hyphenated line breaks rejoined"
+  },
+  {
+   "id": "p3081r2-t4",
+   "pages": [
+    7
+   ],
+   "rows": [
+    [
+     "profile-name",
+     "Subclauses"
+    ],
+    [
+     "std::type",
+     "[expr.reinterpret.cast] , [expr.const.cast], [expr.static.cast], [expr.dynamic.cast], [class.base.init], [cstdarg.syn], [class.union.general]"
+    ],
+    [
+     "std::bounds",
+     "[expr.add], [expr.sub], [expr.pre.incr], [expr.post.incr], [expr.pre.ass], [conv.array]"
+    ],
+    [
+     "std::lifetime",
+     "[expr.delete], [c.malloc], [expr.unary.op]"
+    ],
+    [
+     "std::arithmetic",
+     "[dcl.init.list], [conv.integral], [expr.pre]"
+    ]
+   ],
+   "group": "g3",
+   "source": "verified-draft",
+   "scope": "table",
+   "note": "Table X in inserted wording (caption excluded); 'class.un-ion.general' line break rejoined"
+  }
+ ],
+ "not_tables": [
+  {
+   "group": "g4",
+   "pages": [
+    16
+   ],
+   "reason": "shaded 'Notes' callout box (label + prose), not a table"
+  }
+ ],
+ "missed_by_all": [
+  "p3081r2-t1"
+ ],
+ "checked_pages": "all",
+ "source_pdf": "https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2025/p3081r2.pdf",
+ "set": "heldout-2026-10"
+}

@@ -1,0 +1,125 @@
+{
+ "paper": "p2873r3",
+ "tables": [
+  {
+   "id": "p2873r3-t1",
+   "pages": [
+    0
+   ],
+   "rows": [
+    [
+     "Document #:",
+     "P2873R3"
+    ],
+    [
+     "Date:",
+     "2025-03-16"
+    ],
+    [
+     "Project:",
+     "Programming Language C++"
+    ],
+    [
+     "Audience:",
+     "LWG"
+    ],
+    [
+     "Reply-to:",
+     "Alisdair Meredith <ameredith1@bloomberg.net> Tom Honermann <tom@honermann.net>"
+    ]
+   ],
+   "group": null,
+   "source": "typed",
+   "scope": "front-matter",
+   "note": "title-page metadata block; no group covered it"
+  },
+  {
+   "id": "p2873r3-t2",
+   "pages": [
+    6
+   ],
+   "rows": [
+    [
+     "SF",
+     "F",
+     "N",
+     "A",
+     "SA"
+    ],
+    [
+     "11",
+     "7",
+     "0",
+     "0",
+     "0"
+    ]
+   ],
+   "group": null,
+   "source": "typed",
+   "scope": "table",
+   "note": "poll result in shaded preformatted block; no group covered it"
+  },
+  {
+   "id": "p2873r3-t3",
+   "pages": [
+    7
+   ],
+   "rows": [
+    [
+     "SF",
+     "F",
+     "N",
+     "A",
+     "SA"
+    ],
+    [
+     "9",
+     "7",
+     "0",
+     "0",
+     "0"
+    ]
+   ],
+   "group": null,
+   "source": "typed",
+   "scope": "table",
+   "note": "poll result in shaded preformatted block; no group covered it"
+  },
+  {
+   "id": "p2873r3-t4",
+   "pages": [
+    7
+   ],
+   "rows": [
+    [
+     "SF",
+     "F",
+     "N",
+     "A",
+     "SA"
+    ],
+    [
+     "2",
+     "4",
+     "0",
+     "0",
+     "0"
+    ]
+   ],
+   "group": null,
+   "source": "typed",
+   "scope": "table",
+   "note": "poll result in shaded preformatted block; no group covered it"
+  }
+ ],
+ "not_tables": [],
+ "missed_by_all": [
+  "p2873r3-t1",
+  "p2873r3-t2",
+  "p2873r3-t3",
+  "p2873r3-t4"
+ ],
+ "checked_pages": "all",
+ "source_pdf": "https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2025/p2873r3.pdf",
+ "set": "heldout-2026-10"
+}

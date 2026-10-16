@@ -269,7 +269,7 @@ The table pipeline (independent readers and their evidence, selection, verificat
 **T34. Table rendering**
 - `emit.py:_render_table`
 - GitHub-style Markdown pipe tables. First row = header with bold suppressed.
-- Lines of a wrapped cell are joined with `<br>` (a word hyphenated at the break is rejoined); `|` is escaped as `\|`.
+- Lines of a wrapped cell are joined with `<br>`; a word hyphenated at the break is rejoined, dropping the hyphen for a syllable break (short fragment or short continuation) and keeping it for a compound; letters stacked one per line ("S" / "F") read as one word; `|` is escaped as `\|`.
 - An UNCERTAIN table is preceded by a `tomd:uncertain` marker, and its prompt lists the table from every source.
 
 **T35. Uncertain region marking**

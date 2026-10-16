@@ -1,0 +1,58 @@
+{
+ "paper": "p3866r0",
+ "tables": [
+  {
+   "id": "p3866r0-t1",
+   "pages": [
+    0
+   ],
+   "rows": [
+    [
+     "Historical evolution",
+     "",
+     "If V2 were adopted",
+     ""
+    ],
+    [
+     "Old",
+     "New",
+     "Old",
+     "New"
+    ],
+    [
+     "std::lock_guard x(m);",
+     "std::scoped_lock x(m);",
+     "std::lock_guard x(m); std::cpp11::lock_guard y(m);",
+     "std::lock_guard2 x(m); std::cpp17::lock_guard y(m);"
+    ],
+    [
+     "std::sort( v.begin(), v.end());",
+     "std::ranges::sort( v.begin(), v.end());",
+     "std::sort( v.begin(), v.end()); std::cpp17::sort( v.begin(), v.end());",
+     "std::sort2( v.begin(), v.end()); std::cpp20::sort( v.begin(), v.end());"
+    ],
+    [
+     "std::function f = /*...*/;",
+     "std::copyable_function f = /*...*/;",
+     "std::function f = /*...*/; std::cpp11::function g = /*...*/;",
+     "std::function2 f = /*...*/; std::cpp26::function g = /*...*/;"
+    ],
+    [
+     "std::thread t = /*...*/;",
+     "std::jthread t = /*...*/;",
+     "std::thread t = /*...*/; std::cpp11::thread u = /*...*/;",
+     "std::thread2 t = /*...*/; std::cpp20::thread u = /*...*/;"
+    ]
+   ],
+   "group": "g1",
+   "source": "picked:ruled1",
+   "note": "2-level header; top header cells span 2 columns",
+   "scope": "table"
+  }
+ ],
+ "not_tables": [],
+ "missed_by_all": [],
+ "checked_pages": "all",
+ "source_pdf": "https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2025/p3866r0.pdf",
+ "set": "heldout-2026-10"
+}

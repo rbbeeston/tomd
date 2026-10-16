@@ -1,0 +1,44 @@
+{
+ "paper": "p3681r0",
+ "tables": [
+  {
+   "id": "p3681r0-t1",
+   "pages": [
+    0
+   ],
+   "rows": [
+    [
+     "Document #:",
+     "P3681R0"
+    ],
+    [
+     "Date:",
+     "2025-05-19"
+    ],
+    [
+     "Programming Language C++",
+     ""
+    ],
+    [
+     "Audience:",
+     "SG-16"
+    ],
+    [
+     "Reply-to:",
+     "Corentin Jabot <corentin.jabot@gmail.com>"
+    ]
+   ],
+   "group": null,
+   "source": "typed",
+   "scope": "front-matter",
+   "note": "unruled metadata block; 'Programming Language C++' sits in the label column with no value (as printed); missed by all"
+  }
+ ],
+ "not_tables": [],
+ "missed_by_all": [
+  "p3681r0-t1"
+ ],
+ "checked_pages": "all",
+ "source_pdf": "https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2025/p3681r0.pdf",
+ "set": "heldout-2026-10"
+}

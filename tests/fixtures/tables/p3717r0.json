@@ -1,0 +1,40 @@
+{
+ "paper": "p3717r0",
+ "tables": [
+  {
+   "id": "p3717r0-t1",
+   "pages": [
+    0
+   ],
+   "rows": [
+    [
+     "Document #:",
+     "P3717R0"
+    ],
+    [
+     "Date:",
+     "2025-05-19"
+    ],
+    [
+     "Project:",
+     "Programming Language C++"
+    ],
+    [
+     "Audience:",
+     "SG16, EWG, CWG"
+    ]
+   ],
+   "group": null,
+   "source": "typed",
+   "note": "unruled title-page metadata block",
+   "scope": "front-matter"
+  }
+ ],
+ "not_tables": [],
+ "missed_by_all": [
+  "p3717r0-t1"
+ ],
+ "checked_pages": "all",
+ "source_pdf": "https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2025/p3717r0.pdf",
+ "set": "heldout-2026-10"
+}

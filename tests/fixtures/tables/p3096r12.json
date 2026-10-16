@@ -1,0 +1,152 @@
+{
+ "paper": "p3096r12",
+ "tables": [
+  {
+   "id": "p3096r12-t1",
+   "pages": [
+    0
+   ],
+   "rows": [
+    [
+     "Document #:",
+     "P3096R12"
+    ],
+    [
+     "Date:",
+     "2025-06-20"
+    ],
+    [
+     "Project:",
+     "Programming Language C++"
+    ],
+    [
+     "Audience:",
+     "Core Language Wording Library Wording"
+    ],
+    [
+     "Reply-to:",
+     "Adam Lach <adamlach@gmail.com> Dan Katz <dkatz85@bloomberg.net> Walter Genovese <wgenovese@bloomberg.net>"
+    ]
+   ],
+   "group": null,
+   "source": "typed",
+   "note": "unruled title-page metadata block; multi-line values joined",
+   "scope": "front-matter"
+  },
+  {
+   "id": "p3096r12-t2",
+   "pages": [
+    7
+   ],
+   "rows": [
+    [
+     "Before",
+     "After"
+    ],
+    [
+     "py::class_<Execution> scope(m, \"Execution\"); scope.def(py::init<Order, Execution::Type>()); scope.def(py::init<Order, Execution::Type, double, size_t>());",
+     "py::class_<Execution> scope(m, \"Execution\"); bind_class(scope);"
+    ]
+   ],
+   "group": "g1",
+   "source": "typed",
+   "note": "before/after code table; ruled1 split code lines into rows",
+   "scope": "table"
+  },
+  {
+   "id": "p3096r12-t3",
+   "pages": [
+    8
+   ],
+   "rows": [
+    [
+     "Before",
+     "After"
+    ],
+    [
+     "py::class_<Execution> scope(m, \"Execution\"); scope.def(py::init<Order, Execution::Type>(), py::arg(\"order\"), py::arg(\"type\")); scope.def(py::init<Order, Execution::Type, double, size_t>(), py::arg(\"order\"), py::arg(\"type\"), py::arg(\"price\"), py::arg(\"quantity\") = 0);",
+     "py::class_<Execution> scope(m, \"Execution\"); bind_class(scope);"
+    ]
+   ],
+   "group": "g2",
+   "source": "typed",
+   "note": "before/after code table",
+   "scope": "table"
+  },
+  {
+   "id": "p3096r12-t4",
+   "pages": [
+    14
+   ],
+   "rows": [
+    [
+     "",
+     "consistent",
+     "order independent",
+     "immediately applicable",
+     "self-contained",
+     "robust"
+    ],
+    [
+     "No Guarantees",
+     "no",
+     "no",
+     "yes",
+     "yes",
+     "no"
+    ],
+    [
+     "Improved Consistency",
+     "yes",
+     "no",
+     "yes",
+     "yes",
+     "yes"
+    ],
+    [
+     "Enforced Consistent Naming",
+     "yes",
+     "yes",
+     "partially",
+     "yes",
+     "yes"
+    ],
+    [
+     "Language Attribute",
+     "yes",
+     "yes",
+     "no",
+     "no",
+     "yes"
+    ],
+    [
+     "User Defined Attribute",
+     "yes",
+     "yes",
+     "no",
+     "no",
+     "yes"
+    ]
+   ],
+   "group": "g3",
+   "source": "edited:ruled3",
+   "note": "2-line headers merged; 'self-' / 'contained' line break joined without space (compound hyphen)",
+   "scope": "table"
+  }
+ ],
+ "not_tables": [
+  {
+   "group": "g4",
+   "pages": [
+    22
+   ],
+   "reason": "wording insert paragraph (underlined green text)"
+  }
+ ],
+ "missed_by_all": [
+  "p3096r12-t1"
+ ],
+ "checked_pages": "all",
+ "source_pdf": "https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2025/p3096r12.pdf",
+ "set": "heldout-2026-10"
+}

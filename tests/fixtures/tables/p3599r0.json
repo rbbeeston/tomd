@@ -1,0 +1,44 @@
+{
+ "paper": "p3599r0",
+ "tables": [
+  {
+   "id": "p3599r0-t1",
+   "pages": [
+    0
+   ],
+   "rows": [
+    [
+     "Document #:",
+     "P3599R0"
+    ],
+    [
+     "Date:",
+     "2025-01-30"
+    ],
+    [
+     "Project:",
+     "Programming Language C++"
+    ],
+    [
+     "Audience:",
+     "SG21 (Contracts), SG23 (Safety and Security), EWG, LEWG"
+    ],
+    [
+     "Reply-to:",
+     "Joshua Berne <jberne4@bloomberg.net> Timur Doumler <papers@timur.audio>"
+    ]
+   ],
+   "group": null,
+   "source": "typed",
+   "note": "title-page metadata block; multi-line values joined",
+   "scope": "front-matter"
+  }
+ ],
+ "not_tables": [],
+ "missed_by_all": [
+  "p3599r0-t1"
+ ],
+ "checked_pages": "all",
+ "source_pdf": "https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2025/p3599r0.pdf",
+ "set": "heldout-2026-10"
+}
