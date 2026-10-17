@@ -517,3 +517,48 @@ class TestVerifyLayout:
         assert verify_layout(sec, words) == ""                  # same boundaries: fine
         words[2:4] = [(x0, y0, x1, y1, "alphabeta", 0, 0, 0)]
         assert verify_layout(sec, words) == "word-boundaries"
+
+
+class TestGutter:
+    def _rows(self, rows, page=2):
+        return Block(lines=[_line(t, 50 + 160 * c, 100 + 14 * r, page)
+                            for r, row in enumerate(rows) for c, t in enumerate(row) if t],
+                     page_num=page)
+
+    def test_unruled_table_has_a_gutter(self):
+        from lib.pdf.flag import gutter_regions
+        blk = self._rows([["Rev.", "Date"], ["0", "2023-09-14"], ["1", "2024-01-02"],
+                          ["2", "2024-05-06"]])
+        assert len(gutter_regions([blk])) == 1
+
+    def test_numbered_paragraphs_are_not_a_table(self):
+        from lib.pdf.flag import gutter_regions
+        blk = self._rows([["(1.1)", "Constraints: the type models the concept."],
+                          ["(1.2)", "Effects: equivalent to calling the function."],
+                          ["(1.3)", "Returns: a reference to the stored value."]])
+        assert gutter_regions([blk]) == []
+
+    def test_contents_with_leaders_are_not_a_table(self):
+        from lib.pdf.flag import gutter_regions
+        blk = self._rows([["Introduction . . . . .", "3"], ["Design . . . . . .", "5"],
+                          ["Wording . . . . . .", "9"]])
+        assert gutter_regions([blk]) == []
+
+
+def test_ocr_tokens_short_must_match_long_may_be_fuzzy():
+    from lib.pdf.ocrcheck import mismatched_tokens
+    assert mismatched_tokens(["SF", "WF", "N"], "SF F N") == ["WF"]
+    assert mismatched_tokens(["Description"], "Descriptlon") == []
+    assert mismatched_tokens(["SF"], "") == []          # no OCR evidence, no verdict
+
+
+def test_skipped_document_leaves_a_visible_trace():
+    import fitz
+    from lib.pdf import PipelineResult, _skip
+    doc = fitz.open()
+    page = doc.new_page()
+    page.insert_text((72, 100), "SF F N A SA", fontsize=10)
+    r = PipelineResult()
+    _skip(r, doc, "slide deck", "# skipped\n")
+    assert r.skipped and r.md.startswith("<!-- tomd:skipped:slide deck:")
+    assert "1 page(s) with table candidates" in r.md and r.discards

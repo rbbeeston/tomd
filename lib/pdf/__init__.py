@@ -14,7 +14,7 @@ from .wording import classify_wording, collect_line_drawings
 from .spans import normalize_spans
 from .structure import compare_extractions, structure_sections
 from .table import detect_tables, select_tables, remove_table_regions
-from .flag import text_regions, rejected_regions, flag_possible_tables
+from .flag import text_regions, gutter_regions, rejected_regions, flag_possible_tables
 from .classify import gate_tables
 from .ruled import extract_ruled_tables
 from .tagged import extract_tagged_tables
@@ -144,6 +144,44 @@ class PipelineResult:
     readable: bool = True
     skipped: bool = False
     skip_reason: str = ""
+    # every content the pipeline decided to drop: (what, why, detail)
+    discards: list = field(default_factory=list)
+
+
+_SCAN_PAGES = 300
+_POLL_LINE = re.compile(r"^\s*(SF\s+F\s+N\s+A\s+SA|F\s+N\s+A)\s*$", re.M)
+_TABLE_CAPTION = re.compile(r"^\s*Table\s+\d+(\.\d+)?\b", re.M)
+
+
+def _quick_table_scan(doc) -> list[int]:
+    """Pages (0-based) with a poll header or a "Table N" caption; cheap."""
+    pages = []
+    for i in range(min(doc.page_count, _SCAN_PAGES)):
+        text = doc[i].get_text()
+        if _POLL_LINE.search(text) or _TABLE_CAPTION.search(text):
+            pages.append(i)
+    return pages
+
+
+def _skip(result, doc, reason: str, prompt: str) -> None:
+    """Skip converting a document, but never silently.
+
+    The Markdown says the document was skipped and why, and a cheap scan
+    reports how many pages look like they hold tables, so a wrong skip
+    (p4277r0 was skipped as a Working Draft with 85 tables) is visible.
+    """
+    pages = _quick_table_scan(doc)
+    scanned = min(doc.page_count, _SCAN_PAGES)
+    where = (f"on pages {', '.join(str(p + 1) for p in pages[:20])}"
+             f"{' ...' if len(pages) > 20 else ''}") if pages else ""
+    note = (f"{len(pages)} page(s) with table candidates (poll headers or table captions) "
+            f"in the first {scanned} of {doc.page_count} pages {where}").strip()
+    _log.warning("Skipping %s (%d pages): %s", reason, doc.page_count, note)
+    result.skipped = True
+    result.skip_reason = reason
+    result.md = f"<!-- tomd:skipped:{reason}: {note} -->\n"
+    result.prompts = prompt + f"\nNot converted, so nothing below was checked: {note}.\n"
+    result.discards.append(("document", reason, note))
 
 
 def _horizontal_share(page) -> float:
@@ -190,23 +228,15 @@ def _run_pipeline(path: Path) -> PipelineResult:
             return result
 
         if _is_slide_deck(doc):
-            _log.info("Detected slide deck (%d pages), skipping conversion",
-                       result.page_count)
-            result.skipped = True
-            result.skip_reason = "slide deck"
-            result.prompts = "# tomd - Slide Deck Detected\n\n" \
-                "This PDF appears to be a presentation / slide deck. " \
-                "tomd does not convert slide decks to Markdown.\n"
+            _skip(result, doc, "slide deck", "# tomd - Slide Deck Detected\n\n"
+                  "This PDF appears to be a presentation / slide deck. "
+                  "tomd does not convert slide decks to Markdown.\n")
             return result
 
         if _is_standards_draft(doc):
-            _log.info("Detected standards draft (%d pages), skipping conversion",
-                       result.page_count)
-            result.skipped = True
-            result.skip_reason = "standards draft"
-            result.prompts = "# tomd - Standards Draft Detected\n\n" \
-                f"This PDF has {result.page_count} pages and appears to be " \
-                "a standards draft. tomd is designed for technical papers.\n"
+            _skip(result, doc, "standards draft", "# tomd - Standards Draft Detected\n\n"
+                  f"This PDF has {result.page_count} pages and appears to be "
+                  "a standards draft. tomd is designed for technical papers.\n")
             return result
 
         all_mupdf_blocks = []
@@ -275,6 +305,8 @@ def _run_pipeline(path: Path) -> PipelineResult:
 
     if all_hidden:
         _log.info("Stripping text hidden by %d covered regions", len(all_hidden))
+        result.discards.append(("hidden", f"text under {len(all_hidden)} covered region(s) "
+                                "removed", ""))
         all_mupdf_blocks = strip_hidden_blocks(all_mupdf_blocks, all_hidden)
         all_spatial_blocks = strip_hidden_blocks(all_spatial_blocks, all_hidden)
 
@@ -287,6 +319,8 @@ def _run_pipeline(path: Path) -> PipelineResult:
     repeating = detect_repeating(all_edge_items, result.page_count)
     if repeating:
         _log.info("Stripping %d repeating header/footer patterns", len(repeating))
+        result.discards.append(("headers", f"{len(repeating)} repeating header/footer "
+                                "pattern(s) removed", ", ".join(sorted(map(str, repeating))[:3])[:120]))
         all_mupdf_blocks = strip_repeating(all_mupdf_blocks, repeating)
         all_spatial_blocks = strip_repeating(all_spatial_blocks, repeating)
 
@@ -324,7 +358,7 @@ def _run_pipeline(path: Path) -> PipelineResult:
         all_spatial_blocks = remove_table_regions(all_spatial_blocks, table_sections)
     # Table-like areas left in the text, marked uncertain once sections exist.
     possible_tables = (rejected_regions(rejected_tables, table_sections)
-                       + text_regions(all_mupdf_blocks))
+                       + text_regions(all_mupdf_blocks) + gutter_regions(all_mupdf_blocks))
 
     sections = compare_extractions(all_mupdf_blocks, all_spatial_blocks)
 
@@ -362,6 +396,11 @@ def _run_pipeline(path: Path) -> PipelineResult:
     if toc_indices:
         # A selected table is never a contents entry: dropping it would lose
         # the table silently.
+        removed = [s for i, s in enumerate(sections)
+                   if i in toc_indices and s.kind != SectionKind.TABLE]
+        if removed:
+            result.discards.append(("contents", f"{len(removed)} section(s) taken for a table "
+                                    "of contents", removed[0].text.split("\n")[0][:80]))
         sections = [s for i, s in enumerate(sections)
                     if i not in toc_indices or s.kind == SectionKind.TABLE]
 
@@ -376,6 +415,12 @@ def _run_pipeline(path: Path) -> PipelineResult:
         else:
             prompts = "# tomd - Conversion Issues\n" + wording_prompt
 
+    if result.discards:
+        lines = ["\n## Removed content\n",
+                 "tomd removed this content on purpose; check it if something is missing."]
+        lines += [f"- {what}: {why}" + (f" (e.g. \"{detail}\")" if detail else "")
+                  for what, why, detail in result.discards]
+        prompts = (prompts or "# tomd - Conversion Issues\n") + "\n".join(lines) + "\n"
     result.md = md
     result.prompts = prompts
     result.sections = sections

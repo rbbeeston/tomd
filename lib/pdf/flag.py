@@ -159,6 +159,93 @@ def text_regions(blocks: list[Block]) -> list[Region]:
     return out
 
 
+# A hanging label in a margin column: paragraph and section numbers, list
+# marks, citation keys, code line numbers. Label + text is a list, not a table.
+_HANGING_LABEL = re.compile(
+    r"^(\(?\d+(\.\d+)*\)?\.?|[—–•◦▪o*\-]|\[[^\]]{1,40}\]|\(?[ivxlcIVXLC]+[.)]|\(?[a-zA-Z][.)])$")
+_LEADER = re.compile(r"(\. ?){4,}")
+_GUTTER_MIN = 8.0         # a whitespace gutter at least this wide (pt)...
+_GUTTER_ROWS = 3         # ...with text on both sides in this many rows
+_STOP = {"the", "a", "an", "of", "to", "and", "is", "in", "that", "for", "with", "be",
+         "are", "this", "it", "on", "as", "by", "not", "or", "we", "can", "which"}
+
+
+def _prose(text: str) -> bool:
+    """A sentence: several words, many of them function words."""
+    words = re.findall(r"[A-Za-z']+", text)
+    return len(words) >= 6 and sum(w.lower() in _STOP for w in words) >= 0.2 * len(words)
+
+
+def gutter_regions(blocks: list[Block]) -> list[Region]:
+    """Tables found by their negative space: a vertical whitespace gutter.
+
+    A table without rules still leaves an empty vertical strip between its
+    columns that runs down consecutive lines, with text on both sides.
+    Running text has none (it fills the measure and wraps), and neither do
+    lists or headings. Each run of at least _GUTTER_ROWS lines with text on
+    both sides of one gutter is a region, unless it is two-column prose
+    (sentences on both sides), code with aligned comments, a contents page
+    or title-page metadata.
+    """
+    out: list[Region] = []
+    for page, rows in _rows(blocks).items():
+        runs: list[dict] = []
+        done: list[dict] = []
+        for top, bot, segs in rows:
+            segs = [g for g in segs if _ALNUM.search(g[2])]
+            if not segs:
+                continue
+            gaps = [(a[1], b[0]) for a, b in zip(segs, segs[1:]) if b[0] - a[1] >= _COL_GAP]
+            alive = []
+            for run in runs:
+                a, b = run["iv"]
+                near = top - run["bot"] <= _ROW_SPACING * max(run["bot"] - run["top"], 1)
+                crosses = any(g[0] < b - 1 and g[1] > a + 1 for g in segs)
+                if not near or crosses:
+                    done.append(run)
+                    continue
+                gap = next(((x, y) for x, y in gaps if x <= a + 1 and y >= b - 1 or
+                            min(y, b) - max(x, a) >= _GUTTER_MIN), None)
+                if gap:                       # text on both sides: narrow to the shared strip
+                    run["iv"] = (max(a, gap[0]), min(b, gap[1]))
+                    run["both"].append((top, bot, segs))
+                run["bot"], run["top"] = bot, top
+                alive.append(run)
+            for gap in gaps:
+                if not any(min(r["iv"][1], gap[1]) - max(r["iv"][0], gap[0]) >= _GUTTER_MIN
+                           for r in alive):
+                    alive.append({"iv": gap, "both": [(top, bot, segs)], "top": top, "bot": bot})
+            runs = [r for r in alive if r["iv"][1] - r["iv"][0] >= _GUTTER_MIN]
+        done += runs
+        seen: set = set()
+        for run in done:
+            rws = run["both"]
+            key = (rws[0][0], rws[-1][1]) if rws else None
+            if len(rws) < _GUTTER_ROWS or key in seen:
+                continue
+            seen.add(key)
+            a, b = run["iv"]
+            left = [" ".join(g[2] for g in segs if g[1] <= a + 1) for _, _, segs in rws]
+            right = [" ".join(g[2] for g in segs if g[0] >= b - 1) for _, _, segs in rws]
+            if sum(_prose(l) and _prose(r) for l, r in zip(left, right)) >= 0.5 * len(rws):
+                continue                      # two-column page layout
+            if sum(r.lstrip().startswith(_COMMENT) for r in right) >= 0.5 * len(rws):
+                continue                      # code with aligned comments
+            if (sum(bool(_HANGING_LABEL.match(l.strip())) for l in left) >= 0.7 * len(rws)
+                    and sum(len(r.split()) for r in right) >= 4 * len(rws)):
+                continue                      # numbered paragraphs, citations: label + text
+            if sum(bool(_LEADER.search(l + " " + r)) for l, r in zip(left, right)) >= 0.3 * len(rws):
+                continue                      # contents with dot leaders
+            if _is_not_table([(t, bt, sg) for t, bt, sg in rws], page):
+                continue                      # contents, numbered code, front matter
+            x0 = min(sg[0][0] for _, _, sg in rws)
+            x1 = max(sg[-1][1] for _, _, sg in rws)
+            out.append((page, (x0, rws[0][0], x1, rws[-1][1]),
+                        f"a whitespace gutter runs down {len(rws)} lines with text on both sides",
+                        len(rws)))
+    return out
+
+
 def rejected_regions(rejected: list[TableCandidate], tables: list[Section]) -> list[Region]:
     """Areas of rejected drawing/tag tables that no selected table covers."""
     taken = defaultdict(list)
