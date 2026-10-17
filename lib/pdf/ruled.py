@@ -651,7 +651,8 @@ def _bands_to_table(page_num, in_x, bands, x0, x1, header_above,
     return TableCandidate("rules", rows, {page_num: (x0, top, x1, bands[-1][1])})
 
 
-_CODE_BODY = 0.8          # this share of monospace body text: a before/after code pair
+_CODE_BODY = 0.8          # this share of monospace body text: a before/after code pair...
+_CODE_STATEMENTS = 0.3    # ...when this share of its lines has a brace or semicolon
 
 
 def _join_wrapped_lines(rows):
@@ -674,7 +675,12 @@ def _join_wrapped_lines(rows):
     body = [ln for r in rows[1:] for cell in r for ln in cell]
     chars = sum(len(s.text.strip()) for ln in body for s in ln.spans)
     mono = sum(len(s.text.strip()) for ln in body for s in ln.spans if s.monospace)
-    if chars and mono >= _CODE_BODY * chars and ncol <= 3:
+    # A before/after listing is statements, not names: many lines carry a
+    # brace or a semicolon. A table of monospace identifiers (function |
+    # return type) is all monospace too, but its lines are separate rows.
+    stmt = sum(1 for ln in body if any(ch in ln.text for ch in "{};"))
+    if (chars and mono >= _CODE_BODY * chars and ncol <= 3
+            and stmt >= _CODE_STATEMENTS * len(body)):
         merged = [[ln for r in rows[1:] for ln in r[c]] for c in range(ncol)]
         return [rows[0], merged]
     right = [max((ln.bbox[2] for r in rows for ln in r[c]), default=0.0) for c in range(ncol)]
