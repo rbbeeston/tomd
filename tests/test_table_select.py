@@ -360,6 +360,12 @@ class TestBooktabsRows:
                            ["P2", "x" * 50]])
         assert len(_join_wrapped_lines(rows)) == 4
 
+    def test_monospace_identifier_table_keeps_its_rows(self):
+        from lib.pdf.ruled import _join_wrapped_lines
+        rows = self._rows([["Alias", "Meaning"], ["vertex_t<G>", "vertex"],
+                           ["edge_t<G>", "edge"], ["graph_t", "graph"]], mono=True)
+        assert len(_join_wrapped_lines(rows)) == 4
+
     def test_code_body_is_one_row(self):
         from lib.pdf.ruled import _join_wrapped_lines
         rows = self._rows([["Before", "After"], ["int a;", "auto a = 0;"], ["f(a);", "f(a);"]],
@@ -454,3 +460,19 @@ class TestHyphenation:
     def test_angle_brackets_escaped_outside_code(self):
         assert _render_cell_spans([make_span("Wang <m@x.org>")]) == "Wang \\<m@x.org>"
         assert _render_cell_spans([make_span("vector<int>", monospace=True)]) == "`vector<int>`"
+
+
+def test_jev_calls_are_batched_and_failures_fall_back(monkeypatch):
+    import lib.pdf.classify as C
+    calls = []
+
+    def fake(key, paper, regions, first):
+        calls.append(len(regions))
+        if first:                          # the second batch fails
+            return [("", 0.0)] * len(regions), ""
+        return [("table", 0.9)] * len(regions), "jev-x"
+    monkeypatch.setattr(C, "_jev_key", lambda: "k")
+    monkeypatch.setattr(C, "_jev_batch", fake)
+    out, version = C.jev_table_or_not("p1", [(0, {}, "LaTeX", [])] * 45)
+    assert calls == [30, 15] and version == "jev-x"
+    assert out[:30] == [("table", 0.9)] * 30 and out[30:] == [("", 0.0)] * 15

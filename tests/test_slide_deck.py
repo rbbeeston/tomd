@@ -69,17 +69,34 @@ class TestSlideDeckDetection:
         assert _is_slide_deck(doc) is True
 
 
+def _titled(doc, text):
+    """Give the mock's first page this text."""
+    first = doc[0] if doc.page_count else None
+    if first is not None:
+        first.get_text = lambda *a, **k: text
+    return doc
+
+
+_WD = "Document Number: N5054 Working Draft Programming Languages — C++"
+
+
 class TestStandardsDraftDetection:
-    def test_large_document_is_standards_draft(self):
-        doc = _mock_doc([(612, 792)] * 250)
+    def test_large_working_draft_is_standards_draft(self):
+        doc = _titled(_mock_doc([(612, 792)] * 250), _WD)
         assert _is_standards_draft(doc) is True
 
     def test_exactly_200_pages_is_standards_draft(self):
-        doc = _mock_doc([(612, 792)] * 200)
+        doc = _titled(_mock_doc([(612, 792)] * 200), _WD)
         assert _is_standards_draft(doc) is True
 
+    def test_long_paper_is_not_a_standards_draft(self):
+        # p4277r0: a 233-page implementation report was skipped by page count
+        doc = _titled(_mock_doc([(612, 792)] * 233),
+                      "Overview and Implementation Report for P3100 Document #: P4277R0")
+        assert _is_standards_draft(doc) is False
+
     def test_199_pages_is_not_standards_draft(self):
-        doc = _mock_doc([(612, 792)] * 199)
+        doc = _titled(_mock_doc([(612, 792)] * 199), _WD)
         assert _is_standards_draft(doc) is False
 
     def test_small_document_is_not_standards_draft(self):

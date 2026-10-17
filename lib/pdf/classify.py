@@ -227,28 +227,45 @@ def _geometry(x: dict, gen: str) -> str:
             f"PDF {'has' if x['doc_tagged'] else 'has no'} accessibility tags; made with {gen}")
 
 
+_JEV_BATCH = 30      # regions per call: one 105-page table (~225 regions) was refused
+
+
 def jev_table_or_not(paper: str, regions: list) -> tuple[list, str]:
-    """One call for all of a paper's table areas: [(label, probability)], version."""
+    """[(label, probability)] for every table area, and the Jev version(s).
+
+    The areas go in batches of _JEV_BATCH per call. An area whose batch
+    fails gets ("", 0.0), and the gate falls back to the tree for it.
+    """
     key = _jev_key()
     if not key or not regions:
         return [], ""
+    out, versions = [], []
+    for i in range(0, len(regions), _JEV_BATCH):
+        part, version = _jev_batch(key, paper, regions[i:i + _JEV_BATCH], i)
+        out += part
+        if version and version not in versions:
+            versions.append(version)
+    return out, ",".join(versions)
+
+
+def _jev_batch(key: str, paper: str, regions: list, first: int) -> tuple[list, str]:
     lines = [f"Candidate table regions found in the WG21 paper {paper}. For each: the "
              "drawing and font facts, then its text rows (pieces separated by ' | ' "
              "where the text has wide gaps)."]
     qs = {}
     for i, (page_num, x, gen, text) in enumerate(regions):
-        lines.append(f"\nRegion {i + 1} (page {page_num + 1}): {_geometry(x, gen)}.")
+        lines.append(f"\nRegion {first + i + 1} (page {page_num + 1}): {_geometry(x, gen)}.")
         lines += [f"  {t[:140]}" for t in text[:15]]
         qs[f"t{i}"] = {"type": "choice", "criteria": _TABLE_CRITERIA,
-                       "instructions": f"What is region {i + 1}?"}
+                       "instructions": f"What is region {first + i + 1}?"}
     body = {"state": "\n".join(lines), "model": "jev-latest", "questions": qs}
     req = urllib.request.Request(_JEV_URL, data=json.dumps(body).encode(), headers={
         "Authorization": "Bearer " + key, "Content-Type": "application/json"})
     try:
         r = json.load(urllib.request.urlopen(req, timeout=60))
     except (urllib.error.URLError, OSError, ValueError) as e:
-        _log.warning("Jev call failed (%s); gating with the tree alone", e)
-        return [], ""
+        _log.warning("Jev call failed (%s); gating %d areas with the tree alone", e, len(regions))
+        return [("", 0.0)] * len(regions), ""
     out = []
     for i in range(len(regions)):
         a = r.get("answers", {}).get(f"t{i}", {})
@@ -282,7 +299,7 @@ def gate_tables(doc, pages, sections: list[Section], paper: str = "") -> dict:
         kind, kp = predict(TABLE_TREE, x)
         layout, _ = predict(LAYOUT_TREE, x)
         jk = jev[i][0] if i < len(jev) else ""
-        if jev:
+        if jk:
             sure_table = kind == "table" and jk == "table"
             sure_not = kind != "table" and jk == kind
         else:

@@ -115,9 +115,21 @@ def _is_slide_deck(doc) -> bool:
     return landscape_count / doc.page_count >= _SLIDE_DECK_LANDSCAPE_FRACTION
 
 
+_DRAFT_TITLE = re.compile(r"\b(Working Draft|Committee Draft|Draft International Standard|"
+                          r"Draft Technical Specification)\b", re.I)
+
+
 def _is_standards_draft(doc) -> bool:
-    """Detect standards drafts by page count (>= 200 pages)."""
-    return doc.page_count >= _STANDARDS_DRAFT_MIN_PAGES
+    """Detect standards drafts: long (>= 200 pages) and titled as a draft.
+
+    Page count alone also skipped long papers (p4277r0, a 233-page
+    implementation report, lost all 85 of its tables). A Working Draft says
+    so on its first page.
+    """
+    if doc.page_count < _STANDARDS_DRAFT_MIN_PAGES:
+        return False
+    first = " ".join(doc[0].get_text().split())
+    return bool(_DRAFT_TITLE.search(first))
 
 
 @dataclass
