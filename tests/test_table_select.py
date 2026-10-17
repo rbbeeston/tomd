@@ -417,7 +417,9 @@ class TestGate:
             metadata = {}
             def xref_get_key(self, *a): return ("null", "")
             def pdf_catalog(self): return 0
-        C.gate_tables(Doc(), {0: None}, [sec])
+        class Page:
+            def get_text(self, *a, **k): return []
+        C.gate_tables(Doc(), {0: Page()}, [sec])
 
     def test_gate_makes_a_doubtful_high_table_uncertain(self, monkeypatch):
         sec = self._sec(Confidence.HIGH, "grid", [], "grid")
@@ -476,3 +478,42 @@ def test_jev_calls_are_batched_and_failures_fall_back(monkeypatch):
     out, version = C.jev_table_or_not("p1", [(0, {}, "LaTeX", [])] * 45)
     assert calls == [30, 15] and version == "jev-x"
     assert out[:30] == [("table", 0.9)] * 30 and out[30:] == [("", 0.0)] * 15
+
+
+class TestVerifyLayout:
+    """lib.pdf.validate.verify_layout: the grid put back onto the page."""
+
+    def _sec(self, rows):
+        return select_tables([], [_cand("grid", rows)], [], [])[0]
+
+    def _words(self, sec):
+        # the page's words where the cells say they are
+        out = []
+        for row in sec.columns:
+            for cell in row:
+                for s in cell:
+                    if s.text.strip() and s.text != "\n":
+                        out.append((*s.bbox, s.text.strip(), 0, 0, 0))
+        return out
+
+    def test_consistent_grid_passes(self):
+        sec = self._sec(_GOOD)
+        from lib.pdf.validate import verify_layout
+        assert verify_layout(sec, self._words(sec)) == ""
+
+    def test_word_outside_every_cell_fails(self):
+        sec = self._sec(_GOOD)
+        from lib.pdf.validate import verify_layout
+        stray = (400.0, 300.0, 430.0, 310.0, "stray", 0, 0, 0)
+        assert verify_layout(sec, self._words(sec) + [stray]) == "word-outside-cells"
+
+    def test_glued_words_fail_word_boundaries(self):
+        sec = self._sec([["Name", "Value"], ["alpha beta", "1"], ["gamma", "2"]])
+        from lib.pdf.validate import verify_layout
+        words = self._words(sec)
+        x0, y0, x1, y1 = words[2][:4]
+        mid = (x0 + x1) / 2
+        words[2:3] = [(x0, y0, mid, y1, "alpha", 0, 0, 0), (mid + 3, y0, x1, y1, "beta", 0, 0, 0)]
+        assert verify_layout(sec, words) == ""                  # same boundaries: fine
+        words[2:4] = [(x0, y0, x1, y1, "alphabeta", 0, 0, 0)]
+        assert verify_layout(sec, words) == "word-boundaries"
