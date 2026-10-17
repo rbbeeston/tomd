@@ -90,31 +90,38 @@ def _join_rows(lines: list[Line]) -> list[Line]:
     return out
 
 
-def _rows_of(table):
+def _rows_of(table, section=()):
+    """(key, TR) for every row. The key includes the THead/TBody/TFoot the
+    row sits in: row indexes restart in each section, so the header row and
+    the first body row would otherwise share index 0 and be merged."""
     for b in table.get("blocks", []):
         if b.get("type") != 2:
             continue
         if b.get("std") == "TR":
-            yield b
+            yield section + (b.get("index") or 0,), b
         elif b.get("std") in _ROW_KINDS:
-            yield from _rows_of(b)
+            yield from _rows_of(b, section + (b.get("index") or 0,))
 
 
 def _page_tables(page, page_num, acc: dict):
     """Collect Table nodes of one page into acc[table_index][tr_index]."""
     data = page.get_text("dict", flags=fitz.TEXTFLAGS_DICT | fitz.TEXT_COLLECT_STRUCTURE)
 
-    def walk(b):
+    def walk(b, path=()):
         if b.get("type") != 2:
             return
+        path = path + (b.get("index") or 0,)
         if b.get("std") == "Table":
-            rows = acc.setdefault(b.get("index"), {})
-            for tr in _rows_of(b):
+            # keyed by its path from the structure root: unique per table (a
+            # bare sibling index repeats - every slide's table can be index 0)
+            # and the same on every page the table continues to
+            rows = acc.setdefault(path, {})
+            for key, tr in _rows_of(b):
                 cells = [_join_rows(_lines_of(td, page_num)) for td in tr.get("blocks", [])
                          if td.get("type") == 2 and td.get("std") in _CELL_KINDS]
-                prev = rows.get(tr.get("index"))
+                prev = rows.get(key)
                 if prev is None:
-                    rows[tr.get("index")] = cells
+                    rows[key] = cells
                 else:  # row continued on this page: append line by line
                     for k, c in enumerate(cells):
                         if k < len(prev):
@@ -123,7 +130,7 @@ def _page_tables(page, page_num, acc: dict):
                             prev.append(c)
             return
         for c in b.get("blocks", []):
-            walk(c)
+            walk(c, path)
 
     for b in data.get("blocks", []):
         walk(b)
@@ -180,8 +187,8 @@ def extract_tagged_tables(doc) -> list[TableCandidate]:
         except Exception as e:  # malformed structure trees are common
             _log.debug("Page %d: structure tree unreadable (%s)", page.number, e)
     out = []
-    for _, tr_map in sorted(acc.items(), key=lambda kv: kv[0] or 0):
-        rows = [cells for _, cells in sorted(tr_map.items(), key=lambda kv: kv[0] or 0) if cells]
+    for _, tr_map in sorted(acc.items()):
+        rows = [cells for _, cells in sorted(tr_map.items()) if cells]
         if len(rows) < 2 or max(len(r) for r in rows) < 2:
             continue
         rows = _realign(rows)

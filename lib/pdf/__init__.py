@@ -15,6 +15,7 @@ from .spans import normalize_spans
 from .structure import compare_extractions, structure_sections
 from .table import detect_tables, select_tables, remove_table_regions
 from .flag import text_regions, rejected_regions, flag_possible_tables
+from .classify import gate_tables
 from .ruled import extract_ruled_tables
 from .tagged import extract_tagged_tables
 from .poll import extract_poll_tables
@@ -133,6 +134,36 @@ class PipelineResult:
     skip_reason: str = ""
 
 
+def _horizontal_share(page) -> float:
+    lines = [ln for b in page.get_text("dict").get("blocks", []) for ln in b.get("lines", [])]
+    return sum(1 for ln in lines if abs(ln["dir"][0] - 1.0) < 0.01) / max(len(lines), 1)
+
+
+def _upright_page(doc, pg_num: int, keep_alive: list):
+    """The page as a reader sees it.
+
+    A page with /Rotate (LaTeX landscape tables, rotated appendices) is
+    extracted in its unrotated coordinates, where its text runs vertically
+    and no extractor finds lines or tables. Such a page is drawn upright
+    onto a scratch page and that copy is used instead - when the copy's
+    text is more horizontal than the original's. `keep_alive` holds the
+    scratch documents until extraction is done.
+    """
+    page = doc[pg_num]
+    if not page.rotation:
+        return page
+    import fitz
+    tmp = fitz.open()
+    up = tmp.new_page(width=page.rect.width, height=page.rect.height)
+    up.show_pdf_page(up.rect, doc, pg_num, rotate=-page.rotation)
+    if _horizontal_share(up) <= _horizontal_share(page):
+        tmp.close()
+        return page
+    keep_alive.append(tmp)
+    _log.info("Page %d is rotated %d degrees; extracting it upright", pg_num, page.rotation)
+    return up
+
+
 def _run_pipeline(path: Path) -> PipelineResult:
     """Run the full PDF conversion pipeline, returning all intermediate data."""
     import fitz
@@ -172,8 +203,10 @@ def _run_pipeline(path: Path) -> PipelineResult:
         all_ruled_tables = []
         all_poll_tables = []
 
+        keep_alive: list = []
+        pages = [_upright_page(doc, i, keep_alive) for i in range(result.page_count)]
         for pg_num in range(result.page_count):
-            page = doc[pg_num]
+            page = pages[pg_num]
             page_height = page.rect.height
 
             mupdf_blocks = extract_mupdf(page, pg_num)
@@ -185,7 +218,7 @@ def _run_pipeline(path: Path) -> PipelineResult:
             )
             all_edge_items.append(edge_items)
 
-            links = collect_links(page)
+            links = collect_links(doc[pg_num])
             attach_links(mupdf_blocks, links)
             attach_links(spatial_blocks, links)
 
@@ -215,14 +248,13 @@ def _run_pipeline(path: Path) -> PipelineResult:
 
         all_hidden: set[tuple[float, float, float, float]] = set()
         for pg_num in range(result.page_count):
-            page = doc[pg_num]
-            all_hidden |= find_hidden_regions(page, body_fonts)
+            all_hidden |= find_hidden_regions(pages[pg_num], body_fonts)
 
-        page0_colors = _get_page0_text_colors(doc[0]) if result.page_count > 0 else {}
+        page0_colors = _get_page0_text_colors(pages[0]) if result.page_count > 0 else {}
 
         page_drawings: dict[int, list] = {}
         for pg_num in range(result.page_count):
-            drawings = collect_line_drawings(doc[pg_num])
+            drawings = collect_line_drawings(pages[pg_num])
             if drawings:
                 page_drawings[pg_num] = drawings
     finally:
@@ -266,6 +298,16 @@ def _run_pipeline(path: Path) -> PipelineResult:
                                    all_mupdf_blocks, all_poll_tables, rejected_tables)
     if table_sections:
         _log.info("Selected %d table(s)", len(table_sections))
+        try:
+            import fitz
+            with fitz.open(str(path)) as gdoc:
+                keep_alive: list = []
+                gpages = {pg: _upright_page(gdoc, pg, keep_alive)
+                          for pg in {s.metadata["region_bbox"][0] for s in table_sections
+                                     if "region_bbox" in s.metadata}}
+                gate_tables(gdoc, gpages, table_sections, paper=Path(path).stem)
+        except Exception as e:  # the gate only adjusts confidence; never fail on it
+            _log.warning("Table classification failed: %s", e)
         all_mupdf_blocks = remove_table_regions(all_mupdf_blocks, table_sections)
         all_spatial_blocks = remove_table_regions(all_spatial_blocks, table_sections)
     # Table-like areas left in the text, marked uncertain once sections exist.

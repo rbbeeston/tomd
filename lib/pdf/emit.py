@@ -2,6 +2,7 @@
 
 import logging
 import re
+from collections import Counter
 
 from .. import format_front_matter
 from .cleanup import normalize_whitespace
@@ -249,14 +250,36 @@ def _render_wording_section(sec: Section) -> str:
     return f":::{div_class}\n\n{inner}\n\n:::"
 
 
+# Words of the document's running text (not its tables), set by
+# emit_markdown: how the paper itself spells a word decides a line-break
+# hyphen in a table cell.
+_LEXICON: Counter = Counter()
+_LEX_WORD = re.compile(r"[A-Za-z]+(?:-[A-Za-z]+)*")
+
+
+def _set_lexicon(sections: list[Section]) -> None:
+    _LEXICON.clear()
+    for sec in sections:
+        if sec.kind != SectionKind.TABLE:
+            _LEXICON.update(w.lower() for w in _LEX_WORD.findall(sec.text))
+
+
 def _join_hyphenated(line: str, nxt: str, prefix: str) -> str:
     """Join a cell line ending in "word-" with the next line.
 
-    A syllable break drops the hyphen ("com-" + "patibility"): the part
-    before it is a short fragment or the continuation is short. A compound
-    keeps it ("non-" + "enforced", "effect-" + "parameterized").
+    The paper's own text decides first: if it writes "automatically" and
+    never "automati-cally", the hyphen was a line break; if it writes
+    "non-enforced", the hyphen is part of the word. Otherwise a syllable
+    break drops the hyphen ("com-" + "patibility"): the part before it is a
+    short fragment or the continuation is short. A compound keeps it
+    ("non-" + "enforced", "effect-" + "parameterized").
     """
     suffix = re.match(r"[A-Za-z]*", nxt).group(0)
+    joined, hyphened = (prefix + suffix).lower(), f"{prefix}-{suffix}".lower()
+    if suffix and (_LEXICON[joined] or _LEXICON[hyphened]):
+        return (line if _LEXICON[hyphened] >= _LEXICON[joined] else line[:-1]) + nxt
+    if "-" in prefix:
+        return line + nxt                 # inside a hyphenated chain: "warnings-as-" + "errors"
     p = prefix.lower()
     # An acronym before the hyphen is a compound ("ABI-" + "independent").
     acronym = len(prefix) >= 2 and prefix.isupper()
@@ -284,12 +307,27 @@ def _render_cell_spans(spans: list, suppress_bold: bool = False) -> str:
         return "".join(rendered)          # letters stacked in a narrow cell: "S" / "F" -> "SF"
     out = rendered[:1]
     for r in rendered[1:]:
-        m = re.search(r"([A-Za-z]+)-$", out[-1])
-        if m and r[:1].islower():
-            out[-1] = _join_hyphenated(out[-1], r, m.group(1))
+        # "word-" at the end of a line, possibly inside bold/italic that
+        # continues on the next line ("ap-**" + "**plied"). Code is never
+        # dehyphenated: a "-" ending a code line is part of the code.
+        m = _HYPHEN_END.search(out[-1])
+        n = re.match(r"(\*\*|\*)?(?=[a-z])", r)
+        if m and n and (m.group(2) or "") == (n.group(1) or ""):
+            mark = m.group(2) or ""
+            head = out[-1][:len(out[-1]) - len(mark)]
+            out[-1] = _join_hyphenated(head, r[len(mark):], m.group(1))
         else:
             out.append(r)
-    return "<br>".join(out).replace("|", "\\|")
+    return _escape_angle("<br>".join(out)).replace("|", "\\|")
+
+
+_HYPHEN_END = re.compile(r"([A-Za-z]+(?:-[A-Za-z]+)*)-(\*\*|\*)?$")
+
+
+def _escape_angle(text: str) -> str:
+    """Escape "<" outside code spans so "<a@b.org>" is not read as a link or HTML."""
+    parts = re.split(r"(`[^`]*`|<br>)", text)
+    return "".join(p if i % 2 else p.replace("<", "\\<") for i, p in enumerate(parts))
 
 
 def _render_table(sec: Section) -> str:
@@ -349,6 +387,7 @@ def emit_markdown(metadata: dict, sections: list[Section]) -> str:
     the MuPDF version marked with an HTML comment.
     """
     parts: list[str] = []
+    _set_lexicon(sections)
 
     fm = format_front_matter(metadata)
     if fm:

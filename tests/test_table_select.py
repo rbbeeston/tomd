@@ -330,3 +330,127 @@ def test_lost_header_row_above_agreeing_sources_is_uncertain():
     caption = Block(lines=[_line("Table 1 - Values", 50, 80)], page_num=0)
     out = select_tables([tomd], [_cand("rules", body)], [], [caption, cells])
     assert out[0].confidence == Confidence.HIGH
+
+
+class TestBooktabsRows:
+    """lib.pdf.ruled._join_wrapped_lines: booktabs rows from text lines."""
+
+    def _rows(self, lines, mono=False, col_x=(50, 200), col_w=(120, 300)):
+        # lines: list of rows of cell texts; a cell's line ends at its text width
+        rows = []
+        for i, r in enumerate(lines):
+            row = []
+            for c, t in enumerate(r):
+                row.append([_line(t, col_x[c], 100 + 12 * i, mono=mono)] if t else [])
+            rows.append(row)
+        return rows
+
+    def test_wrapped_cell_joins_the_row_above(self):
+        from lib.pdf.ruled import _join_wrapped_lines
+        long = "x" * 50                       # fills column 2 to its right edge
+        rows = self._rows([["Paper", "Description"], ["P1", long], ["", "continued"],
+                           ["P2", "short"]])
+        out = _join_wrapped_lines(rows)
+        assert [[" ".join(l.text for l in c) for c in r] for r in out] == [
+            ["Paper", "Description"], ["P1", long + " continued"], ["P2", "short"]]
+
+    def test_short_line_does_not_swallow_the_next_row(self):
+        from lib.pdf.ruled import _join_wrapped_lines
+        rows = self._rows([["Paper", "Description"], ["P1", "short"], ["", "next entry"],
+                           ["P2", "x" * 50]])
+        assert len(_join_wrapped_lines(rows)) == 4
+
+    def test_code_body_is_one_row(self):
+        from lib.pdf.ruled import _join_wrapped_lines
+        rows = self._rows([["Before", "After"], ["int a;", "auto a = 0;"], ["f(a);", "f(a);"]],
+                          mono=True)
+        out = _join_wrapped_lines(rows)
+        assert len(out) == 2 and [l.text for l in out[1][0]] == ["int a;", "f(a);"]
+
+
+class TestClassCheck:
+    def test_poll_with_counts(self):
+        from lib.pdf.table import class_check
+        assert class_check(_cand("poll", [["SF", "F", "N", "A", "SA"],
+                                          ["1", "2", "3", "4", "5"]])) == "poll"
+
+    def test_suggested_poll_with_empty_row(self):
+        from lib.pdf.table import class_check
+        assert class_check(_cand("poll", [["SF", "F", "N", "A", "SA"],
+                                          ["", "", "", "", ""]])) == "poll"
+
+    def test_poll_with_text_is_not_trusted(self):
+        from lib.pdf.table import class_check
+        assert class_check(_cand("poll", [["SF", "F", "N", "A", "SA"],
+                                          ["1", "2", "3", "4", "many"]])) == ""
+
+
+class TestGate:
+    def test_predict_walks_the_tree(self):
+        from lib.pdf.classify import predict
+        tree = {"f": "vrules", "t": 1.5, "l": {"label": "not-a-table", "p": 0.8, "n": 10},
+                "r": {"label": "table", "p": 0.95, "n": 40}}
+        assert predict(tree, {"vrules": 3.0}) == ("table", 0.95)
+        assert predict(tree, {}) == ("not-a-table", 0.8)
+
+    def _sec(self, conf, source, reasons, check):
+        sec = select_tables([], [_cand("grid", _GOOD)], [], [])[0]
+        sec.confidence = conf
+        sec.metadata.update(table_source=source, uncertain_reasons=reasons, class_check=check)
+        return sec
+
+    def _gate(self, monkeypatch, sec, kind, layout):
+        import lib.pdf.classify as C
+        monkeypatch.setattr(C, "region_features", lambda *a: ({}, []))
+        from lib.pdf.classify_trees import LAYOUT_TREE
+        monkeypatch.setattr(C, "predict", lambda tree, x: (layout, 0.97) if tree is LAYOUT_TREE
+                            else (kind, 0.97))
+        monkeypatch.delenv("TOMD_JEV", raising=False)
+
+        class Doc:
+            metadata = {}
+            def xref_get_key(self, *a): return ("null", "")
+            def pdf_catalog(self): return 0
+        C.gate_tables(Doc(), {0: None}, [sec])
+
+    def test_gate_makes_a_doubtful_high_table_uncertain(self, monkeypatch):
+        sec = self._sec(Confidence.HIGH, "grid", [], "grid")
+        self._gate(monkeypatch, sec, "not-a-table", "grid")
+        assert sec.confidence == Confidence.UNCERTAIN
+        assert "not a table" in sec.metadata["table_note"]
+
+    def test_gate_trusts_a_checked_single_source_poll(self, monkeypatch):
+        sec = self._sec(Confidence.UNCERTAIN, "poll", ["single-source"], "poll")
+        self._gate(monkeypatch, sec, "table", "poll")
+        assert sec.confidence == Confidence.HIGH
+        assert sec.metadata["table_agreement"] == "class:poll"
+
+    def test_gate_never_overrides_lost_text(self, monkeypatch):
+        sec = self._sec(Confidence.UNCERTAIN, "poll", ["single-source", "conservation"], "poll")
+        self._gate(monkeypatch, sec, "table", "poll")
+        assert sec.confidence == Confidence.UNCERTAIN
+
+
+class TestHyphenation:
+    def test_paper_vocabulary_decides(self):
+        import lib.pdf.emit as E
+        E._LEXICON.clear()
+        E._LEXICON.update({"automatically": 3, "tree-structured": 2})
+        spans = [make_span("fixes it automati-"), make_span("\n"), make_span("cally")]
+        assert _render_cell_spans(spans) == "fixes it automatically"
+        spans = [make_span("a tree-"), make_span("\n"), make_span("structured view")]
+        assert _render_cell_spans(spans) == "a tree-structured view"
+        E._LEXICON.clear()
+
+    def test_hyphen_chain_is_kept(self):
+        spans = [make_span("warnings-as-"), make_span("\n"), make_span("errors")]
+        assert _render_cell_spans(spans) == "warnings-as-errors"
+
+    def test_code_is_never_dehyphenated(self):
+        spans = [make_span("x = a -", monospace=True), make_span("\n"),
+                 make_span("b;", monospace=True)]
+        assert "<br>" in _render_cell_spans(spans)
+
+    def test_angle_brackets_escaped_outside_code(self):
+        assert _render_cell_spans([make_span("Wang <m@x.org>")]) == "Wang \\<m@x.org>"
+        assert _render_cell_spans([make_span("vector<int>", monospace=True)]) == "`vector<int>`"
