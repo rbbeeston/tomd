@@ -39,6 +39,7 @@ from collections import Counter
 
 from .types import Confidence, Section, SectionKind
 from .validate import verify_layout
+from .ocrcheck import check_table, ocr_enabled
 
 _log = logging.getLogger(__name__)
 
@@ -324,4 +325,14 @@ def gate_tables(doc, pages, sections: list[Section], paper: str = "") -> dict:
             sec.confidence = Confidence.HIGH
             sec.metadata["table_agreement"] = "class:" + layout
             sec.metadata.pop("table_note", None)
+    if ocr_enabled():
+        # a different modality for HIGH tables: what the page shows
+        for sec, (pg, _, _, _) in zip(tables, regions):
+            if sec.confidence != Confidence.HIGH:
+                continue
+            note = check_table(pages[pg], sec)
+            sec.metadata["ocr_check"] = note or "ok"
+            if note:
+                sec.confidence = Confidence.UNCERTAIN
+                sec.metadata["table_note"] = (sec.metadata.get("table_note", "") + " " + note).strip()
     return summary
