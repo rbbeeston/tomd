@@ -497,7 +497,7 @@ def table_flags(cand: TableCandidate) -> list[str]:
         flags.append("ascii-art")                   # "+---+ +---+" box diagrams
     comment_cols = [j for j in range(ncol)
                     if [r[j] for r in rows if j < len(r) and r[j]]
-                    and all(r[j] == "//" for r in rows if j < len(r) and r[j])]
+                    and all(set(r[j].split()) == {"//"} for r in rows if j < len(r) and r[j])]
     if comment_cols:
         flags.append("code-comment-column")         # "using x = y; | // | exposition only"
     if len(last) >= 2 and all(c.startswith("//") for c in last):
@@ -723,16 +723,20 @@ def select_tables(tomd_sections: list[Section],
         exact = any(candidates_agree(primary, o) for o in others)
         agree = exact or any(partial_reading(primary, o) for o in others)
         conf = Confidence.HIGH if agree else Confidence.UNCERTAIN
+        reasons = []                     # why it is UNCERTAIN; the gate reads these
         if not agree:
+            reasons.append("single-source" if not others else "disagree")
             notes.append("Only one table source produced this table." if not others else
                          "The table sources disagree; every version is below.")
         lost = conservation_error(primary, blocks)
         if lost:
             conf = Confidence.UNCERTAIN
+            reasons.append("conservation")
             notes.append(lost)
         damaged = _damaged_text(primary)
         if damaged:
             conf = Confidence.UNCERTAIN
+            reasons.append("damaged")
             notes.append(
                 "The PDF's text layer is damaged in this table (characters such as "
                 f"{damaged} are wrong in the file itself, e.g. math italics written "
@@ -741,6 +745,12 @@ def select_tables(tomd_sections: list[Section],
         if notes:
             sec.metadata["table_note"] = " ".join(notes)
         sec.metadata["table_agreement"] = "exact" if exact else "subset" if agree else "none"
+        sec.metadata["uncertain_reasons"] = reasons
+        sec.metadata["class_check"] = class_check(primary)
+        # what the classifier sees: every source and rule flag in this region
+        sec.metadata["region_sources"] = sorted({c.source for c in settled})
+        sec.metadata["region_flags"] = sorted({f for c in settled for f in c.flags})
+        sec.metadata["region_bbox"] = (primary.pages[0], primary.bboxes[primary.pages[0]])
         out.append(sec)
         _log.debug("Table p%d %dx%d from %s: %s", primary.pages[0], *primary.shape,
                    primary.source, conf.value)
@@ -750,6 +760,44 @@ def select_tables(tomd_sections: list[Section],
         if rejected is not None and c.source != "tomd":
             rejected.append(c)
     return out
+
+
+_POLL_HEADERS = (["SF", "F", "N", "A", "SA"], ["F", "N", "A"])
+_VOTE = re.compile(r"^\d{1,3}$")
+
+
+def class_check(cand: TableCandidate) -> str:
+    """Why this table can be trusted from one source, or "".
+
+    Each check is specific to how the table was built, and only used when
+    the classifier puts the region in the matching layout class:
+      - poll: exactly the SF F N A SA (or F N A) header, then rows that are
+        all vote counts, or one all-empty row (a suggested poll);
+      - grid: read from drawn cell boundaries, rectangular, no column or
+        row left empty;
+      - tags: from a well-formed structure tree, every row as wide as the
+        table, no empty column.
+    """
+    rows = cand.text_rows()
+    if not rows or _is_bad(cand):
+        return ""
+    width = max(len(r) for r in rows)
+    if any(len(r) != width for r in rows):
+        return ""
+    head = ["".join(c.split()) for c in rows[0]]
+    if cand.source == "poll":
+        if head in _POLL_HEADERS and len(rows) >= 2 and all(
+                all(_VOTE.match(c.strip()) for c in r) or not any(c.strip() for c in r)
+                for r in rows[1:]):
+            return "poll"
+        return ""
+    empty_col = any(not any(r[c].strip() for r in rows) for c in range(width))
+    empty_row = any(not any(c.strip() for c in r) for r in rows)
+    if cand.source == "grid" and not empty_col and not empty_row:
+        return "grid"
+    if cand.source == "tags" and not empty_col:
+        return "tagged"
+    return ""
 
 
 def remove_table_regions(blocks: list[Block], tables: list[Section]) -> list[Block]:

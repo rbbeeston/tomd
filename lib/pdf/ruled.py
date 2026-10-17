@@ -591,7 +591,8 @@ def _rule_band_tables(page_num, words_all, group, header_above,
             segments[-1].extend((a - 1, b + 1) for a, b, _ in _text_lines(plain))
     out = []
     for bands in segments:
-        t = _bands_to_table(page_num, in_x, bands, x0, x1, header_above, min_rows)
+        t = _bands_to_table(page_num, in_x, bands, x0, x1, header_above, min_rows,
+                            per_line=not per_row_rules)
         if t is not None:
             out.append(t)
     return out
@@ -609,7 +610,7 @@ def _has_column_gap(ws) -> bool:
 
 
 def _bands_to_table(page_num, in_x, bands, x0, x1, header_above,
-                    min_rows: int = 2) -> TableCandidate | None:
+                    min_rows: int = 2, per_line: bool = False) -> TableCandidate | None:
     if len(bands) < min_rows:
         return None
     row_words = [[w for w in in_x if a <= (w[1] + w[3]) / 2 <= b] for a, b in bands]
@@ -643,9 +644,60 @@ def _bands_to_table(page_num, in_x, bands, x0, x1, header_above,
             cells[sum(1 for s in seps if w[0] >= s) - 1].append(w)
         rows.append([_chars_to_lines(_word_chars(cw), page_num) for cw in cells])
     rows = _drop_empty(rows)
+    if per_line:
+        rows = _join_wrapped_lines(rows)
     if len(rows) < min_rows or max(len(r) for r in rows) < 2:
         return None
     return TableCandidate("rules", rows, {page_num: (x0, top, x1, bands[-1][1])})
+
+
+_CODE_BODY = 0.8          # this share of monospace body text: a before/after code pair
+
+
+def _join_wrapped_lines(rows):
+    """Rebuild booktabs rows from text lines (no rules between body rows).
+
+    Without rules every text line came out as a row. Two cases put lines
+    back together:
+      - a code body (before/after listings): the whole body is one row, one
+        listing per column;
+      - a wrapped cell: a line continues the row above when every cell it
+        has text in continues a cell that wrapped - the line's first word
+        would not have fitted in the space left on the line above (how
+        LaTeX p{} columns break) - and it leaves at least one cell empty.
+        A line that fills every cell is a row of its own.
+    """
+    if len(rows) < 3:
+        return rows
+    ncol = max(len(r) for r in rows)
+    rows = [r + [[] for _ in range(ncol - len(r))] for r in rows]
+    body = [ln for r in rows[1:] for cell in r for ln in cell]
+    chars = sum(len(s.text.strip()) for ln in body for s in ln.spans)
+    mono = sum(len(s.text.strip()) for ln in body for s in ln.spans if s.monospace)
+    if chars and mono >= _CODE_BODY * chars and ncol <= 3:
+        merged = [[ln for r in rows[1:] for ln in r[c]] for c in range(ncol)]
+        return [rows[0], merged]
+    right = [max((ln.bbox[2] for r in rows for ln in r[c]), default=0.0) for c in range(ncol)]
+
+    def first_word_width(ln) -> float:
+        text = ln.text.strip()
+        word = text.split()[0] if text else ""
+        return (ln.bbox[2] - ln.bbox[0]) * len(word) / max(len(text), 1)
+
+    out = [rows[0]]
+    last = rows[0]                       # the previous text line (not the merged row)
+    for r in rows[1:]:
+        filled = [c for c in range(ncol) if r[c]]
+        cont = bool(filled) and len(filled) < ncol and all(
+            last[c] and right[c] - last[c][-1].bbox[2] < first_word_width(r[c][0]) + 2.0
+            for c in filled)
+        if cont:
+            for c in filled:
+                out[-1][c] = out[-1][c] + r[c]
+        else:
+            out.append([list(cell) for cell in r])
+        last = r
+    return out
 
 
 # --------------------------------------------------------------------------
