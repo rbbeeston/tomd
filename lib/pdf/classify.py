@@ -38,6 +38,7 @@ import urllib.request
 from collections import Counter
 
 from .types import Confidence, Section, SectionKind
+from .validate import verify_layout
 
 _log = logging.getLogger(__name__)
 
@@ -296,6 +297,9 @@ def gate_tables(doc, pages, sections: list[Section], paper: str = "") -> dict:
     jev, version = jev_table_or_not(paper, regions) if jev_enabled() else ([], "")
     summary = {"jev_version": version, "tables": len(tables)}
     for i, (sec, (pg, x, _, _)) in enumerate(zip(tables, regions)):
+        _, bbox = sec.metadata["region_bbox"]
+        sec.metadata["verified"] = verify_layout(
+            sec, pages[pg].get_text("words", clip=bbox)) or "ok"
         kind, kp = predict(TABLE_TREE, x)
         layout, _ = predict(LAYOUT_TREE, x)
         jk = jev[i][0] if i < len(jev) else ""
