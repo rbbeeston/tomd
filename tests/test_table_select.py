@@ -562,3 +562,46 @@ def test_skipped_document_leaves_a_visible_trace():
     _skip(r, doc, "slide deck", "# skipped\n")
     assert r.skipped and r.md.startswith("<!-- tomd:skipped:slide deck:")
     assert "1 page(s) with table candidates" in r.md and r.discards
+
+
+class TestTableModel:
+    def test_two_level_header_combines(self):
+        from lib.pdf.tablemodel import flatten_text
+        rows = [["Group", "GCC", "", "Clang", ""], ["", "v1", "v2", "v1", "v2"], ["a", "1", "2", "3", "4"]]
+        spans = [{"r": 0, "c": 0, "rows": 2, "cols": 1, "kind": "header"},
+                 {"r": 0, "c": 1, "rows": 1, "cols": 2, "kind": "header"},
+                 {"r": 0, "c": 3, "rows": 1, "cols": 2, "kind": "header"}]
+        assert flatten_text(rows, spans)[0] == ["Group", "GCC / v1", "GCC / v2", "Clang / v1", "Clang / v2"]
+
+    def test_spanning_header_over_data_is_kept_once(self):
+        from lib.pdf.tablemodel import flatten_text
+        rows = [["Name", "Members", ""], ["v", "id", "value"]]
+        assert flatten_text(rows, [{"r": 0, "c": 1, "rows": 1, "cols": 2, "kind": "header"}]) == rows
+
+    def test_label_fills_down_data_kept_once(self):
+        from lib.pdf.tablemodel import flatten_text
+        rows = [["OS", "Ver", "Total"], ["Linux", "1", "9"], ["", "2", ""]]
+        spans = [{"r": 1, "c": 0, "rows": 2, "cols": 1, "kind": "label"},
+                 {"r": 1, "c": 2, "rows": 2, "cols": 1, "kind": "data"}]
+        assert flatten_text(rows, spans)[2] == ["Linux", "2", ""]
+
+    def test_marker(self):
+        from lib.pdf.tablemodel import marker
+        assert marker([{"r": 1, "c": 0, "rows": 3, "cols": 1, "kind": "label"}]) == \
+            "<!-- tomd:merged label rows=2-4 col=1 -->"
+
+
+def test_code_comparison_renders_as_fenced_blocks():
+    from lib.pdf.emit import _render_code_comparison, _is_code_comparison
+    nl = make_span("\n")
+    before = [make_span("int f() {", monospace=True, bbox=(10, 0, 64, 10)), nl,
+              make_span("return 1;", monospace=True, bbox=(22, 12, 76, 22)), nl,
+              make_span("}", monospace=True, bbox=(10, 24, 16, 34))]
+    after = [make_span("auto f() {", monospace=True, bbox=(110, 0, 170, 10)), nl,
+             make_span("return 1;", monospace=True, bbox=(122, 12, 176, 22)), nl,
+             make_span("}", monospace=True, bbox=(110, 24, 116, 34))]
+    rows = [[[make_span("Before")], [make_span("After")]], [before, after]]
+    assert _is_code_comparison(rows)
+    md = _render_code_comparison(rows)
+    assert md.startswith("<!-- tomd:table kind=code-comparison cols=2 -->")
+    assert "**Before**" in md and "```cpp\nint f() {\n  return 1;\n}\n```" in md

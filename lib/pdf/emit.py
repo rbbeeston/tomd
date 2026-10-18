@@ -1,12 +1,14 @@
 """Markdown and companion prompts file generation."""
 
 import logging
+import os
 import re
 from collections import Counter
 
 from .. import format_front_matter
 from .cleanup import normalize_whitespace
 from .types import Line, Span, Section, SectionKind, Confidence, BULLET_CHARS, COMPOUND_PREFIXES
+from .tablemodel import SEP, flatten, marker
 
 _log = logging.getLogger(__name__)
 
@@ -330,29 +332,87 @@ def _escape_angle(text: str) -> str:
     return "".join(p if i % 2 else p.replace("<", "\\<") for i, p in enumerate(parts))
 
 
+_CODE_SHARE = 0.8       # body text this monospace...
+_CODE_LINES = 3         # ...with a cell this many lines long: a code comparison
+
+
+def _cell_lines(cell) -> list[list]:
+    out, cur = [], []
+    for s in cell:
+        if s.text == "\n":
+            out.append(cur)
+            cur = []
+        else:
+            cur.append(s)
+    out.append(cur)
+    return [ln for ln in out if any(s.text.strip() for s in ln)]
+
+
+def _is_code_comparison(rows) -> bool:
+    """Side-by-side code: at most 3 columns and 2 rows (header + code), the
+    body (nearly) all monospace, some cell several lines long."""
+    if not rows or max(len(r) for r in rows) > 3 or len(rows) > 2:
+        return False
+    body = rows[1:] if len(rows) == 2 else rows
+    spans = [s for r in body for c in r for s in c if s.text.strip() and s.text != "\n"]
+    chars = sum(len(s.text.strip()) for s in spans)
+    mono = sum(len(s.text.strip()) for s in spans if s.monospace)
+    return (chars > 0 and mono >= _CODE_SHARE * chars and len([c for c in body[0] if c]) >= 2
+            and max(len(_cell_lines(c)) for r in body for c in r) >= _CODE_LINES)
+
+
+def _code_text(cell) -> str:
+    """A code cell's lines exactly: indentation rebuilt from x offsets."""
+    lines = _cell_lines(cell)
+    widths = [(s.bbox[2] - s.bbox[0]) / len(s.text) for ln in lines for s in ln
+              if s.monospace and s.text and s.bbox and s.bbox[2] > s.bbox[0]]
+    em = sorted(widths)[len(widths) // 2] if widths else 0.0
+    left = min((ln[0].bbox[0] for ln in lines if ln and ln[0].bbox), default=0.0)
+    out = []
+    for ln in lines:
+        text = "".join(s.text for s in ln).rstrip()
+        indent = int(round((ln[0].bbox[0] - left) / em)) if em and ln[0].bbox else 0
+        out.append(" " * max(indent, 0) + text.lstrip())
+    return "\n".join(out)
+
+
+def _render_code_comparison(rows) -> str:
+    """Paired fenced code blocks under the column headers (a pipe table cannot
+    hold multi-line code), after a marker that records the structure."""
+    header = rows[0] if len(rows) == 2 else [[] for _ in rows[0]]
+    body = rows[-1]
+    parts = [f"<!-- tomd:table kind=code-comparison cols={len(body)} -->"]
+    for h, cell in zip(list(header) + [[]] * (len(body) - len(header)), body):
+        title = " ".join(s.text for s in h if s.text != "\n").strip()
+        if title:
+            parts.append(f"**{title}**")
+        parts.append("```cpp\n" + _code_text(cell) + "\n```")
+    return "\n\n".join(parts)
+
+
 def _render_table(sec: Section) -> str:
     """Render a table section as a Markdown table."""
     if not sec.columns:
         return sec.text
+    if os.environ.get("TOMD_CODECMP") != "0" and _is_code_comparison(sec.columns):
+        return _render_code_comparison(sec.columns)
 
     rows = sec.columns
     num_cols = max(len(row) for row in rows)
+    spans = sec.metadata.get("spans") or []
+    header_rows = 1 + max((s["r"] + 1 for s in spans if s["kind"] == "header"), default=0)
+    grid = [[_render_cell_spans(cell, suppress_bold=r < header_rows) for cell in row]
+            + [""] * (num_cols - len(row)) for r, row in enumerate(rows)]
+    if spans:
+        # lossless model -> plain Markdown: combined headers, labels filled
+        # down, shared values kept once; the spans go in a comment after it
+        sep = SEP if not any(SEP in c for r in grid for c in r) else " ⁄ "
+        grid, _ = flatten(grid, spans, lambda c: not c.strip(), lambda a, b: f"{a}{sep}{b}")
 
-    header = rows[0]
-    header_cells = [_render_cell_spans(cell, suppress_bold=True) for cell in header]
-    while len(header_cells) < num_cols:
-        header_cells.append("")
-
-    lines = []
-    lines.append("| " + " | ".join(header_cells) + " |")
-    lines.append("| " + " | ".join(["---"] * num_cols) + " |")
-
-    for row in rows[1:]:
-        cells = [_render_cell_spans(cell) for cell in row]
-        while len(cells) < num_cols:
-            cells.append("")
-        lines.append("| " + " | ".join(cells) + " |")
-
+    lines = ["| " + " | ".join(grid[0]) + " |", "| " + " | ".join(["---"] * num_cols) + " |"]
+    lines += ["| " + " | ".join(r) + " |" for r in grid[1:]]
+    if spans:
+        lines += ["", marker(spans)]
     return "\n".join(lines)
 
 

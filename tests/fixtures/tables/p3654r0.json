@@ -1,29 +1,68 @@
 {
  "paper": "p3654r0",
- "tables": [],
- "not_tables": [
+ "tables": [
   {
-   "group": "g1",
+   "id": "p3654r0-t1",
    "pages": [
     3
    ],
-   "reason": "slide with two side-by-side code listings (Status quo / This paper) in separate unruled text boxes; code listings, not a table"
+   "scope": "table",
+   "columns": [
+    "code",
+    "code"
+   ],
+   "rows": [
+    [
+     "/* Status quo */ vector<T>::emplace(iterator position, Args&&... args) { if (size() == capacity()) { /* ... */ } if (position == end()) { /* ... */ } } else { T tmp(std::forward<Args>(args)...); std::construct_at(std::to_address(end()), std::move(back())); ++end_; std::move_backward( position, end() - 2, end() - 1); *position = std::move(tmp); } return position; }",
+     "/* This paper */ vector<T>::emplace(iterator position, Args&&... args) { if (size() == capacity()) { /* ... */ } if (position == end()) { /* ... */ } } else { T tmp(std::forward<Args>(args)...); std::uninitialized_relocate_backward( position, end(), end() + 1); std::construct_at(std::to_address(position), std::move(tmp)); ++end_; } return position; }"
+    ]
+   ],
+   "group": "g1",
+   "source": "typed",
+   "note": "side-by-side code (convention change 2026-10-17); /* Status quo */ and /* This paper */ labels are code comments, kept in the code cells"
   },
   {
-   "group": "g2",
+   "id": "p3654r0-t2",
    "pages": [
     4
    ],
-   "reason": "slide with two side-by-side code listings (Status quo / This paper) in separate unruled text boxes; code listings, not a table"
+   "scope": "table",
+   "columns": [
+    "code",
+    "code"
+   ],
+   "rows": [
+    [
+     "/* Status quo */ constexpr iterator vector<T>::erase(iterator first, iterator last) { if (first == last) return last; auto new_end = std::move(last, end(), first); std::destroy(new_end, end()); end_ -= (last - first); return first; }",
+     "/* This paper */ constexpr iterator vector<T>::erase(iterator first, iterator last) { if (first == last) return last; std::destroy(first, last); std::uninitialized_relocate(last, end(), first); end_ -= (last - first); return first; }"
+    ]
+   ],
+   "group": "g2",
+   "source": "typed",
+   "note": "side-by-side code (convention change 2026-10-17); /* Status quo */ and /* This paper */ labels are code comments, kept in the code cells"
   },
   {
-   "group": "g3",
+   "id": "p3654r0-t3",
    "pages": [
     6
    ],
-   "reason": "slide with two side-by-side code listings (Status quo / This paper) in separate unruled text boxes; code listings, not a table"
+   "scope": "table",
+   "columns": [
+    "code",
+    "code"
+   ],
+   "rows": [
+    [
+     "/* Status quo */ // same as before, // reserve, construct element, ... for (auto& element : *this) tmp.emplace_back( std::move_if_noexcept(element) ); // ... disengage guard ... ++tmp.end_; swap(tmp); return back();",
+     "/* This paper */ // same as before, // reserve, construct element, ... if constexpr (is_nothrow_relocatable_v<T>) { tmp.end_ = std::uninitialized_relocate(begin(), end(), tmp.begin_); end_ = begin_; } else { for (auto& element : *this) tmp.emplace_back( std::move_if_noexcept(element) ); } // ... disengage guard ... ++tmp.end_; swap(tmp); return back();"
+    ]
+   ],
+   "group": "g3",
+   "source": "typed",
+   "note": "side-by-side code (convention change 2026-10-17); /* Status quo */ and /* This paper */ labels are code comments, kept in the code cells"
   }
  ],
+ "not_tables": [],
  "missed_by_all": [],
  "checked_pages": "all",
  "source_pdf": "https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2025/p3654r0.pdf",

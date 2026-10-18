@@ -38,8 +38,9 @@ import urllib.request
 from collections import Counter
 
 from .types import Confidence, Section, SectionKind
-from .validate import verify_layout
+from .validate import escalate, verify_layout
 from .ocrcheck import check_table, ocr_enabled
+from .tablemodel import detect_spans
 
 _log = logging.getLogger(__name__)
 
@@ -299,8 +300,17 @@ def gate_tables(doc, pages, sections: list[Section], paper: str = "") -> dict:
     summary = {"jev_version": version, "tables": len(tables)}
     for i, (sec, (pg, x, _, _)) in enumerate(zip(tables, regions)):
         _, bbox = sec.metadata["region_bbox"]
-        sec.metadata["verified"] = verify_layout(
-            sec, pages[pg].get_text("words", clip=bbox)) or "ok"
+        words = pages[pg].get_text("words", clip=bbox)
+        reason = verify_layout(sec, words)
+        sec.metadata["verified"] = reason or "ok"
+        if reason and sec.confidence != Confidence.HIGH and os.environ.get("TOMD_ESCALATE") != "0":
+            # escalate: a targeted re-read for what failed; kept only if it verifies
+            new, moves = escalate(sec, words, reason)
+            if new is not None:
+                sec.columns, sec.text = new.columns, new.text
+                sec.metadata["table_source"] = new.metadata.get("table_source")
+                sec.metadata["escalated"] = moves
+                sec.metadata["verified"] = "ok after " + "+".join(moves)
         kind, kp = predict(TABLE_TREE, x)
         layout, _ = predict(LAYOUT_TREE, x)
         jk = jev[i][0] if i < len(jev) else ""
@@ -325,6 +335,12 @@ def gate_tables(doc, pages, sections: list[Section], paper: str = "") -> dict:
             sec.confidence = Confidence.HIGH
             sec.metadata["table_agreement"] = "class:" + layout
             sec.metadata.pop("table_note", None)
+    # the lossless model: spans from the geometry, flattened by emit
+    for sec in tables:
+        if sec.metadata.get("table_source") != "poll" and os.environ.get("TOMD_SPANS") != "0":
+            sp = detect_spans(sec.columns)
+            if sp:
+                sec.metadata["spans"] = sp
     if ocr_enabled():
         # a different modality for HIGH tables: what the page shows
         for sec, (pg, _, _, _) in zip(tables, regions):
