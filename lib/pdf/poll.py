@@ -24,6 +24,34 @@ from .ruled import _page_words, _word_chars, _chars_to_lines, _text_lines, _hori
 _log = logging.getLogger(__name__)
 
 _HEADER = ["SF", "F", "N", "A", "SA"]
+# Vote labels and their side: +1 for, 0 neutral, -1 against. A header is a
+# line made only of these, in that order (for ... neutral ... against):
+# "SF F N A SA", "SF WF N WA SA", "F N A", "Strongly Favor ... Strongly Against".
+VOTE_LABELS = {
+    "sf": 1, "wf": 1, "f": 1, "strongly favor": 1, "strongly for": 1, "weakly favor": 1,
+    "weakly for": 1, "favor": 1, "for": 1, "favour": 1, "strongly favour": 1,
+    "n": 0, "neutral": 0,
+    "wa": -1, "a": -1, "sa": -1, "against": -1, "weakly against": -1, "strongly against": -1,
+}
+
+
+def vote_header(labels: list[str]) -> bool:
+    """These cell texts form a poll header (see VOTE_LABELS)."""
+    sides = [VOTE_LABELS.get(" ".join(t.lower().split())) for t in labels]
+    if len(sides) < 3 or None in sides or 1 not in sides or -1 not in sides:
+        return False
+    return sides == sorted(sides, reverse=True)
+
+
+def _label_cells(lw: list) -> list[list]:
+    """Group a line's words into cells: words closer than a word gap join."""
+    cells: list[list] = []
+    for w in lw:
+        if cells and w[0] - cells[-1][-1][2] < 0.6 * (w[3] - w[1]):
+            cells[-1].append(w)
+        else:
+            cells.append([w])
+    return cells
 _ZERO_WIDTH = "​‌‍﻿"
 _COUNT_RE = re.compile(r"^(\d{1,3}|[-–—])$")
 _MAX_ROWS = 3
@@ -68,19 +96,24 @@ def extract_poll_tables(page, page_num: int) -> list[TableCandidate]:
     """Poll result tables on one page."""
     raw = page.get_text("rawdict", flags=0)
     words = [w for w in _page_words(raw) if _clean(w[4])]
-    if not any(_clean(w[4]) == "SA" for w in words):
+    if not any(VOTE_LABELS.get(_clean(w[4]).lower()) == -1 for w in words):
         return []
     lines = _text_lines(words)
     rules = _horizontal_rules(page.get_drawings())
     out = []
     for i, (top, bot, lw) in enumerate(lines):
         lw = sorted(lw, key=lambda w: w[0])
-        if [_clean(w[4]) for w in lw] != _HEADER:
-            continue
-        centers = [(w[0] + w[2]) / 2 for w in lw]
+        # one label per word ("SF F N A SA", however tightly set), else
+        # words grouped into multi-word labels ("Strongly Favor ...")
+        head = [[w] for w in lw]
+        if not vote_header([_clean(w[4]) for w in lw]):
+            head = _label_cells(lw)
+            if not vote_header([" ".join(_clean(w[4]) for w in c) for c in head]):
+                continue
+        centers = [(c[0][0] + c[-1][2]) / 2 for c in head]
         half = min(b - a for a, b in zip(centers, centers[1:])) / 2
         height = bot - top
-        rows = [[[w] for w in lw]]
+        rows = [head]
         last_bot = bot
         for top2, bot2, lw2 in lines[i + 1:i + 1 + _MAX_ROWS]:
             if top2 - last_bot > _ROW_GAP_RATIO * height:
@@ -95,7 +128,7 @@ def extract_poll_tables(page, page_num: int) -> list[TableCandidate]:
         table_rows = [[_strip_zero_width(_chars_to_lines(_word_chars(c), page_num)) for c in row]
                       for row in rows]
         if len(rows) == 1 and _drawn_empty_row(rules, lw, bot, height):
-            table_rows.append([[] for _ in _HEADER])       # a suggested poll's blank vote row
+            table_rows.append([[] for _ in head])           # a suggested poll's blank vote row
         x0 = min(w[0] for w in lw) - 2
         x1 = max(w[2] for w in lw) + 2
         out.append(TableCandidate("poll", table_rows, {page_num: (x0, top - 1, x1, last_bot + 1)}))

@@ -63,6 +63,42 @@ def _line_ys(ws) -> list[float]:
     return ys
 
 
+def _column_rights(sec) -> list[float]:
+    """The right edge text reaches in each column, over all rows."""
+    ncol = max(len(r) for r in sec.columns)
+    out = []
+    for c in range(ncol):
+        xs = [s.bbox[2] for row in sec.columns if c < len(row) for s in row[c]
+              if s.text.strip() and s.text != "\n" and s.bbox]
+        out.append(max(xs) if xs else 0.0)
+    return out
+
+
+def _wraps(cell, right: float) -> bool:
+    """Some line of the cell wrapped: the first word of the next line would
+    not have fitted in the space left at the end of it (how text breaks)."""
+    lines = []
+    cur = []
+    for s in cell:
+        if s.text == "\n":
+            if cur:
+                lines.append(cur)
+            cur = []
+        elif s.text.strip() and s.bbox:
+            cur.append(s)
+    if cur:
+        lines.append(cur)
+    for a, b in zip(lines, lines[1:]):
+        end = max(s.bbox[2] for s in a)
+        first = b[0]
+        text = first.text.strip()
+        word = text.split()[0] if text else ""
+        width = (first.bbox[2] - first.bbox[0]) * len(word) / max(len(text), 1)
+        if right - end < width + 2.0:
+            return True
+    return False
+
+
 def _inside(w, b) -> bool:
     xc, yc = (w[0] + w[2]) / 2, (w[1] + w[3]) / 2
     return b[0] - _TOL <= xc <= b[2] + _TOL and b[1] - _TOL <= yc <= b[3] + _TOL
@@ -102,11 +138,13 @@ def verify_layout(sec: Section, words: list) -> str:
             return "word-boundaries"
     # 2b. several cells of a row, each several lines on shared baselines:
     #     those are rows the reader merged, not wrapped cells
+    right = _column_rights(sec)
     for r, row in enumerate(sec.columns):
         lines = [_line_ys(owner.get((r, c), [])) for c in range(len(row))]
         multi = [ys for ys in lines if len(ys) >= 2]
         if len(multi) >= 2 and all(len(ys) == len(multi[0]) for ys in multi) and all(
-                abs(a - b) <= _TOL for ys in multi[1:] for a, b in zip(ys, multi[0])):
+                abs(a - b) <= _TOL for ys in multi[1:] for a, b in zip(ys, multi[0])) \
+                and not any(_wraps(row[c], right[c]) for c in range(len(row)) if c < len(right)):
             return "stacked-rows"
     # 2c. a column whose cells have a wide gap at the same x in several
     #     rows holds two columns
@@ -144,3 +182,151 @@ def verify_layout(sec: Section, words: list) -> str:
         if b0 < a1 - _TOL:
             return "columns-overlap"
     return ""
+
+
+# ------------------------------------------------------------- escalation
+#
+# A failed verification says what is wrong; each reason maps to a small set
+# of targeted re-reads at the smallest level that can fix it. A re-read is
+# kept only if it passes the same verification; otherwise the table stays
+# as it was, flagged.
+
+def _lines_of(cell):
+    """A cell's spans split into lines (the "\n" spans separate them)."""
+    out, cur = [], []
+    for s in cell:
+        if s.text == "\n":
+            if cur:
+                out.append(cur)
+            cur = []
+        elif s.text.strip():
+            cur.append(s)
+    if cur:
+        out.append(cur)
+    return out
+
+
+def _yc(line) -> float:
+    return sum((s.bbox[1] + s.bbox[3]) / 2 for s in line) / len(line)
+
+
+def _join_lines(lines, nl):
+    out = []
+    for i, ln in enumerate(lines):
+        if i:
+            out.append(nl)
+        out.extend(ln)
+    return out
+
+
+def _with_columns(sec, columns):
+    import copy
+    new = copy.copy(sec)
+    new.metadata = dict(sec.metadata)
+    new.columns = columns
+    new.text = "\n".join(" | ".join("".join(s.text for s in c if s.text != "\n") for c in r)
+                         for r in columns)
+    return new
+
+
+def _newline_span(sec):
+    for row in sec.columns:
+        for cell in row:
+            for s in cell:
+                if s.text == "\n":
+                    return s
+    from .types import Span
+    return Span(text="\n")
+
+
+def split_stacked_rows(sec, words):
+    """Rows whose cells hold several entries on shared baselines become one
+    row per baseline (the drawn cell grouped several entries)."""
+    nl = _newline_span(sec)
+    out, changed = [], False
+    for row in sec.columns:
+        lines = [_lines_of(c) for c in row]
+        multi = [ls for ls in lines if len(ls) >= 2]
+        right = _column_rights(sec)
+        if len(multi) < 2 or any(_wraps(row[c], right[c]) for c in range(len(row))):
+            out.append(row)              # wrapped cells are one row
+            continue
+        base = [_yc(ln) for ln in max(multi, key=len)]
+        groups = [[[] for _ in row] for _ in base]
+        for c, ls in enumerate(lines):
+            for ln in ls:
+                k = min(range(len(base)), key=lambda i: abs(base[i] - _yc(ln)))
+                groups[k][c].append(ln)
+        out += [[_join_lines(cell, nl) for cell in g] for g in groups if any(g)]
+        changed = True
+    return _with_columns(sec, out) if changed else None
+
+
+def split_hidden_column(sec, words):
+    """A column whose cells have a wide gap at the same x is two columns:
+    split every cell of it at that x (spans left and right of the gap)."""
+    ncol = max(len(r) for r in sec.columns)
+    for c in range(ncol):
+        xs = []
+        for row in sec.columns:
+            if c >= len(row):
+                continue
+            for ln in _lines_of(row[c]):
+                ln = sorted(ln, key=lambda s: s.bbox[0])
+                for a, b in zip(ln, ln[1:]):
+                    if b.bbox[0] - a.bbox[2] >= _HIDDEN_GAP:
+                        xs.append((a.bbox[2] + b.bbox[0]) / 2)
+        for x in xs:
+            if sum(1 for y in xs if abs(y - x) <= 4.0) >= 2:
+                nl = _newline_span(sec)
+                out = []
+                for row in sec.columns:
+                    row = list(row) + [[] for _ in range(ncol - len(row))]
+                    left, right = [], []
+                    for ln in _lines_of(row[c]):
+                        lft = [s for s in ln if (s.bbox[0] + s.bbox[2]) / 2 < x]
+                        rgt = [s for s in ln if (s.bbox[0] + s.bbox[2]) / 2 >= x]
+                        if lft:
+                            left.append(lft)
+                        if rgt:
+                            right.append(rgt)
+                    out.append(row[:c] + [_join_lines(left, nl), _join_lines(right, nl)] + row[c + 1:])
+                return _with_columns(sec, out)
+    return None
+
+
+def switch_reader(sec, words):
+    """Another source's reading of the same region, the first that verifies."""
+    for source, columns in sec.metadata.get("alternatives", []):
+        alt = _with_columns(sec, columns)
+        alt.metadata["table_source"] = source
+        if not verify_layout(alt, words):
+            return alt
+    return None
+
+
+_MOVES = {
+    "stacked-rows": [split_stacked_rows],
+    "hidden-column": [split_hidden_column],
+    "overlapping-cells": [switch_reader],
+    "word-outside-cells": [switch_reader],
+    "cell-order": [switch_reader],
+    "rows-overlap": [switch_reader],
+    "columns-overlap": [switch_reader],
+}
+
+
+def escalate(sec, words, reason: str, depth: int = 2):
+    """(re-read section, moves) that passes verification, or (None, [])."""
+    for move in _MOVES.get(reason, []):
+        new = move(sec, words)
+        if new is None:
+            continue
+        again = verify_layout(new, words)
+        if not again:
+            return new, [move.__name__]
+        if depth > 1 and again != reason:          # fixed one thing, try the next
+            deeper, moves = escalate(new, words, again, depth - 1)
+            if deeper is not None:
+                return deeper, [move.__name__] + moves
+    return None, []

@@ -416,13 +416,29 @@ def partial_reading(primary: TableCandidate, other: TableCandidate) -> bool:
         return False
     rows = primary.text_rows()
     i = 0
+    seen = set()
     for orow in other.text_rows():
         while i < len(rows) and not all(_cells_agree(x, y) for x, y in zip(orow, rows[i])):
             i += 1
         if i == len(rows):
             return False
+        seen.add(i)
         i += 1
-    return True
+    # The rows tomd did not see are unconfirmed: they must be the minority,
+    # and none may look like another table's header (every cell bold) -
+    # a ruled box around two tables passed as one (p4089r1).
+    if len(seen) < _SUBSET_SHARE * len(rows):
+        return False
+    return not any(r > 0 and r not in seen and _all_bold(primary.rows[r])
+                   for r in range(len(rows)))
+
+
+_SUBSET_SHARE = 0.5
+
+
+def _all_bold(row) -> bool:
+    spans = [s for cell in row for ln in cell for s in ln.spans if s.text.strip()]
+    return bool(spans) and all(s.bold for s in spans)
 
 
 def table_flags(cand: TableCandidate) -> list[str]:
@@ -751,6 +767,12 @@ def select_tables(tomd_sections: list[Section],
         sec.metadata["region_sources"] = sorted({c.source for c in settled})
         sec.metadata["region_flags"] = sorted({f for c in settled for f in c.flags})
         sec.metadata["region_bbox"] = (primary.pages[0], primary.bboxes[primary.pages[0]])
+        # every other source's reading of this region (rejected ones too):
+        # escalation may switch to one when the primary fails verification
+        sec.metadata["alternatives"] = [
+            (c.source, [[_cell_spans(cell) for cell in row] for row in c.rows])
+            for c in settled if c is not primary and c.source != primary.source
+            and c.pages == primary.pages]
         out.append(sec)
         _log.debug("Table p%d %dx%d from %s: %s", primary.pages[0], *primary.shape,
                    primary.source, conf.value)
@@ -762,7 +784,6 @@ def select_tables(tomd_sections: list[Section],
     return out
 
 
-_POLL_HEADERS = (["SF", "F", "N", "A", "SA"], ["F", "N", "A"])
 _VOTE = re.compile(r"^\d{1,3}$")
 
 
@@ -784,9 +805,9 @@ def class_check(cand: TableCandidate) -> str:
     width = max(len(r) for r in rows)
     if any(len(r) != width for r in rows):
         return ""
-    head = ["".join(c.split()) for c in rows[0]]
     if cand.source == "poll":
-        if head in _POLL_HEADERS and len(rows) >= 2 and all(
+        from .poll import vote_header
+        if vote_header(rows[0]) and len(rows) >= 2 and all(
                 all(_VOTE.match(c.strip()) for c in r) or not any(c.strip() for c in r)
                 for r in rows[1:]):
             return "poll"

@@ -32,6 +32,9 @@ _CORPUS = os.environ.get("TOMD_TABLE_CORPUS")
 # entry when it is fixed; the test fails if a listed table starts passing so
 # the list stays honest.
 KNOWN_GAPS = {
+    "p3654r0-t1": "side-by-side code slide, reclassified as a table 2026-10-17; not detected",
+    "p3654r0-t2": "side-by-side code slide, reclassified as a table 2026-10-17; not detected",
+    "p3654r0-t3": "side-by-side code slide, reclassified as a table 2026-10-17; not detected",
     "p0533r9-t4": "ambiguous: the empty Comment column shows only in the header, \"Pass Comment\" spaced like one two-word header; only a sibling table reveals two columns",
     "p4318r1-t3": "PDF text layer is damaged (math italics written without their last hex digit); not recoverable from text, so the table is marked uncertain with a note",
     # Held-out set (2026-10): misses measured before any tuning on these papers
@@ -110,8 +113,28 @@ def _inline_text(nodes) -> str:
     return "".join(out)
 
 
+_CODE_CMP = re.compile(r"<!-- tomd:table kind=code-comparison cols=(\d+) -->")
+_CODE_PART = re.compile(r"\s*(?:\*\*(.+?)\*\*\s*)?```[a-z]*\n(.*?)\n```", re.S)
+
+
+def _code_comparisons(md: str) -> list[list[list[str]]]:
+    """Code-comparison tables, rendered as paired fenced blocks under bold headers."""
+    out = []
+    for m in _CODE_CMP.finditer(md):
+        pos, heads, codes = m.end(), [], []
+        for _ in range(int(m.group(1))):
+            part = _CODE_PART.match(md, pos)
+            if not part:
+                break
+            heads.append(_norm(part.group(1) or ""))
+            codes.append(_norm(part.group(2)))
+            pos = part.end()
+        out.append(([heads] if any(heads) else []) + [codes])
+    return out
+
+
 def _md_tables(md: str) -> list[list[list[str]]]:
-    tables = []
+    tables = _code_comparisons(md)
 
     def walk(nodes):
         for n in nodes:
