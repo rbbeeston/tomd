@@ -303,6 +303,13 @@ def gate_tables(doc, pages, sections: list[Section], paper: str = "") -> dict:
         _, bbox = sec.metadata["region_bbox"]
         words = pages[pg].get_text("words", clip=bbox)
         reason = verify_layout(sec, words)
+        if (not reason and "conservation" in sec.metadata.get("uncertain_reasons", [])
+                and os.environ.get("TOMD_HEADER") != "0"):
+            # an aligned row just above the table may be its header (checked by content contrast)
+            above = pages[pg].get_text("words", clip=(bbox[0] - 2, bbox[1] - 22, bbox[2] + 2, bbox[1] - 0.5))
+            if above:
+                sec.metadata["_above_words"] = above
+                reason = "header-above"
         sec.metadata["verified"] = reason or "ok"
         if reason and sec.confidence != Confidence.HIGH and os.environ.get("TOMD_ESCALATE") != "0":
             # escalate: a targeted re-read for what failed; kept only if it verifies

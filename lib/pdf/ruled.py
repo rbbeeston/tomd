@@ -305,10 +305,51 @@ def _grid_tables_in(page, page_num, chars, clip) -> list[TableCandidate]:
                 row.append(_chars_to_lines(_chars_in(chars, cell), page_num) if cell else [])
             rows.append(row)
         rows = _drop_empty(rows)
+        if len(rows) == 1:
+            cells = [c for c in t.rows[0].cells]
+            visual = [_visual_lines(_chars_in(chars, c), page_num) if c else [] for c in cells]
+            visual = [v for v in visual] if len(visual) == len(rows[0]) else rows[0]
+            rows = _split_stacked_cells(visual)
         if len(rows) < 2 or max(len(r) for r in rows) < 2:
             continue
         out.append(TableCandidate("grid", rows, {page_num: tuple(t.bbox)}))
     return out
+
+
+def _visual_lines(chars, page_num: int) -> list[Line]:
+    """Lines of a cell where characters that overlap vertically share a line
+    (a formula's glyphs sit on slightly different baselines): each group's
+    characters get one common box, so the line builder orders them by x."""
+    groups: list[list] = []
+    for ch in sorted(chars, key=lambda c: c[1][1]):
+        g = next((g for g in groups if min(g[1], ch[1][3]) - max(g[0], ch[1][1])
+                  > 0.5 * min(g[1] - g[0], ch[1][3] - ch[1][1])), None)
+        if g:
+            g[0], g[1] = min(g[0], ch[1][1]), max(g[1], ch[1][3])
+            g[2].append(ch)
+        else:
+            groups.append([ch[1][1], ch[1][3], [ch]])
+    flat = [(c[0], (c[1][0], g[0], c[1][2], g[1])) + tuple(c[2:]) for g in groups for c in g[2]]
+    return _chars_to_lines(flat, page_num)
+
+
+def _split_stacked_cells(row):
+    """A single drawn row whose filled cells each hold the same number of
+    lines on shared baselines is that many rows (entries stacked in one
+    box, e.g. "Complexity / O(...)" beside "Throws? / Multi-edge?"); any
+    other single row stays one row."""
+    filled = [c for c in row if c]
+    if len(filled) < 2:
+        return [row]
+    k = len(filled[0])
+    if k < 2 or any(len(c) != k for c in filled):
+        return [row]
+    def overlaps(a, b):
+        return min(a.bbox[3], b.bbox[3]) - max(a.bbox[1], b.bbox[1]) > \
+            0.5 * min(a.bbox[3] - a.bbox[1], b.bbox[3] - b.bbox[1])
+    if not all(overlaps(a, b) for c in filled[1:] for a, b in zip(c, filled[0])):
+        return [row]                     # lines not on shared baselines
+    return [[[c[i]] if c else [] for c in row] for i in range(k)]
 
 
 def _drop_empty(rows):

@@ -1,6 +1,7 @@
 """PDF to Markdown converter - pipeline entry point."""
 
 import logging
+import os
 import re
 from collections import Counter
 from dataclasses import dataclass, field
@@ -14,14 +15,15 @@ from .wording import classify_wording, collect_line_drawings
 from .spans import normalize_spans
 from .structure import compare_extractions, structure_sections
 from .table import detect_tables, select_tables, remove_table_regions
-from .flag import text_regions, gutter_regions, rejected_regions, flag_possible_tables
+from .flag import (text_regions, gutter_regions, rejected_regions, flag_possible_tables,
+                   outside_view_regions)
 from .classify import gate_tables
 from .ruled import extract_ruled_tables
 from .tagged import extract_tagged_tables
 from .poll import extract_poll_tables
 from .wg21 import extract_metadata_from_blocks
 from .emit import emit_markdown, emit_prompts
-from .types import Section, SectionKind, is_readable
+from .types import Block, Section, SectionKind, is_readable
 from ..toc import find_toc_indices
 
 __all__ = ["convert_pdf", "PipelineResult"]
@@ -182,6 +184,34 @@ def _skip(result, doc, reason: str, prompt: str) -> None:
     result.md = f"<!-- tomd:skipped:{reason}: {note} -->\n"
     result.prompts = prompt + f"\nNot converted, so nothing below was checked: {note}.\n"
     result.discards.append(("document", reason, note))
+
+
+_OWN_TABLE = re.compile(r"(?<![\w\]])Table\s+(\d+(?:\.\d+)?)\b")
+
+
+def _own_table_numbers(blocks) -> int:
+    """"Table N" numbers in the paper's text, not counting the standard's
+    tables (lines with a [tab:...] stable name). A paper numbers its own
+    tables from 1, so only the unbroken run 1..k counts (per chapter for
+    "Table 2.3"); "see Table 30" alone is someone else's numbering."""
+    nums = set()
+    for b in blocks:
+        for ln in b.lines:
+            t = ln.text
+            if "[tab:" in t or "tab." in t:
+                continue
+            nums |= set(_OWN_TABLE.findall(t))
+    groups: dict[str, set[int]] = {}
+    for n in nums:
+        major, _, minor = n.rpartition(".")
+        groups.setdefault(major, set()).add(int(minor))
+    count = 0
+    for got in groups.values():
+        k = 1
+        while k in got:
+            k += 1
+        count += k - 1
+    return count
 
 
 def _horizontal_share(page) -> float:
@@ -378,6 +408,8 @@ def _run_pipeline(path: Path) -> PipelineResult:
         if not inserted:
             sections.append(ts)
     flag_possible_tables(sections, possible_tables)
+    if os.environ.get("TOMD_OUTSIDE") != "0":
+        flag_possible_tables(sections, outside_view_regions(sections))
 
     has_title = "title" in wg21_metadata
     # Three metadata pathways, merged here in precedence order (last wins):
@@ -415,6 +447,13 @@ def _run_pipeline(path: Path) -> PipelineResult:
         else:
             prompts = "# tomd - Conversion Issues\n" + wording_prompt
 
+    # what the paper's own text says about its tables: a floor, cheap to check
+    expected = _own_table_numbers(all_mupdf_blocks + [Block(lines=ts.lines, page_num=ts.page_num)
+                                                      for ts in table_sections if ts.lines])
+    found = sum(1 for s in sections if s.kind == SectionKind.TABLE)
+    if expected > found:
+        result.discards.append(("tables", f"the paper numbers {expected} tables of its own "
+                                f"(\"Table N\") but {found} were extracted", ""))
     if result.discards:
         lines = ["\n## Removed content\n",
                  "tomd removed this content on purpose; check it if something is missing."]

@@ -291,3 +291,73 @@ def flag_possible_tables(sections: list[Section], regions: list[Region]) -> int:
     if n:
         _log.info("Marked %d section(s) as possible tables", n)
     return n
+
+
+_OV_FILL = 0.85          # set apart: its rows fill at most this share of the prose width
+_OV_SHARED = 0.6         # two-dimensional: this share of rows repeat 2+ piece positions
+_OV_MONO = 0.5           # code (monospace) is not judged here
+
+
+def _visual_rows(lines):
+    rows: list = []
+    for ln in sorted(lines, key=lambda l: ((l.bbox[1] + l.bbox[3]) / 2, l.bbox[0])):
+        yc = (ln.bbox[1] + ln.bbox[3]) / 2
+        if rows and abs(yc - rows[-1][0]) <= 3:
+            rows[-1][1].append(ln)
+        else:
+            rows.append([yc, [ln]])
+    return [r for _, r in rows]
+
+
+def _pieces(row):
+    spans = sorted((s for ln in row for s in ln.spans if s.text.strip()), key=lambda s: s.bbox[0])
+    out: list = []
+    for s in spans:
+        if out and s.bbox[0] - out[-1][1] < _COL_GAP:
+            out[-1][1] = max(out[-1][1], s.bbox[2])
+            out[-1][2] += s.text
+        else:
+            out.append([s.bbox[0], s.bbox[2], s.text])
+    return out
+
+
+def outside_view_regions(sections: list[Section]) -> list[Region]:
+    """Tables seen from the outside, against the paper's own prose: a block
+    that is set apart (its rows fill much less than the prose measure) AND
+    two-dimensional (most rows hold 2+ pieces whose positions recur on other
+    rows). A block that is set apart but one-dimensional is a quote or a
+    list; prose fills the measure. Measured on the tuning sets before use."""
+    body = [ln for s in sections if s.kind == SectionKind.PARAGRAPH and len(s.lines) >= 2
+            for ln in s.lines]
+    if len(body) < 5:
+        return []
+    widths = sorted(ln.bbox[2] - ln.bbox[0] for ln in body)
+    measure = widths[len(widths) // 2] or 1.0
+    out: list[Region] = []
+    for sec in sections:
+        if sec.kind in _KEEP_KINDS or "possible_table" in sec.metadata or len(sec.lines) < 2:
+            continue
+        rows = _visual_rows(sec.lines)
+        if len(rows) < 2:
+            continue
+        chars = sum(len(s.text) for ln in sec.lines for s in ln.spans)
+        mono = sum(len(s.text) for ln in sec.lines for s in ln.spans if s.monospace)
+        if chars and mono >= _OV_MONO * chars:
+            continue
+        pieces = [_pieces(r) for r in rows]
+        starts = [[round(p[0]) for p in ps] for ps in pieces]
+        segs = sorted(len(p) for p in pieces)[len(pieces) // 2]
+        shared = sum(1 for i, a in enumerate(starts) if len(a) >= 2 and any(
+            j != i and sum(1 for x in a for y in b if abs(x - y) <= _START_TOL) >= 2
+            for j, b in enumerate(starts))) / len(rows)
+        fill = sorted(max(l.bbox[2] for l in r) - min(l.bbox[0] for l in r) for r in rows)[len(rows) // 2] / measure
+        page = sec.lines[0].page_num
+        if page == 0 and sum(p[0][2].strip().endswith(":") for p in pieces if p) >= 0.5 * len(rows):
+            continue                          # "Date: 2024-03-19" front matter
+        if segs >= 2 and shared >= _OV_SHARED and fill <= _OV_FILL:
+            same = [ln for ln in sec.lines if ln.page_num == page]
+            out.append((page, (min(l.bbox[0] for l in same), min(l.bbox[1] for l in same),
+                               max(l.bbox[2] for l in same), max(l.bbox[3] for l in same)),
+                        "a block set apart from the prose and laid out in aligned columns",
+                        len(rows)))
+    return out
