@@ -28,6 +28,7 @@ at the last same-page row and the orphan appears in an uncertain region.
 """
 
 import logging
+import os
 import re
 from collections import Counter, defaultdict
 from difflib import SequenceMatcher
@@ -624,7 +625,8 @@ def stitch_pages(cands: list[TableCandidate], blocks: list[Block]) -> list[Table
             pb, cb = prev.bboxes[last_pg], c.bboxes[c.pages[0]]
             if (c.pages[0] == last_pg + 1 and c is first_on_pg and prev is last_on_prev
                     and prev.shape[1] == c.shape[1]
-                    and abs(pb[0] - cb[0]) <= _STITCH_X_TOL and abs(pb[2] - cb[2]) <= _STITCH_X_TOL
+                    and ((abs(pb[0] - cb[0]) <= _STITCH_X_TOL and abs(pb[2] - cb[2]) <= _STITCH_X_TOL)
+                         or _same_columns(prev, last_pg, c, c.pages[0]))
                     and not _text_outside(blocks, last_pg, below=pb[3] + _REGION_MARGIN)
                     and not _text_outside(blocks, c.pages[0], above=cb[1] - _REGION_MARGIN)):
                 rows = c.rows
@@ -635,6 +637,28 @@ def stitch_pages(cands: list[TableCandidate], blocks: list[Block]) -> list[Table
                 continue
         out.append(c)
     return out
+
+
+_SIGNATURE_TOL = 4.0       # column starts closer than this are the same column
+
+
+def _column_starts_on(cand: TableCandidate, page: int) -> list[float | None]:
+    out = []
+    for c in range(cand.shape[1]):
+        xs = [ln.bbox[0] for row in cand.rows if c < len(row) for ln in row[c] if ln.page_num == page]
+        out.append(min(xs) if xs else None)
+    return out
+
+
+def _same_columns(a: TableCandidate, pa: int, b: TableCandidate, pb: int) -> bool:
+    """The two parts start their columns at the same x positions (a page
+    continuation keeps the page geometry; its outer edge may move with
+    content). Every column seen on both pages must match, and at least two."""
+    if os.environ.get("TOMD_STITCHSIG") == "0":
+        return False
+    sa, sb = _column_starts_on(a, pa), _column_starts_on(b, pb)
+    pairs = [(x, y) for x, y in zip(sa, sb) if x is not None and y is not None]
+    return len(pairs) >= 2 and all(abs(x - y) <= _SIGNATURE_TOL for x, y in pairs)
 
 
 def _cell_spans(cell: list[Line]) -> list[Span]:
