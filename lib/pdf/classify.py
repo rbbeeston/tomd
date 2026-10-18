@@ -350,6 +350,8 @@ def gate_tables(doc, pages, sections: list[Section], paper: str = "") -> dict:
                     break
             repair(sec, pages[pg], bbox, pages[pg].get_text("words", clip=bbox),
                    verify_layout, client)
+            if not llm_enabled():      # credentials rejected: stop for this paper
+                break
     # the lossless model: spans from the geometry, flattened by emit
     for sec in tables:
         if sec.metadata.get("table_source") != "poll" and os.environ.get("TOMD_SPANS") != "0":
