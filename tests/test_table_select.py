@@ -673,4 +673,6 @@ class TestLLMRepair:
         import lib.pdf.llmrepair as L
         monkeypatch.setenv("TOMD_LLM", "1")
         monkeypatch.delenv("ANTHROPIC_API_KEY", raising=False)
+        monkeypatch.delenv("ANTHROPIC_AUTH_TOKEN", raising=False)
+        monkeypatch.setenv("ANTHROPIC_CONFIG_DIR", "/nonexistent-tomd-test")
         assert not L.llm_enabled()

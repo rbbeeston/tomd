@@ -2,8 +2,9 @@
 
 A table that is still UNCERTAIN after every deterministic reader and the
 escalation moves may be sent to a vision model - only when TOMD_LLM=1 and
-ANTHROPIC_API_KEY is set (the key is read by the Anthropic SDK from the
-environment and is never logged or printed). The model gets the rendered
+credentials exist: ANTHROPIC_API_KEY, ANTHROPIC_AUTH_TOKEN, or an
+`ant auth login` profile (the Anthropic SDK resolves them; tomd never reads,
+logs or prints a key or token). The model gets the rendered
 table region and the page's own words, each with an index and position,
 and returns rows of cells as lists of word indices. It cannot write text:
 tomd builds every cell from the indexed page words.
@@ -57,8 +58,22 @@ _INSTRUCTIONS = (
 )
 
 
+def _has_credentials() -> bool:
+    """An API key, an auth token, or an `ant auth login` profile on disk -
+    the sources the Anthropic SDK resolves, in that order. Nothing is read
+    from them here; the SDK does that."""
+    if os.environ.get("ANTHROPIC_API_KEY") or os.environ.get("ANTHROPIC_AUTH_TOKEN"):
+        return True
+    from pathlib import Path
+    base = Path(os.environ.get("ANTHROPIC_CONFIG_DIR") or Path.home() / ".config" / "anthropic")
+    return any((base / "credentials").glob("*.json"))
+
+
+_DISABLED = False          # set after an authentication failure, for the rest of the run
+
+
 def llm_enabled() -> bool:
-    return os.environ.get("TOMD_LLM") == "1" and bool(os.environ.get("ANTHROPIC_API_KEY"))
+    return os.environ.get("TOMD_LLM") == "1" and not _DISABLED and _has_credentials()
 
 
 def _client():
@@ -98,7 +113,12 @@ def ask(client, page, bbox, words):
             ]}],
         )
     except Exception as e:  # any API or network error: leave the table flagged
-        _log.warning("LLM repair call failed (%s); table stays flagged", type(e).__name__)
+        global _DISABLED
+        if type(e).__name__ in ("AuthenticationError", "PermissionDeniedError"):
+            _DISABLED = True       # bad or missing credentials: stop trying this run
+            _log.warning("LLM repair disabled: the API rejected the credentials")
+        else:
+            _log.warning("LLM repair call failed (%s); table stays flagged", type(e).__name__)
         return None
     if getattr(resp, "stop_reason", None) == "refusal":
         return None
