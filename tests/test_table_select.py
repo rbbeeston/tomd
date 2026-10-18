@@ -605,3 +605,72 @@ def test_code_comparison_renders_as_fenced_blocks():
     md = _render_code_comparison(rows)
     assert md.startswith("<!-- tomd:table kind=code-comparison cols=2 -->")
     assert "**Before**" in md and "```cpp\nint f() {\n  return 1;\n}\n```" in md
+
+
+class TestLLMRepair:
+    """lib.pdf.llmrepair with the API mocked: structure only, verified."""
+
+    WORDS = [(50, 100, 80, 110, "Name", 0, 0, 0), (200, 100, 230, 110, "Value", 0, 0, 1),
+             (50, 120, 80, 130, "alpha", 0, 1, 0), (200, 120, 206, 130, "1", 0, 1, 1)]
+
+    def _client(self, rows):
+        import json as _json
+
+        class Block:
+            type = "text"
+            text = _json.dumps({"rows": rows})
+
+        class Resp:
+            content = [Block()]
+            stop_reason = "end_turn"
+            model = "claude-opus-5-5"
+
+            class usage:
+                input_tokens, output_tokens = 1000, 50
+
+        class Messages:
+            def create(self, **kw):
+                assert kw["model"] == "claude-opus-5-5"
+                assert kw["messages"][0]["content"][0]["type"] == "image"
+                return Resp()
+
+        class Beta:
+            messages = Messages()
+
+        class Client:
+            beta = Beta()
+        return Client()
+
+    def _sec(self):
+        return select_tables([], [_cand("grid", _GOOD)], [], [])[0]
+
+    def _run(self, rows, monkeypatch, verify=lambda s, w: ""):
+        import lib.pdf.llmrepair as L
+        monkeypatch.setattr(L, "_image", lambda page, bbox: "")
+        sec = self._sec()
+        return sec, L.repair(sec, None, (0, 0, 300, 200), self.WORDS, verify, self._client(rows))
+
+    def test_verified_structure_is_kept(self, monkeypatch):
+        sec, result = self._run([[[0], [1]], [[2], [3]]], monkeypatch)
+        assert result == "verified" and sec.metadata["llm_repair"]["model"] == "claude-opus-5-5"
+        assert [["".join(s.text for s in c) for c in r] for r in sec.columns] == [["Name", "Value"], ["alpha", "1"]]
+
+    def test_left_out_or_duplicated_words_are_rejected(self, monkeypatch):
+        sec, result = self._run([[[0], [1]], [[2], []]], monkeypatch)
+        assert result == "rejected:word-left-out"
+        sec, result = self._run([[[0], [1]], [[2], [2, 3]]], monkeypatch)
+        assert result == "rejected:word-used-twice"
+
+    def test_unknown_index_is_rejected(self, monkeypatch):
+        sec, result = self._run([[[0], [1]], [[2], [9]]], monkeypatch)
+        assert result.startswith("rejected:")
+
+    def test_failed_verification_keeps_the_table(self, monkeypatch):
+        sec, result = self._run([[[0], [1]], [[2], [3]]], monkeypatch, verify=lambda s, w: "cell-order")
+        assert result == "rejected:cell-order" and sec.metadata["table_source"] == "grid"
+
+    def test_disabled_without_key(self, monkeypatch):
+        import lib.pdf.llmrepair as L
+        monkeypatch.setenv("TOMD_LLM", "1")
+        monkeypatch.delenv("ANTHROPIC_API_KEY", raising=False)
+        assert not L.llm_enabled()

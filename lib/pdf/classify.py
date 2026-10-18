@@ -41,6 +41,7 @@ from .types import Confidence, Section, SectionKind
 from .validate import escalate, verify_layout
 from .ocrcheck import check_table, ocr_enabled
 from .tablemodel import detect_spans
+from .llmrepair import llm_enabled, repair
 
 _log = logging.getLogger(__name__)
 
@@ -335,6 +336,20 @@ def gate_tables(doc, pages, sections: list[Section], paper: str = "") -> dict:
             sec.confidence = Confidence.HIGH
             sec.metadata["table_agreement"] = "class:" + layout
             sec.metadata.pop("table_note", None)
+    # opt-in LLM repair of tables still flagged: structure only, verified
+    if llm_enabled():
+        client = None
+        for sec, (pg, _, _, _) in zip(tables, regions):
+            if sec.confidence == Confidence.HIGH or sec.metadata.get("table_source") == "poll":
+                continue
+            _, bbox = sec.metadata["region_bbox"]
+            if client is None:
+                from .llmrepair import _client
+                client = _client()
+                if client is None:
+                    break
+            repair(sec, pages[pg], bbox, pages[pg].get_text("words", clip=bbox),
+                   verify_layout, client)
     # the lossless model: spans from the geometry, flattened by emit
     for sec in tables:
         if sec.metadata.get("table_source") != "poll" and os.environ.get("TOMD_SPANS") != "0":

@@ -41,6 +41,22 @@ def _cell_boxes(sec: Section):
     return out
 
 
+def cell_text(cell) -> str:
+    """A cell's text as tomd renders it: spans of a line joined as they are
+    (they carry their own spaces: "has_degree<G>", "C++26"), lines joined
+    with a space. Joining spans with spaces broke code into "has_degree < G >"
+    and made correct tables fail the word-boundary check."""
+    lines, cur = [], []
+    for s in cell:
+        if s.text == "\n":
+            lines.append("".join(cur))
+            cur = []
+        else:
+            cur.append(s.text)
+    lines.append("".join(cur))
+    return " ".join(l.strip() for l in lines if l.strip())
+
+
 def _tokens(words: list[str]) -> list[str]:
     """Words, with a line-break hyphen joining its two halves."""
     out: list[str] = []
@@ -99,6 +115,14 @@ def _wraps(cell, right: float) -> bool:
     return False
 
 
+def _code_row(row) -> bool:
+    """The row's text is (nearly) all monospace: lines of code belong to one
+    listing, so they are never split into rows (before/after tables)."""
+    spans = [s for c in row for s in c if s.text.strip() and s.text != "\n"]
+    chars = sum(len(s.text.strip()) for s in spans)
+    return chars > 0 and sum(len(s.text.strip()) for s in spans if s.monospace) >= 0.8 * chars
+
+
 def _inside(w, b) -> bool:
     xc, yc = (w[0] + w[2]) / 2, (w[1] + w[3]) / 2
     return b[0] - _TOL <= xc <= b[2] + _TOL and b[1] - _TOL <= yc <= b[3] + _TOL
@@ -130,7 +154,7 @@ def verify_layout(sec: Section, words: list) -> str:
     #    the same order, and the same word boundaries (a line-break hyphen
     #    may join two page words)
     for r, c, _ in flat:
-        text = " ".join(s.text for s in sec.columns[r][c] if s.text != "\n")
+        text = cell_text(sec.columns[r][c])
         ws = sorted(owner.get((r, c), []), key=lambda w: (round((w[1] + w[3]) / 2 / 3), w[0]))
         if _ALNUM.findall(" ".join(w[4] for w in ws)) != _ALNUM.findall(text):
             return "cell-order"
@@ -144,7 +168,8 @@ def verify_layout(sec: Section, words: list) -> str:
         multi = [ys for ys in lines if len(ys) >= 2]
         if len(multi) >= 2 and all(len(ys) == len(multi[0]) for ys in multi) and all(
                 abs(a - b) <= _TOL for ys in multi[1:] for a, b in zip(ys, multi[0])) \
-                and not any(_wraps(row[c], right[c]) for c in range(len(row)) if c < len(right)):
+                and not any(_wraps(row[c], right[c]) for c in range(len(row)) if c < len(right)) \
+                and not _code_row(row):
             return "stacked-rows"
     # 2c. a column whose cells have a wide gap at the same x in several
     #     rows holds two columns
@@ -248,8 +273,8 @@ def split_stacked_rows(sec, words):
         lines = [_lines_of(c) for c in row]
         multi = [ls for ls in lines if len(ls) >= 2]
         right = _column_rights(sec)
-        if len(multi) < 2 or any(_wraps(row[c], right[c]) for c in range(len(row))):
-            out.append(row)              # wrapped cells are one row
+        if len(multi) < 2 or _code_row(row) or any(_wraps(row[c], right[c]) for c in range(len(row))):
+            out.append(row)              # wrapped cells and code listings are one row
             continue
         base = [_yc(ln) for ln in max(multi, key=len)]
         groups = [[[] for _ in row] for _ in base]
