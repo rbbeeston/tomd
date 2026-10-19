@@ -19,7 +19,7 @@ import logging
 import re
 
 from .types import TableCandidate
-from .ruled import _page_words, _word_chars, _chars_to_lines, _text_lines, _horizontal_rules
+from .ruled import _page_words, _word_chars, _chars_to_lines, _text_lines
 
 _log = logging.getLogger(__name__)
 
@@ -83,15 +83,6 @@ def _strip_zero_width(lines):
     return [ln for ln in lines if ln.spans]
 
 
-def _drawn_empty_row(rules, header_words, bottom, height) -> bool:
-    """Two rules spanning the header just below it: a ruled, empty vote row."""
-    x0 = min(w[0] for w in header_words) - 2
-    x1 = max(w[2] for w in header_words) + 2
-    below = [r for r in rules if bottom - 1 <= r[0] <= bottom + _EMPTY_ROW_RATIO * height
-             and r[1] <= x0 + 5 and r[2] >= x1 - 5]
-    return len(below) >= 2
-
-
 def extract_poll_tables(page, page_num: int) -> list[TableCandidate]:
     """Poll result tables on one page."""
     raw = page.get_text("rawdict", flags=0)
@@ -99,7 +90,6 @@ def extract_poll_tables(page, page_num: int) -> list[TableCandidate]:
     if not any(VOTE_LABELS.get(_clean(w[4]).lower()) == -1 for w in words):
         return []
     lines = _text_lines(words)
-    rules = _horizontal_rules(page.get_drawings())
     out = []
     for i, (top, bot, lw) in enumerate(lines):
         lw = sorted(lw, key=lambda w: w[0])
@@ -127,11 +117,16 @@ def extract_poll_tables(page, page_num: int) -> list[TableCandidate]:
             last_bot = bot2
         table_rows = [[_strip_zero_width(_chars_to_lines(_word_chars(c), page_num)) for c in row]
                       for row in rows]
-        if len(rows) == 1 and _drawn_empty_row(rules, lw, bot, height):
-            table_rows.append([[] for _ in head])           # a suggested poll's blank vote row
+        if len(rows) == 1:
+            # a suggested poll (no counts yet) still has its vote row, blank -
+            # drawn or not (convention: every poll is a header and a vote row)
+            table_rows.append([[] for _ in head])
         x0 = min(w[0] for w in lw) - 2
         x1 = max(w[2] for w in lw) + 2
-        out.append(TableCandidate("poll", table_rows, {page_num: (x0, top - 1, x1, last_bot + 1)}))
+        cand = TableCandidate("poll", table_rows, {page_num: (x0, top - 1, x1, last_bot + 1)})
+        if len(rows) == 1:
+            cand.flags.append("blank-row-inferred")       # by convention, not seen: no evidence
+        out.append(cand)
     if out:
         _log.debug("Page %d: %d poll table(s)", page_num, len(out))
     return out

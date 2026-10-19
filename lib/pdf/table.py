@@ -565,6 +565,8 @@ def _is_bad(cand: TableCandidate) -> bool:
         bad -= _SPARSE_FLAGS          # sparse by design: marks, or a grid its rotated header labels define
     if cand.source == "tags":
         bad -= _TAG_EXEMPT_FLAGS
+    if cand.source == "poll":
+        bad -= {"empty-cells", "sparse-two-rows", "single-cell-rows", "ragged-columns"}   # a suggested poll's blank vote row
     if cand.source == "codepair" or (cand.source == "content" and getattr(cand, "trace", {}).get("code")):
         bad -= _CODEPAIR_EXEMPT_FLAGS
     return bool(bad)
@@ -852,6 +854,22 @@ def select_tables(tomd_sections: list[Section],
                 k.flags = k.flags + ["code-rows"]
                 cands = [x for x in cands if x is not c]
                 break
+    # A poll whose vote row was inferred (blank) yields to another reading of
+    # the same region that has the votes under the same header.
+    for c in [c for c in cands if c.source == "poll" and "blank-row-inferred" in c.flags]:
+        head = [_key(t) for t in c.text_rows()[0]]
+        for o in cands:
+            if o is c or o.source == "poll" or not (set(o.pages) & set(c.pages)) or _overlap(o, c) < _GROUP_OVERLAP:
+                continue
+            rows = o.text_rows()
+            for i, r in enumerate(rows[:-1]):
+                if [_key(t) for t in r] == head and all(_VOTE.match(x.strip()) for x in rows[i + 1] if x.strip()) \
+                        and any(x.strip() for x in rows[i + 1]):
+                    rec.feature("poll", c.pages[0], c.bboxes[c.pages[0]], "votes read by another reader", "words", o.source)
+                    cands = [x for x in cands if x is not c]
+                    break
+            if c not in cands:
+                break
     # Greedy selection: take the best remaining candidate, settle everything
     # that overlaps it, repeat. (Grouping by overlap first would chain
     # separate tables together through one large box that overlaps them all.)
@@ -1051,6 +1069,8 @@ def class_check(cand: TableCandidate) -> str:
         return ""
     if cand.source == "poll":
         from .poll import vote_header
+        if "blank-row-inferred" in cand.flags:
+            return ""                     # the blank row was added by convention, not read
         if vote_header(rows[0]) and len(rows) >= 2 and all(
                 all(_VOTE.match(c.strip()) for c in r) or not any(c.strip() for c in r)
                 for r in rows[1:]):
