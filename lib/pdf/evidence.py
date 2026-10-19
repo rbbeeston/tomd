@@ -36,6 +36,7 @@ class Record:
     entries: list[Entry] = field(default_factory=list)
     # every candidate reading: (source, page, bbox, rows of cell text)
     readings: list[tuple] = field(default_factory=list)
+    doc_measure: object = None      # level 0 (docmeasure.DocMeasure)
 
     def nominate(self, scan: str, page: int, bbox: Box, cue: str, info: str, value=None) -> None:
         self.entries.append(Entry("nominated", scan, page, tuple(bbox), cue, info, value))
