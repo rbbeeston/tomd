@@ -19,6 +19,7 @@ from .flag import (text_regions, gutter_regions, rejected_regions, dropped_uncov
                    outside_view_regions)
 from .classify import gate_tables
 from .codepair import find_code_pairs
+from .content import content_candidates
 from .ruled import extract_ruled_tables
 from .tagged import extract_tagged_tables
 from .poll import extract_poll_tables
@@ -372,8 +373,26 @@ def _run_pipeline(path: Path) -> PipelineResult:
     tomd_tables, _ = detect_tables(all_mupdf_blocks)
     rejected_tables: list = []
     code_pairs = find_code_pairs(all_mupdf_blocks) if os.environ.get("TOMD_CODEPAIR") != "0" else []
+    # the shared content-first builder reads every region any reader located
+    content_tables = []
+    if os.environ.get("TOMD_CONTENT") != "0":
+        try:
+            regions = [(c.pages[0], c.bboxes[c.pages[0]])
+                       for c in all_ruled_tables + tagged_tables + all_poll_tables + code_pairs
+                       if len(c.pages) == 1]
+            regions += [(s.page_num, (min(ln.bbox[0] for ln in s.lines), min(ln.bbox[1] for ln in s.lines),
+                                      max(ln.bbox[2] for ln in s.lines), max(ln.bbox[3] for ln in s.lines)))
+                        for s in tomd_tables if s.lines and len({ln.page_num for ln in s.lines}) == 1]
+            import fitz
+            with fitz.open(str(path)) as cdoc:
+                keep: list = []
+                cpages = {pg: _upright_page(cdoc, pg, keep) for pg in {pg for pg, _ in regions}}
+                content_tables = content_candidates(cpages, regions)
+        except Exception as e:  # never let the builder break conversion
+            _log.warning("Content builder failed: %s", e)
     table_sections = select_tables(tomd_tables, all_ruled_tables, tagged_tables,
-                                   all_mupdf_blocks, all_poll_tables, rejected_tables, code_pairs)
+                                   all_mupdf_blocks, all_poll_tables, rejected_tables, code_pairs,
+                                   content_tables)
     if table_sections:
         _log.info("Selected %d table(s)", len(table_sections))
         try:
