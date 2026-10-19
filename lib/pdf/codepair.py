@@ -1,0 +1,187 @@
+"""Side-by-side code comparisons, found from geometry and confirmed by content.
+
+  observation  two blocks of monospace lines on one page whose vertical
+               extents overlap (by half the shorter one) with a gutter
+               between them - whatever draws them: boxes, shading, rules or
+               white space only;
+  hypothesis   the two blocks do roughly the same thing: they share much of
+               their code (whitespace-free character trigrams, since text
+               layers often drop spaces in code), and the right one is not
+               a column of comments beside the left one;
+  validation   short labels aligned above both blocks become the header row;
+               pairs stacked down the page with the same column starts are
+               rows of one table.
+Measured on the truth sets (cmp_measure.py) before use. A pair is a table
+candidate like any other ("codepair"); it renders with the code-comparison
+convention.
+"""
+
+import logging
+import re
+from collections import defaultdict
+
+from .table import TableCandidate
+from .types import Block, Line
+
+_log = logging.getLogger(__name__)
+
+_MONO_SHARE = 0.8          # a monospace piece: this share of its characters
+_PIECE_GAP = 12.0          # a wider gap inside a pdf line separates two pieces
+_JOIN_GAP = 1.8            # lines join a block across gaps below this many line heights
+_OVERLAP = 0.5             # vertical overlap, share of the shorter block
+_SAME_CODE = 0.3           # trigram overlap coefficient: "doing the same thing"
+_COMMENTS = 0.7            # a right block this share comments is an annotation column
+_LABEL_REACH = 30.0        # a label sits at most this far above its block
+_LABEL_WORDS = 8
+_STACK_TOL = 6.0           # stacked pairs: column starts this close are the same column
+_COMMENT = ("//", "/*", "#", "--")
+_CODE_MARK = re.compile(r"[;{}()<>\[\]=]|::|->")
+_CODE_LINES = 0.3          # a code block: this share of its lines carry code punctuation
+_FURNITURE_PAGES = 3       # the same pair text on this many pages is page furniture
+
+
+def _pieces(line: Line) -> list[Line]:
+    spans = sorted((s for s in line.spans if s.text.strip()), key=lambda s: s.bbox[0])
+    out: list[list] = []
+    for s in spans:
+        if out and s.bbox[0] - out[-1][-1].bbox[2] <= _PIECE_GAP:
+            out[-1].append(s)
+        else:
+            out.append([s])
+    return [Line(spans=p, page_num=line.page_num,
+                 bbox=(min(s.bbox[0] for s in p), min(s.bbox[1] for s in p),
+                       max(s.bbox[2] for s in p), max(s.bbox[3] for s in p))) for p in out]
+
+
+def _mono(line: Line) -> bool:
+    chars = sum(len(s.text.strip()) for s in line.spans)
+    mono = sum(len(s.text.strip()) for s in line.spans if s.monospace)
+    return chars > 0 and mono >= _MONO_SHARE * chars
+
+
+def _blocks(lines: list[Line]) -> list[list[Line]]:
+    parent = list(range(len(lines)))
+
+    def find(i):
+        while parent[i] != i:
+            parent[i] = parent[parent[i]]
+            i = parent[i]
+        return i
+    for i, a in enumerate(lines):
+        h = max(a.bbox[3] - a.bbox[1], 1.0)
+        for j in range(i + 1, len(lines)):
+            b = lines[j]
+            if b.bbox[1] - a.bbox[3] > _JOIN_GAP * h:
+                break                                 # sorted by top: nothing further joins
+            if min(a.bbox[2], b.bbox[2]) > max(a.bbox[0], b.bbox[0]):
+                parent[find(i)] = find(j)
+    groups: dict = defaultdict(list)
+    for i, ln in enumerate(lines):
+        groups[find(i)].append(ln)
+    return [sorted(g, key=lambda l: (l.bbox[1], l.bbox[0])) for g in groups.values()]
+
+
+def _box(block: list[Line]) -> tuple[float, float, float, float]:
+    return (min(l.bbox[0] for l in block), min(l.bbox[1] for l in block),
+            max(l.bbox[2] for l in block), max(l.bbox[3] for l in block))
+
+
+def _grams(block: list[Line]) -> set[str]:
+    t = re.sub(r"\s+", "", "".join(l.text for l in block))
+    return {t[i:i + 3] for i in range(len(t) - 2)}
+
+
+def same_code(left: list[Line], right: list[Line]) -> float:
+    """Share of the smaller block's trigrams that the other block has too."""
+    a, b = _grams(left), _grams(right)
+    return len(a & b) / max(min(len(a), len(b)), 1)
+
+
+def _comment_share(block: list[Line]) -> float:
+    return sum(l.text.strip().startswith(_COMMENT) for l in block) / max(len(block), 1)
+
+
+def _code_like(block: list[Line]) -> bool:
+    """Code, not prose set in a monospace font."""
+    return sum(bool(_CODE_MARK.search(l.text)) for l in block) >= _CODE_LINES * len(block)
+
+
+def _label(block: list[Line], others: list[Line]) -> Line | None:
+    x0, y0, x1, _ = _box(block)
+    near = [l for l in others if y0 - _LABEL_REACH <= l.bbox[3] <= y0 + 1
+            and l.bbox[0] < x1 and l.bbox[2] > x0 and len(l.text.split()) <= _LABEL_WORDS]
+    return max(near, key=lambda l: l.bbox[3]) if near else None
+
+
+def find_code_pairs(blocks: list[Block]) -> list[TableCandidate]:
+    """Code-comparison candidates on every page."""
+    by_page: dict = defaultdict(list)
+    for b in blocks:
+        for ln in b.lines:
+            by_page[ln.page_num].extend(_pieces(ln))
+    out: list[TableCandidate] = []
+    for page, pieces in sorted(by_page.items()):
+        mono = sorted((p for p in pieces if _mono(p)), key=lambda l: (l.bbox[1], l.bbox[0]))
+        rest = [p for p in pieces if not _mono(p)]
+        code_blocks = [b for b in _blocks(mono) if len(b) >= 2]
+        pairs = []
+        for i, a in enumerate(code_blocks):
+            for b in code_blocks[i + 1:]:
+                left, right = (a, b) if _box(a)[0] <= _box(b)[0] else (b, a)
+                lb, rb = _box(left), _box(right)
+                if lb[2] > rb[0]:
+                    continue                          # no gutter between them
+                overlap = min(lb[3], rb[3]) - max(lb[1], rb[1])
+                if overlap < _OVERLAP * min(lb[3] - lb[1], rb[3] - rb[1]):
+                    continue
+                if _comment_share(right) >= _COMMENTS:
+                    continue                          # code with its comments beside it
+                if not (_code_like(left) and _code_like(right)):
+                    continue                          # monospace prose (a form, a template)
+                score = same_code(left, right)
+                if score >= _SAME_CODE:
+                    pairs.append((left, right, score))
+        # one block pairs once: keep its best partner
+        pairs.sort(key=lambda p: -p[2])
+        used: set[int] = set()
+        kept = []
+        for left, right, score in pairs:
+            if id(left) in used or id(right) in used:
+                continue
+            used |= {id(left), id(right)}
+            kept.append((left, right, score))
+        kept.sort(key=lambda p: _box(p[0])[1])
+        # stacked pairs with the same column starts are rows of one table
+        tables: list[list] = []
+        for p in kept:
+            if tables:
+                last = tables[-1][-1]
+                if (abs(_box(p[0])[0] - _box(last[0])[0]) <= _STACK_TOL
+                        and abs(_box(p[1])[0] - _box(last[1])[0]) <= _STACK_TOL):
+                    tables[-1].append(p)
+                    continue
+            tables.append([p])
+        for rows in tables:
+            first = rows[0]
+            lab_l, lab_r = _label(first[0], rest), _label(first[1], rest)
+            body = [[left, right] for left, right, _ in rows]
+            header = []
+            if lab_l is not None and lab_r is not None and lab_l is not lab_r \
+                    and abs(lab_l.bbox[1] - lab_r.bbox[1]) <= 3:
+                header = [[[lab_l], [lab_r]]]
+            cells = header + body
+            lines = [ln for r in cells for c in r for ln in c]
+            bbox = (min(l.bbox[0] for l in lines), min(l.bbox[1] for l in lines),
+                    max(l.bbox[2] for l in lines), max(l.bbox[3] for l in lines))
+            cand = TableCandidate("codepair", cells, {page: bbox})
+            cand.flags = ["same-code=%.2f" % min(s for _, _, s in rows)] + (["labelled"] if header else [])
+            out.append(cand)
+    # page furniture: the same pair text recurring page after page
+    key = lambda c: re.sub(r"\s+", "", " ".join(c.text_rows()[-1]))[:200]
+    seen = defaultdict(set)
+    for c in out:
+        seen[key(c)].add(c.pages[0])
+    out = [c for c in out if len(seen[key(c)]) < _FURNITURE_PAGES]
+    if out:
+        _log.debug("%d code-comparison candidate(s)", len(out))
+    return out

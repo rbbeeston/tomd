@@ -18,6 +18,7 @@ from .table import detect_tables, select_tables, remove_table_regions
 from .flag import (text_regions, gutter_regions, rejected_regions, dropped_uncovered, flag_possible_tables,
                    outside_view_regions)
 from .classify import gate_tables
+from .codepair import find_code_pairs
 from .ruled import extract_ruled_tables
 from .tagged import extract_tagged_tables
 from .poll import extract_poll_tables
@@ -370,8 +371,9 @@ def _run_pipeline(path: Path) -> PipelineResult:
 
     tomd_tables, _ = detect_tables(all_mupdf_blocks)
     rejected_tables: list = []
+    code_pairs = find_code_pairs(all_mupdf_blocks) if os.environ.get("TOMD_CODEPAIR") != "0" else []
     table_sections = select_tables(tomd_tables, all_ruled_tables, tagged_tables,
-                                   all_mupdf_blocks, all_poll_tables, rejected_tables)
+                                   all_mupdf_blocks, all_poll_tables, rejected_tables, code_pairs)
     if table_sections:
         _log.info("Selected %d table(s)", len(table_sections))
         try:
