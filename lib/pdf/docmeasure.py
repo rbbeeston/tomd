@@ -53,21 +53,31 @@ def visual_lines(words):
 def measure(page_words: list[list]) -> DocMeasure:
     """page_words: per page, fitz "words" tuples (x0, y0, x1, y1, text, block, line, n)."""
     xs0, xs1, gaps = [], [], defaultdict(list)
+
+    def take(ln):
+        if len(ln) < 6:
+            return
+        xs0.append(ln[0][0])
+        xs1.append(ln[-1][2])
+        h = round(statistics.median(w[3] - w[1] for w in ln))
+        gaps[h].extend(b[0] - a[2] for a, b in zip(ln, ln[1:]) if b[0] > a[2])
+
     for words in page_words:
         blocks = defaultdict(lambda: defaultdict(list))
         for w in words:
             blocks[w[5]][w[6]].append(w)
         for lines in blocks.values():
-            if len(lines) < 3:
-                continue
-            for ln in lines.values():
-                ln = sorted(ln, key=lambda w: w[0])
-                if len(ln) < 6:
-                    continue
-                xs0.append(ln[0][0])
-                xs1.append(ln[-1][2])
-                h = round(statistics.median(w[3] - w[1] for w in ln))
-                gaps[h].extend(b[0] - a[2] for a, b in zip(ln, ln[1:]) if b[0] > a[2])
+            if len(lines) >= 3:
+                for ln in lines.values():
+                    take(sorted(ln, key=lambda w: w[0]))
+    if len(xs0) < 20:
+        # some generators put every line of a paragraph in a block of its own:
+        # fall back to the page's visual lines (long lines only, so headings
+        # and list labels stay out; the percentiles below absorb the rest)
+        xs0, xs1, gaps = [], [], defaultdict(list)
+        for words in page_words:
+            for ln in visual_lines(words):
+                take(ln)
     if len(xs0) < 20:
         return DocMeasure()
     xs0.sort()
