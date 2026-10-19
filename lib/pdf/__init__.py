@@ -15,7 +15,7 @@ from .wording import classify_wording, collect_line_drawings
 from .spans import normalize_spans
 from .structure import compare_extractions, structure_sections
 from .table import detect_tables, select_tables, remove_table_regions
-from .flag import (text_regions, gutter_regions, rejected_regions, flag_possible_tables,
+from .flag import (text_regions, gutter_regions, rejected_regions, dropped_uncovered, flag_possible_tables,
                    outside_view_regions)
 from .classify import gate_tables
 from .ruled import extract_ruled_tables
@@ -387,6 +387,11 @@ def _run_pipeline(path: Path) -> PipelineResult:
         all_mupdf_blocks = remove_table_regions(all_mupdf_blocks, table_sections)
         all_spatial_blocks = remove_table_regions(all_spatial_blocks, table_sections)
     # Table-like areas left in the text, marked uncertain once sections exist.
+    dropped = dropped_uncovered(rejected_tables, table_sections)
+    if dropped:
+        result.discards.append(("dropped table candidates", f"{len(dropped)} reading(s) failed the "
+                                "checks and no kept table covers them: " + "; ".join(dropped[:12])
+                                + ("; ..." if len(dropped) > 12 else ""), ""))
     possible_tables = (rejected_regions(rejected_tables, table_sections)
                        + text_regions(all_mupdf_blocks) + gutter_regions(all_mupdf_blocks))
 

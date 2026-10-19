@@ -16,6 +16,7 @@ Nothing here decides cell boundaries; it only says "look here".
 """
 
 import logging
+import os
 import re
 from collections import defaultdict
 
@@ -252,19 +253,45 @@ def rejected_regions(rejected: list[TableCandidate], tables: list[Section]) -> l
     for t in tables:
         for ln in t.lines:
             taken[ln.page_num].append(ln.bbox)
+    mode = os.environ.get("TOMD_DROPMARK", "misread")  # misread | all | 0
     out = []
     for c in rejected:
-        if len(c.rows) < 2 or max(len(r) for r in c.rows) < 2:
+        if mode == "0" or len(c.rows) < 2 or max(len(r) for r in c.rows) < 2:
             continue
-        if not set(c.flags) <= _MISREAD_FLAGS:
+        if c.source == "tomd" and mode != "all":
             continue
+        if mode == "misread" and not set(c.flags) <= _MISREAD_FLAGS:
+            continue
+        # visual lines, not rows: a code comparison holds one row of many
+        # lines, and its text comes back as one section per line
+        lines = sum(max((len(cell) for cell in r), default=1) for r in c.rows)
         for page, (x0, y0, x1, y1) in c.bboxes.items():
             if any(x0 <= (b[0] + b[2]) / 2 <= x1 and y0 <= (b[1] + b[3]) / 2 <= y1
                    for b in taken[page]):
                 continue
             out.append((page, (x0, y0, x1, y1),
                         f"the {c.source} extractor found a table here but its reading "
-                        f"failed the checks ({', '.join(c.flags) or 'unknown'})", len(c.rows)))
+                        f"failed the checks ({', '.join(c.flags) or 'outranked'})", lines))
+    return out
+
+
+def dropped_uncovered(rejected: list[TableCandidate], tables: list[Section]) -> list[str]:
+    """Every dropped candidate (any source, any reason) that no kept table
+    covers, for the prompts file: nothing a reader found is erased, but only
+    misread-looking ones are marked in the Markdown (rejected_regions)."""
+    taken = defaultdict(list)
+    for t in tables:
+        for ln in t.lines:
+            taken[ln.page_num].append(ln.bbox)
+    out = []
+    for c in rejected:
+        if len(c.rows) < 2 or max(len(r) for r in c.rows) < 2:
+            continue
+        page, (x0, y0, x1, y1) = c.pages[0], c.bboxes[c.pages[0]]
+        if any(x0 <= (b[0] + b[2]) / 2 <= x1 and y0 <= (b[1] + b[3]) / 2 <= y1 for b in taken[page]):
+            continue
+        out.append(f"page {page + 1} {c.source} {c.shape[0]}x{c.shape[1]} "
+                   f"({', '.join(c.flags) or 'outranked'})")
     return out
 
 
