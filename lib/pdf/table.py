@@ -253,7 +253,14 @@ _SOURCE_PRIORITY = {"tags": 0, "poll": 1, "grid": 2, "tags-malformed": 3, "rules
                     "content": 7}
 
 
+def _row_top(row) -> float | None:
+    ys = [ln.bbox[1] for cell in row for ln in cell if ln.text.strip()]
+    return min(ys) if ys else None
+
+
 def _priority(c: TableCandidate) -> int:
+    if c.source == "content" and "refines-rules" in c.flags:
+        return _SOURCE_PRIORITY["rules"]
     if c.source == "tags" and "tags-malformed" in c.flags:
         return _SOURCE_PRIORITY["tags-malformed"]
     return _SOURCE_PRIORITY[c.source]
@@ -888,6 +895,33 @@ def select_tables(tomd_sections: list[Section],
                 k.flags = k.flags + ["code-rows"]
                 cands = [x for x in cands if x is not c]
                 break
+    # Rows come from content and drawn rules confirm them: a content reading
+    # of a rule reader's region that keeps every drawn row boundary and finds
+    # more rows inside the bands (several records per band) refines the rule
+    # reading, and takes its place (and its priority).
+    if os.environ.get("TOMD_CONTENT_REFINES") != "0":
+        for c in [c for c in cands if c.source == "rules" and len(c.pages) == 1]:
+            pg, bb = c.pages[0], c.bboxes[c.pages[0]]
+            tops_r = [_row_top(r) for r in c.rows[1:]]
+            for k in [k for k in cands if k.source == "content" and k.pages == [pg]]:
+                kb = k.bboxes[pg]
+                if not (abs(kb[0] - bb[0]) <= 8 and abs(kb[2] - bb[2]) <= 8 and min(kb[3], bb[3]) > max(kb[1], bb[1])):
+                    continue
+                if k.shape[1] != c.shape[1] or k.shape[0] < c.shape[0] + 2 or _is_bad(k):
+                    continue
+                tops_k = [_row_top(r) for r in k.rows]
+                # the extra rows (not at a drawn boundary) must be records with
+                # a short key, not wrapped sentences continuing the row above
+                extra = [r for r, t in zip(k.rows[1:], tops_k[1:])
+                         if t is not None and not any(u is not None and abs(u - t) <= 3 for u in tops_r)]
+                keys = [" ".join(ln.text.strip() for ln in r[0]).strip() if r else "" for r in extra]
+                records = all(kk and len(kk.split()) <= 6 and not kk[0].islower() and not kk.startswith(('"', "“"))
+                              for kk in keys)
+                if records and all(t is None or any(u is not None and abs(u - t) <= 3 for u in tops_k) for t in tops_r):
+                    rec.feature("rules", pg, bb, "content rows refine the rule bands", "words", k.shape[0])
+                    k.flags = k.flags + ["refines-rules"]
+                    cands = [x for x in cands if x is not c]
+                    break
     # A poll whose vote row was inferred (blank) yields to another reading of
     # the same region that has the votes under the same header.
     for c in [c for c in cands if c.source == "poll" and "blank-row-inferred" in c.flags]:
