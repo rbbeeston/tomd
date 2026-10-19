@@ -38,7 +38,7 @@ import urllib.request
 from collections import Counter
 
 from .types import Confidence, Section, SectionKind
-from .validate import escalate, verify_layout
+from .validate import verify_pieces, escalate, verify_layout
 from .ocrcheck import check_table, ocr_enabled
 from .tablemodel import detect_spans
 from .llmrepair import llm_enabled, repair
@@ -303,6 +303,10 @@ def gate_tables(doc, pages, sections: list[Section], paper: str = "") -> dict:
         _, bbox = sec.metadata["region_bbox"]
         words = pages[pg].get_text("words", clip=bbox)
         reason = verify_layout(sec, words)
+        if reason == "multi-page" and sec.metadata.get("pieces"):
+            def words_on(p, b):
+                return pages[p].get_text("words", clip=b) if (b and p in pages) else []
+            reason = verify_pieces(sec, words_on)
         if (not reason and "conservation" in sec.metadata.get("uncertain_reasons", [])
                 and os.environ.get("TOMD_HEADER") != "0"):
             # an aligned row just above the table may be its header (checked by content contrast)
@@ -361,7 +365,8 @@ def gate_tables(doc, pages, sections: list[Section], paper: str = "") -> dict:
                 break
     # the lossless model: spans from the geometry, flattened by emit
     for sec in tables:
-        if sec.metadata.get("table_source") != "poll" and os.environ.get("TOMD_SPANS") != "0":
+        if (sec.metadata.get("table_source") != "poll" and os.environ.get("TOMD_SPANS") != "0"
+                and not sec.metadata.get("sparse_by_design")):
             sp = detect_spans(sec.columns)
             if sp:
                 sec.metadata["spans"] = sp
