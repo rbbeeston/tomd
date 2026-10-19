@@ -25,6 +25,7 @@ disagreement with the other extractors.
 """
 
 import logging
+import os
 from collections import Counter
 
 from .types import Line, Span, TableCandidate
@@ -205,8 +206,15 @@ def _chars_to_lines(chars: list[tuple], page_num: int) -> list[Line]:
             gap = bb[0] - prev[1][2] if prev else 0.0
             # Infer a space from a gap only when the PDF encodes none of its
             # own here (kerned text otherwise gains spaces: "ch anges").
-            space = (not has_spaces and prev is not None and gap > 0.25 * max(size, 1.0)
-                     and c != " " and prev[0] != " ")
+            # where the PDF does encode spaces, a gap still means a space when it
+            # is word-sized (a third of the font size): LaTeX leaves some word
+            # gaps as positioning only ("Recommendedpractice"); kerning never
+            # reaches that width
+            limit = (0.25 if not has_spaces else 0.33) * max(size, 1.0)
+            space = (prev is not None and gap > limit and c != " " and prev[0] != " "
+                     and os.environ.get("TOMD_GAP_SPACES") != "0" or
+                     (not has_spaces and prev is not None and gap > 0.25 * max(size, 1.0)
+                      and c != " " and prev[0] != " "))
             same_run = (spans and prev is not None and font == prev[2]
                         and size == prev[3] and flags == prev[4] and color == prev[5])
             if same_run:

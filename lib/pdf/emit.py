@@ -323,7 +323,7 @@ def _render_cell_spans(spans: list, suppress_bold: bool = False) -> str:
     return _escape_angle("<br>".join(out)).replace("|", "\\|")
 
 
-_HYPHEN_END = re.compile(r"([A-Za-z]+(?:-[A-Za-z]+)*)-(\*\*|\*)?$")
+_HYPHEN_END = re.compile(r"([A-Za-z_][\w]*(?:-[\w]+)*)-(\*\*|\*)?$")
 
 
 def _escape_angle(text: str) -> str:
