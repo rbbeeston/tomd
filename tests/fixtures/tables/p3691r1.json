@@ -163,7 +163,7 @@
    "group": null,
    "source": "typed",
    "note": "unruled 2-col name/vote-count list (\"Vote for all the names you like\"), no header",
-   "scope": "borderline"
+   "scope": "table"
   },
   {
    "id": "p3691r1-t7",

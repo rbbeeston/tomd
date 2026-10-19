@@ -55,7 +55,7 @@
    "group": null,
    "source": "typed",
    "note": "unruled teleconference info label/value block",
-   "scope": "borderline"
+   "scope": "front-matter"
   }
  ],
  "not_tables": [],
