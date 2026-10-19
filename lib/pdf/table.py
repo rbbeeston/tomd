@@ -686,13 +686,14 @@ def stitch_pages(cands: list[TableCandidate], blocks: list[Block],
                                key=lambda d: d.bboxes[last_pg][3])
             pb, cb = prev.bboxes[last_pg], c.bboxes[c.pages[0]]
             if (c.pages[0] == last_pg + 1 and c is first_on_pg and prev is last_on_prev
+                    and not _new_header(c, prev)
                     and prev.shape[1] == c.shape[1]
                     and ((abs(pb[0] - cb[0]) <= _STITCH_X_TOL and abs(pb[2] - cb[2]) <= _STITCH_X_TOL)
                          or _same_columns(prev, last_pg, c, c.pages[0]))
                     and not _text_outside(blocks, last_pg, below=pb[3] + _REGION_MARGIN, furniture=furniture)
                     and not _text_outside(blocks, c.pages[0], above=cb[1] - _REGION_MARGIN, furniture=furniture)):
                 rows = list(c.rows)
-                if [_key(t) for t in c.text_rows()[0]] == [_key(t) for t in prev.text_rows()[0]]:
+                if _same_header(c.text_rows()[0], prev.text_rows()[0]):
                     rows = rows[1:]                  # the header the PDF repeats
                 merged = False
                 if rows and prev.rows and not "".join(ln.text for ln in rows[0][0]).strip() \
@@ -716,6 +717,39 @@ def stitch_pages(cands: list[TableCandidate], blocks: list[Block],
                 continue
         out.append(c)
     return out
+
+
+_CONT = re.compile(r"\((cont(inued|\.|'d)?)\)|\bcontinued\b", re.I)
+
+
+def _norm_header(row) -> list[str]:
+    return [" ".join(_CONT.sub("", t).split()).lower() for t in row]
+
+
+def _same_header(a, b) -> bool:
+    """Identical header rows, after whitespace, case and "(cont.)"."""
+    return _norm_header(a) == _norm_header(b)
+
+
+def _bold_row(row) -> bool:
+    cells = [cell for cell in row if any(ln.text.strip() for ln in cell)]
+    return bool(cells) and all(all(sp.bold for ln in cell for sp in ln.spans if sp.text.strip()) for cell in cells)
+
+
+def _is_header_row(cand: TableCandidate) -> bool:
+    """The first row reads as a header: short bold labels over a body that
+    is not bold (where every row is bold, bold says nothing)."""
+    cells = [cell for cell in cand.rows[0] if any(ln.text.strip() for ln in cell)]
+    texts = [" ".join(ln.text.strip() for ln in cell) for cell in cells]
+    return (_bold_row(cand.rows[0]) and (len(cand.rows) < 2 or not _bold_row(cand.rows[1]))
+            and all(len(t.split()) <= 6 and not re.search(r"[;{}()<>=]|::|&&", t) for t in texts))
+
+
+def _new_header(c: TableCandidate, prev: TableCandidate) -> bool:
+    """A different header row starts a new table (user, 2026-10-19)."""
+    if _same_header(c.text_rows()[0], prev.text_rows()[0]):
+        return False
+    return _is_header_row(c) and _is_header_row(prev)
 
 
 _SIGNATURE_TOL = 4.0       # column starts closer than this are the same column
