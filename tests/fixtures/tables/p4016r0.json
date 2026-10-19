@@ -268,7 +268,7 @@
    "group": null,
    "source": "typed",
    "note": "monospace \"state table\" inside a grey code block (text calls it a table); header underlined with box-drawing rules; not ruled",
-   "scope": "borderline"
+   "scope": "table"
   },
   {
    "id": "p4016r0-t6",
