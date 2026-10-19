@@ -432,6 +432,18 @@ def _render_table(sec: Section) -> str:
     if use != "table" and os.environ.get("TOMD_USES") != "0":
         sec.metadata["table_use"] = use
         return _render_use(sec, use)
+    pd = sec.metadata.get("data_vs_format")
+    if pd is not None and pd < _FORMATTING_P:
+        # likely layout, not tabular data: converted the same way, marked for the reader
+        return (f"<!-- tomd:use formatting? (grid likely places content rather than holding data; "
+                f"p_data={pd:.2f}) -->\n" + _render_table_body(sec))
+    return _render_table_body(sec)
+
+
+_FORMATTING_P = 0.5
+
+
+def _render_table_body(sec: Section) -> str:
     if os.environ.get("TOMD_CODECMP") != "0" and _is_code_comparison(sec.columns):
         return _render_code_comparison(sec.columns)
 
