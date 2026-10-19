@@ -35,7 +35,9 @@ def _diff_head(actual: str, golden: str, limit: int = 120) -> str:
 
 
 @pytest.mark.parametrize("stem", _GOLDEN_STEMS)
-def test_convert_pdf_matches_golden(stem: str):
+def test_convert_pdf_matches_golden(stem: str, monkeypatch):
+    # the paper summary carries a fitted confidence: tested on its own (test_summary.py)
+    monkeypatch.setenv("TOMD_SUMMARY", "0")
     pdf_path = _GOLDEN / f"{stem}.pdf"
     if not pdf_path.is_file():
         pytest.skip(f"missing PDF fixture: {pdf_path}")

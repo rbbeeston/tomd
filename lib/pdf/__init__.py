@@ -259,6 +259,11 @@ def _run_pipeline(path: Path) -> PipelineResult:
     try:
         doc = fitz.open(str(path))
         result.page_count = doc.page_count
+        try:
+            from .classify import generator as _gen
+            result.generator = _gen(doc.metadata or {})
+        except Exception:
+            result.generator = "unknown"
         if result.page_count == 0:
             return result
 
@@ -507,6 +512,26 @@ def _run_pipeline(path: Path) -> PipelineResult:
         lines += [f"- {what}: {why}" + (f" (e.g. \"{detail}\")" if detail else "")
                   for what, why, detail in result.discards]
         prompts = (prompts or "# tomd - Conversion Issues\n") + "\n".join(lines) + "\n"
+    if os.environ.get("TOMD_SUMMARY") != "0":
+        # the paper-level summary: what was done with the tables, how sure, how unfamiliar
+        try:
+            from .summary import build as build_summary, header_comment, prompts_section
+            result.summary = build_summary(result, sections, result.evidence, getattr(result, "generator", "unknown"))
+            comment = header_comment(result.summary)
+            if md.startswith("---\n") and "\n---\n" in md[4:]:
+                end = md.index("\n---\n", 4) + 5
+            else:
+                end, comment = 0, comment + "\n"
+            at = md[:end].count("\n") + 1              # 1-based line where the comment goes
+            md = md[:end] + comment + "\n" + md[end:]
+            # the uncertainty markers point at line numbers: shift those after the comment
+            added = comment.count("\n") + 1
+            md = re.sub(r"tomd:uncertain:L(\d+)-L(\d+)",
+                        lambda m: "tomd:uncertain:L%d-L%d" % tuple(int(x) + (added if int(x) >= at else 0)
+                                                               for x in m.groups()), md)
+            prompts = (prompts or "# tomd - Conversion Issues\n") + prompts_section(result.summary)
+        except Exception as e:      # the summary describes the conversion; never fail it
+            _log.warning("Paper summary failed: %s", e)
     result.md = md
     result.prompts = prompts
     result.sections = sections
@@ -524,3 +549,11 @@ def convert_pdf(path: Path) -> tuple[str, str | None]:
     """
     r = _run_pipeline(path)
     return r.md, r.prompts
+
+
+def convert_pdf_with_summary(path: Path) -> tuple[str, str | None, dict | None]:
+    """convert_pdf plus the paper-level summary (summary.py): tables trusted,
+    flagged and marked, confidence and unfamiliarity. Written as JSON beside
+    the Markdown by the command line."""
+    r = _run_pipeline(path)
+    return r.md, r.prompts, getattr(r, "summary", None)

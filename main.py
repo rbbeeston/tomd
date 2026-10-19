@@ -5,7 +5,7 @@ PDF: hybrid dual extraction (MuPDF + spatial rules) with confidence scoring.
 HTML: DOM traversal with generator-specific metadata extraction.
 
 Usage (after `pip install -e tomd`):
-    tomd input.pdf                  # -> input.md + input.prompts.md
+    tomd input.pdf                  # -> input.md + input.prompts.md + input.summary.json
     tomd input.html                 # -> input.md
     tomd *.pdf *.html --outdir out/ # batch mode
 
@@ -105,6 +105,8 @@ def main():
             md_path = input_file.with_suffix(".md")
 
         prompts_path = md_path.with_suffix(".prompts.md")
+        summary_path = md_path.with_suffix(".summary.json")
+        summary = None
 
         try:
             ext = input_file.suffix.lower()
@@ -112,8 +114,8 @@ def main():
                 from .lib.html import convert_html
                 md_text, prompts_text = convert_html(input_file)
             elif ext in _PDF_EXTENSIONS:
-                from .lib.pdf import convert_pdf
-                md_text, prompts_text = convert_pdf(input_file)
+                from .lib.pdf import convert_pdf_with_summary
+                md_text, prompts_text, summary = convert_pdf_with_summary(input_file)
             else:
                 print(f"SKIP: {input_file} unsupported format", file=sys.stderr)
                 failures.append(input_file)
@@ -121,6 +123,9 @@ def main():
 
             md_path.parent.mkdir(parents=True, exist_ok=True)
             md_path.write_text(md_text, encoding="utf-8")
+            if summary is not None:
+                import json
+                summary_path.write_text(json.dumps(summary, indent=1) + "\n", encoding="utf-8")
 
             if prompts_text:
                 prompts_path.write_text(prompts_text, encoding="utf-8")
