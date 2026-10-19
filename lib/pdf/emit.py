@@ -390,10 +390,48 @@ def _render_code_comparison(rows) -> str:
     return "\n\n".join(parts)
 
 
+_LABEL_CELL = re.compile(r"^[A-Za-z][\w ./()-]{0,40}:$")
+_PAGE_CELL = re.compile(r"^\d{1,4}$")
+
+
+def table_use(rows) -> str:
+    """What a grid is used for, by the user's decisions (2026-10-19):
+    "label-value" - repeated per-item "label: value" entries (not a table);
+    "contents" - a contents page or reference list laid out in a grid (not a table);
+    "table" - everything else."""
+    texts = [[" ".join(s.text for s in c if s.text != "\n").strip() for c in r] for r in rows]
+    if not texts:
+        return "table"
+    ncol = max(len(r) for r in texts)
+    labels = [r[0] for r in texts if r and r[0]]
+    if ncol == 2 and labels and sum(bool(_LABEL_CELL.match(t)) for t in labels) >= 0.6 * len(texts):
+        return "label-value"
+    last = [r[-1] for r in texts if r and r[-1]]
+    nums = [int(t) for t in last if _PAGE_CELL.match(t)]
+    if ncol <= 3 and len(nums) >= 3 and len(nums) >= 0.7 * len(texts) and nums == sorted(nums):
+        return "contents"
+    return "table"
+
+
+def _render_use(sec: Section, use: str) -> str:
+    texts = [[" ".join(s.text for s in c if s.text != "\n").strip() for c in r] for r in sec.columns]
+    if use == "label-value":
+        out = ["<!-- tomd:use label-value (rendered as labelled text, not a table) -->"]
+        out += [_escape_angle(f"**{r[0]}** {' '.join(c for c in r[1:] if c)}".rstrip()) for r in texts if any(r)]
+        return "\n\n".join(out)
+    out = ["<!-- tomd:use contents (rendered as a list, not a table) -->"]
+    out += [_escape_angle(f"- {' '.join(c for c in r if c)}") for r in texts if any(r)]
+    return "\n".join(out)
+
+
 def _render_table(sec: Section) -> str:
     """Render a table section as a Markdown table."""
     if not sec.columns:
         return sec.text
+    use = table_use(sec.columns)
+    if use != "table" and os.environ.get("TOMD_USES") != "0":
+        sec.metadata["table_use"] = use
+        return _render_use(sec, use)
     if os.environ.get("TOMD_CODECMP") != "0" and _is_code_comparison(sec.columns):
         return _render_code_comparison(sec.columns)
 

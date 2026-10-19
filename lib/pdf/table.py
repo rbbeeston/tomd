@@ -541,8 +541,28 @@ _CODEPAIR_EXEMPT_FLAGS = frozenset({"split-code", "code-comment-column", "sparse
                                     "constant-first-column", "single-cell-rows"})
 
 
+_MARK = re.compile(r"^(✔|✓|✗|✘|×|x|X|-|–|—|N/A|n/a|yes|no|Yes|No|Y|N|CE|\?|\*|●|○)$")
+_SPARSE_FLAGS = frozenset({"empty-cells", "sparse-columns", "ragged-columns"})
+
+
+def mark_matrix(cand: TableCandidate) -> bool:
+    """A check-mark matrix (status, feature or compliance tables): row keys in
+    the first column, and the filled cells beside them are marks. Sparse by
+    design, so empty cells and sparse or ragged columns are not misreadings."""
+    rows = cand.text_rows()
+    if len(rows) < 2 or cand.shape[1] < 3:
+        return False
+    keyed = [r for r in rows[1:] if r and r[0].strip()]          # body rows: those with a row key
+    body = [c.strip() for r in keyed for c in r[1:] if c.strip()]
+    need = 1 if cand.shape[1] >= 5 else 3                         # a wide grid of marks: one row suffices
+    return len(keyed) >= 1 and len(body) >= need and sum(bool(_MARK.match(c)) for c in body) >= 0.8 * len(body)
+
+
 def _is_bad(cand: TableCandidate) -> bool:
     bad = set(cand.flags) & BAD_TABLE_FLAGS
+    if bad & _SPARSE_FLAGS and (mark_matrix(cand)
+                                or "rotated_header" in getattr(cand, "trace", {}).get("specialists", {})):
+        bad -= _SPARSE_FLAGS          # sparse by design: marks, or a grid its rotated header labels define
     if cand.source == "tags":
         bad -= _TAG_EXEMPT_FLAGS
     if cand.source == "codepair" or (cand.source == "content" and getattr(cand, "trace", {}).get("code")):
@@ -585,17 +605,49 @@ def _overlap(a: TableCandidate, b: TableCandidate) -> float:
 
 
 def _text_outside(blocks: list[Block], page: int, below: float | None = None,
-                  above: float | None = None) -> bool:
-    """True if any text line on the page lies below/above the given y."""
+                  above: float | None = None, furniture: frozenset = frozenset()) -> bool:
+    """True if any text line on the page lies below/above the given y
+    (page furniture - running headers, page numbers - does not count)."""
     for blk in blocks:
         if blk.page_num != page:
             continue
         for ln in blk.lines:
             yc = (ln.bbox[1] + ln.bbox[3]) / 2
             if (below is not None and yc > below) or (above is not None and yc < above):
-                if ln.text.strip():
+                if ln.text.strip() and _furniture_key(ln) not in furniture:
                     return True
     return False
+
+
+_DIGITS = re.compile(r"\d+")
+
+
+def _furniture_key(ln) -> tuple:
+    return (round((ln.bbox[1] + ln.bbox[3]) / 2 / 4), _DIGITS.sub("#", " ".join(ln.text.split())))
+
+
+def page_furniture(blocks: list[Block], min_pages: int = 3) -> frozenset:
+    """Lines repeated at the same height on several pages once digits are
+    normalised: running headers and footers with page numbers that header
+    stripping missed (a header block holding the page number)."""
+    by_page: dict = defaultdict(list)
+    for blk in blocks:
+        for ln in blk.lines:
+            if ln.text.strip():
+                by_page[blk.page_num].append(ln)
+    pages: dict = defaultdict(set)
+    for pg, lines in by_page.items():
+        # furniture is the outermost text on the page: a repeated heading
+        # further in (a slide title, "[P1371R3] examples") is not
+        ys = sorted({round((ln.bbox[1] + ln.bbox[3]) / 2) for ln in lines})
+        edge = set(ys[:2]) | set(ys[-2:])
+        for ln in lines:
+            if round((ln.bbox[1] + ln.bbox[3]) / 2) in edge:
+                pages[_furniture_key(ln)].add(pg)
+    # running headers and footers are on nearly every page; a heading that
+    # recurs on a few pages is content
+    need = max(min_pages, len(by_page) // 2)
+    return frozenset(k for k, v in pages.items() if len(v) >= need)
 
 
 def _same_region(primary: TableCandidate, other: TableCandidate) -> bool:
@@ -612,7 +664,8 @@ def _same_region(primary: TableCandidate, other: TableCandidate) -> bool:
     return False
 
 
-def stitch_pages(cands: list[TableCandidate], blocks: list[Block]) -> list[TableCandidate]:
+def stitch_pages(cands: list[TableCandidate], blocks: list[Block],
+                 furniture: frozenset = frozenset()) -> list[TableCandidate]:
     """Join a table that ends one page with one that starts the next page.
 
     Requires the same column count and x-extent, and no text after the first
@@ -634,13 +687,30 @@ def stitch_pages(cands: list[TableCandidate], blocks: list[Block]) -> list[Table
                     and prev.shape[1] == c.shape[1]
                     and ((abs(pb[0] - cb[0]) <= _STITCH_X_TOL and abs(pb[2] - cb[2]) <= _STITCH_X_TOL)
                          or _same_columns(prev, last_pg, c, c.pages[0]))
-                    and not _text_outside(blocks, last_pg, below=pb[3] + _REGION_MARGIN)
-                    and not _text_outside(blocks, c.pages[0], above=cb[1] - _REGION_MARGIN)):
-                rows = c.rows
+                    and not _text_outside(blocks, last_pg, below=pb[3] + _REGION_MARGIN, furniture=furniture)
+                    and not _text_outside(blocks, c.pages[0], above=cb[1] - _REGION_MARGIN, furniture=furniture)):
+                rows = list(c.rows)
                 if [_key(t) for t in c.text_rows()[0]] == [_key(t) for t in prev.text_rows()[0]]:
+                    rows = rows[1:]                  # the header the PDF repeats
+                merged = False
+                if rows and prev.rows and not "".join(ln.text for ln in rows[0][0]).strip() \
+                        and any("".join(ln.text for ln in cell).strip() for cell in rows[0][1:]):
+                    # a row split mid-cell by the page break: empty key, cells continuing
+                    head = [list(a) + list(b) for a, b in zip(prev.rows[-1], rows[0])]
+                    prev_rows = prev.rows[:-1] + [head]
                     rows = rows[1:]
-                out[-1] = TableCandidate(prev.source, prev.rows + rows,
-                                         {**prev.bboxes, **c.bboxes})
+                    merged = True
+                else:
+                    prev_rows = prev.rows
+                joined = TableCandidate(prev.source, prev_rows + rows, {**prev.bboxes, **c.bboxes})
+                joined.flags = list(prev.flags)
+                # the pieces, so each can be verified on its own page and the join reversed
+                pieces = list(getattr(prev, "pieces", None) or [(last_pg, 0, len(prev.rows))])
+                pieces.append((c.pages[0], len(prev_rows), len(prev_rows) + len(rows)))
+                joined.pieces = pieces
+                evidence.current().feature(prev.source, c.pages[0], cb, "continues from previous page", "words",
+                                           {"pages": joined.pages, "split_row_merged": merged})
+                out[-1] = joined
                 continue
         out.append(c)
     return out
@@ -741,7 +811,12 @@ def select_tables(tomd_sections: list[Section],
     tomd = [candidate_from_section(s) for s in tomd_sections]
     # Continuation fragments (the last rows of a table on the next page) only
     # count once stitched onto the table they continue.
-    ruled = [c for c in stitch_pages(ruled, blocks) if "continuation-fragment" not in c.flags]
+    # one continuation step for every reader that reads page by page
+    furniture = page_furniture(blocks)
+    ruled = [c for c in stitch_pages(ruled, blocks, furniture) if "continuation-fragment" not in c.flags]
+    if os.environ.get("TOMD_STITCH_ALL") != "0":
+        codepairs = stitch_pages(list(codepairs), blocks, furniture) if codepairs else []
+        content = stitch_pages(list(content), blocks, furniture) if content else []
     cands = tagged + list(polls) + ruled + list(codepairs) + tomd + list(content)
     rec = evidence.current()
     for c in cands:
@@ -866,6 +941,12 @@ def select_tables(tomd_sections: list[Section],
         sec.metadata["region_sources"] = sorted({c.source for c in settled})
         sec.metadata["region_flags"] = sorted({f for c in settled for f in c.flags})
         sec.metadata["region_bbox"] = (primary.pages[0], primary.bboxes[primary.pages[0]])
+        if mark_matrix(primary) or "rotated_header" in getattr(primary, "trace", {}).get("specialists", {}):
+            sec.metadata["sparse_by_design"] = True     # empty cells are data: no span filling
+        if len(primary.pages) > 1:
+            sec.metadata["page_bboxes"] = dict(primary.bboxes)
+            if getattr(primary, "pieces", None):
+                sec.metadata["pieces"] = primary.pieces
         # every other source's reading of this region (rejected ones too):
         # escalation may switch to one when the primary fails verification
         sec.metadata["alternatives"] = [

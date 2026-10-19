@@ -222,6 +222,9 @@ def verify_layout(sec: Section, words: list) -> str:
     # 2c. a column whose cells have a wide gap at the same x in several
     #     rows holds two columns
     for c in range(max(len(r) for r in sec.columns)):
+        spans = [sp for row in sec.columns if c < len(row) for sp in row[c] if sp.text.strip()]
+        if spans and sum(len(sp.text) for sp in spans if sp.monospace) >= 0.6 * sum(len(sp.text) for sp in spans):
+            continue                       # code: wide gaps align comments, they are not columns
         gaps = []
         for r in range(len(sec.columns)):
             ws = owner.get((r, c), [])
@@ -424,6 +427,9 @@ def add_header_above(sec, words):
         return None                              # a caption, not a header
     if len(text.split()) >= 8:
         return None                              # a sentence: headers are labels
+    gaps = [b[0] - a[2] for a, b in zip(line, line[1:])]
+    if len(gaps) >= 3 and max(gaps) <= 1.8 * sorted(gaps)[len(gaps) // 2]:
+        return None                              # uniform word gaps: a (justified) prose line
     first = [[(s.bbox[0], s.bbox[1], s.bbox[2], s.bbox[3], s.text) for s in c if s.text.strip()]
              for c in sec.columns[0]]
     if _contrasts(first, _with_columns(sec, sec.columns[1:])):
@@ -499,9 +505,13 @@ def switch_reader(sec, words):
     columns), never one whose rows and columns come from drawn paths or the
     structure tree (grid, tags) - that would be one witness checking itself."""
     primary = sec.metadata.get("table_source")
+    shape = (len(sec.columns), max((len(r) for r in sec.columns), default=0))
     for source, columns in sec.metadata.get("alternatives", []):
         if source == "content" and primary in ("grid", "tags"):
             continue
+        if source == "content" and (len(columns), max((len(r) for r in columns), default=0)) == shape:
+            continue                  # same grid, other cell text: the content builder is not the better witness
+                                      # of text (a cell-order failure is often the verifier's own false alarm)
         alt = _with_columns(sec, columns)
         alt.metadata["table_source"] = source
         if not verify_layout(alt, words):
@@ -535,3 +545,20 @@ def escalate(sec, words, reason: str, depth: int = 2):
             if deeper is not None:
                 return deeper, [move.__name__] + moves
     return None, []
+
+
+def verify_pieces(sec, words_on) -> str:
+    """A table stitched across pages: each piece against its own page's
+    words (words_on(page, bbox)), then the whole by its parts. "" when every
+    piece verifies, else "page N: what failed"."""
+    pieces = sec.metadata.get("pieces")
+    boxes = sec.metadata.get("page_bboxes") or {}
+    if not pieces:
+        return "multi-page"
+    for page, a, b in pieces:
+        sub = _with_columns(sec, sec.columns[a:b])
+        sub.lines = [ln for ln in sec.lines if ln.page_num == page]
+        reason = verify_layout(sub, words_on(page, boxes.get(page))) if b - a >= 2 else ""
+        if reason:
+            return f"page {page + 1}: {reason}"
+    return ""

@@ -20,6 +20,7 @@ from .flag import (text_regions, gutter_regions, rejected_regions, dropped_uncov
 from .classify import gate_tables
 from .codepair import find_code_pairs
 from . import evidence
+from .docmeasure import measure as doc_measure
 from .content import content_candidates, page_hrules
 from .ruled import extract_ruled_tables
 from .tagged import extract_tagged_tables
@@ -281,11 +282,13 @@ def _run_pipeline(path: Path) -> PipelineResult:
 
         keep_alive: list = []
         page_rules: dict = {}           # drawn horizontal rules per page, read once
+        page_words: list = []
         pages = [_upright_page(doc, i, keep_alive) for i in range(result.page_count)]
         for pg_num in range(result.page_count):
             page = pages[pg_num]
             page_height = page.rect.height
 
+            page_words.append(page.get_text("words"))
             mupdf_blocks = extract_mupdf(page, pg_num)
             spatial_blocks = extract_spatial(page, pg_num)
 
@@ -311,6 +314,9 @@ def _run_pipeline(path: Path) -> PipelineResult:
             except Exception as e:  # never let a table source break conversion
                 _log.warning("Table extraction failed on page %d: %s", pg_num, e)
 
+        # level 0: what ordinary prose looks like in this document
+        result.doc_measure = doc_measure(page_words)
+        result.evidence.doc_measure = result.doc_measure
         try:
             tagged_tables = extract_tagged_tables(doc)
         except Exception as e:
@@ -408,7 +414,8 @@ def _run_pipeline(path: Path) -> PipelineResult:
                 keep_alive: list = []
                 gpages = {pg: _upright_page(gdoc, pg, keep_alive)
                           for pg in {s.metadata["region_bbox"][0] for s in table_sections
-                                     if "region_bbox" in s.metadata}}
+                                     if "region_bbox" in s.metadata}
+                          | {p for s in table_sections for p in (s.metadata.get("page_bboxes") or {})}}
                 gate_tables(gdoc, gpages, table_sections, paper=Path(path).stem)
         except Exception as e:  # the gate only adjusts confidence; never fail on it
             _log.warning("Table classification failed: %s", e)
@@ -420,7 +427,14 @@ def _run_pipeline(path: Path) -> PipelineResult:
         result.discards.append(("dropped table candidates", f"{len(dropped)} reading(s) failed the "
                                 "checks and no kept table covers them: " + "; ".join(dropped[:12])
                                 + ("; ..." if len(dropped) > 12 else ""), ""))
-    possible_tables = (rejected_regions(rejected_tables, table_sections)
+    scan_regions = []
+    if os.environ.get("TOMD_SCAN") != "0":
+        try:
+            from .scan import run_scan
+            scan_regions = run_scan(path, result.evidence, table_sections)
+        except Exception as e:  # the scan only adds marks and doubts; never fail on it
+            _log.warning("Region scan failed: %s", e)
+    possible_tables = (scan_regions + rejected_regions(rejected_tables, table_sections)
                        + text_regions(all_mupdf_blocks) + gutter_regions(all_mupdf_blocks))
 
     sections = compare_extractions(all_mupdf_blocks, all_spatial_blocks)
