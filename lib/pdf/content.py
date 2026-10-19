@@ -26,6 +26,7 @@ this grid; they do not build it.
 from __future__ import annotations
 
 import logging
+import re
 from collections import Counter
 
 from .types import TableCandidate
@@ -37,7 +38,12 @@ _WORD_GAP = 0.6        # a gap below this many line heights stays inside a piece
 _MIN_GUTTER = 4.0      # points: narrower white space is word spacing, not a column
 _SPAN_LINES = 1        # a gutter may be crossed by this many lines (spanning cells)
 _GAP_RATIO = 1.5       # row gap: at least this many times the typical leading
-_KEY_FILL = 0.5        # key column: filled in at least this share of rows
+_KEY_FILL = 0.5
+_ROW_VOTES = int(__import__('os').environ.get('TOMD_ROW_VOTES', '99'))   # record-only by default: measured, the votes split one-box programs (3 votes: inert)
+# a code unit's opening: declaration keyword(s) and the declared name, or a
+# function signature head (return type and name)
+_DECL = re.compile(r"^\s*(template\s*<[^>]*>\s*)?((enum|struct|class|union|namespace|concept|using)\s+(class\s+)?[A-Za-z_]\w*"
+                   r"|[A-Za-z_][\w:<>,*& ]*?\s+[*&]?[A-Za-z_]\w*\s*\()")        # key column: filled in at least this share of rows
 
 
 def visual_lines(words):
@@ -163,9 +169,41 @@ def build(words, hrules=(), specialists=None):
     trace["code"] = code
     # content's own row starts first
     content_new = [True]
+    unit_votes: list = [None]
+    base = {c: min((min(w[0] for w in cl[c]) for cl in grid_lines if c in cl), default=0.0) for c in range(ncol)}
+    balance = {c: 0 for c in range(ncol)}
+    opened = {c: False for c in range(ncol)}      # a block opened (and must close) since the row began
+
+    def _bal(text: str) -> int:
+        return sum(text.count(o) - text.count(k) for o, k in ("{}", "()", "[]"))
+
+    def _decl(text: str) -> str:
+        """The declared name or signature head a unit opens with ("enum Color", "void f")."""
+        m = _DECL.match(text)
+        return m.group(0).replace(" ", "") if m else ""
     for i in range(1, len(grid_lines)):
         cl = grid_lines[i]
-        if gap_votes[i - 1]:
+        prev_cl = grid_lines[i - 1]
+        for c, ws in prev_cl.items():
+            balance[c] += _bal(" ".join(w[4] for w in ws))
+            opened[c] = opened[c] or balance[c] > 0 or "{" in " ".join(w[4] for w in ws)
+        if code and sp["code_rows"]:
+            # the code-pair specialist: three votes for a row boundary
+            both = [c for c in range(ncol) if c in cl]
+            at_base = [c for c in both if min(w[0] for w in cl[c]) <= base[c] + 2]
+            # a complete unit: a block opened and closed back to the base indentation
+            complete = (len(both) >= 2 and all(balance[c] == 0 and opened[c] for c in both)
+                        and len(at_base) == len(both))
+            names = [_decl(" ".join(w[4] for w in cl[c])) for c in both]
+            same_name = len(names) >= 2 and names[0] != "" and all(n == names[0] for n in names)
+            aligned = len(at_base) >= 2 and len(at_base) == len(both)
+            votes = complete + same_name + aligned
+            new = gap_votes[i - 1] or votes >= _ROW_VOTES
+            if votes == 1 and aligned:
+                unit_votes.append("flag: tops aligned but unit incomplete or names differ")
+            else:
+                unit_votes.append(votes if new else None)
+        elif gap_votes[i - 1]:
             new = True
         elif gaps_separate or code:
             new = False
@@ -174,6 +212,11 @@ def build(words, hrules=(), specialists=None):
             lone_key_wrap = set(prev) == {key}
             new = key in cl and not (lone_key_wrap and len(cl) == 1)
         content_new.append(new)
+        if new:
+            balance = {c: 0 for c in range(ncol)}
+            opened = {c: False for c in range(ncol)}
+    if code and sp["code_rows"]:
+        trace["specialists"]["code_rows"] = {"row_votes": [v for v in unit_votes if v is not None]}
     # specialist (row level): drawn separators confirm, add or contradict
     ruled = [False] + [any(bots[i - 1] - 1 <= y <= tops[i] + 1 for y in hrules) for i in range(1, len(lines))]
     final_new = list(content_new)
@@ -221,14 +264,101 @@ _MONO_FONTS = ("mono", "courier", "code", "cmtt", "consol", "menlo", "lmmono")
 
 
 def page_words(page) -> list[tuple]:
-    """(x0, y0, x1, y1, text, monospace) for every word on the page."""
-    spans = [(sp["bbox"], bool(sp["flags"] & 8) or any(k in sp["font"].lower() for k in _MONO_FONTS))
-             for b in page.get_text("dict")["blocks"] for ln in b.get("lines", []) for sp in ln["spans"]]
+    """(x0, y0, x1, y1, text, monospace) for every horizontal word on the page."""
+    return page_text(page)[0]
 
-    def mono(w):
+
+def page_text(page) -> tuple[list[tuple], list[tuple]]:
+    """Horizontal words (x0, y0, x1, y1, text, monospace), and rotated lines
+    (x0, y0, x1, y1, text) - labels set at 90 degrees, as table headers often
+    are. Rotated text is kept out of line, row and column building."""
+    spans, rotated = [], []
+    for b in page.get_text("dict")["blocks"]:
+        for ln in b.get("lines", []):
+            horizontal = abs(ln["dir"][0] - 1) <= 0.01
+            if not horizontal:
+                text = "".join(sp["text"] for sp in ln["spans"]).strip()
+                if text:
+                    rotated.append(tuple(ln["bbox"]) + (text,))
+            for sp in ln["spans"]:
+                spans.append((sp["bbox"], bool(sp["flags"] & 8) or any(k in sp["font"].lower() for k in _MONO_FONTS),
+                              horizontal))
+
+    def look(w):
         xc, yc = (w[0] + w[2]) / 2, (w[1] + w[3]) / 2
-        return any(bb[0] <= xc <= bb[2] and bb[1] <= yc <= bb[3] and m for bb, m in spans)
-    return [tuple(w[:5]) + (mono(w),) for w in page.get_text("words")]
+        hits = [(m, h) for bb, m, h in spans if bb[0] <= xc <= bb[2] and bb[1] <= yc <= bb[3]]
+        return any(m for m, _ in hits), (not hits or any(h for _, h in hits))
+    words = []
+    for w in page.get_text("words"):
+        mono, horizontal = look(w)
+        if horizontal:
+            words.append(tuple(w[:5]) + (mono,))
+    return words, rotated
+
+
+def _rotated_header(rows, rotated):
+    """Rotated labels define the columns (columns level): one label per
+    column, marks aligned under them. Columns: a key column left of the
+    labels, one per label, and one for anything right of the last label;
+    every row's words are re-assigned by x, and the labels become a header
+    row placed by height among the rows."""
+    labels = sorted(rotated, key=lambda r: (r[0] + r[2]) / 2)
+    if len(labels) < 3 or not rows:
+        return rows, None
+    xs = [(r[0] + r[2]) / 2 for r in labels]
+    step = min(b - a for a, b in zip(xs, xs[1:])) if len(xs) > 1 else 10.0
+    edges = [xs[0] - step / 2] + [(a + b) / 2 for a, b in zip(xs, xs[1:])] + [xs[-1] + step / 2]
+    ncol = len(labels) + 2
+
+    def col(x):
+        if x < edges[0]:
+            return 0
+        for i in range(len(labels)):
+            if edges[i] <= x < edges[i + 1]:
+                return i + 1
+        return ncol - 1
+    out = []
+    for r in rows:
+        cells: list[list] = [[] for _ in range(ncol)]
+        for cell in r:
+            for ln in cell:
+                for w in ln:
+                    cells[col((w[0] + w[2]) / 2)].append(w)
+        out.append([visual_lines(c) for c in cells])
+    head = [[] for _ in range(ncol)]
+    for i, (x0, y0, x1, y1, text) in enumerate(labels):
+        head[i + 1] = [[(x0, y0, x1, y1, text, False)]]
+    bottom = max(r[3] for r in labels)
+    at = next((i for i, r in enumerate(out)
+               if min((w[1] for cell in r for ln in cell for w in ln), default=1e9) > bottom), len(out))
+    above = out[:at]
+    if above:
+        # everything above the rotated labels is one header row (a row label
+        # like "Group" is centred across both header lines)
+        merged = [[w for r in above for ln in r[c] for w in ln] for c in range(ncol)]
+        # a group label over several sub-columns goes to the first column of
+        # its span; spans end halfway to the next group label
+        groups = sorted((c, w) for c in range(1, len(labels) + 1) for w in merged[c])
+        if groups:
+            mids = [((a[1][0] + a[1][2]) / 2 + (b[1][0] + b[1][2]) / 2) / 2 for a, b in zip(groups, groups[1:])]
+            starts = [1] + [next((c for c in range(1, len(labels) + 1) if xs[c - 1] >= m), len(labels)) for m in mids]
+            for c in range(1, len(labels) + 1):
+                merged[c] = []
+            for (_, w), c in zip(groups, starts):
+                merged[c].append(w)
+            # a label column outside every group's span is a header cell over
+            # both header rows: its label goes to the top row (span convention)
+            width = (starts[1] - starts[0]) if len(starts) > 1 else len(labels)
+            covered = {c for st in starts for c in range(st, st + width)}
+            for i in range(len(labels)):
+                if i + 1 not in covered:
+                    merged[i + 1] = head[i + 1][0][:] if head[i + 1] else []
+                    head[i + 1] = []
+        above = [[visual_lines(c) for c in merged]]
+    out = above + [head] + out[at:]
+    at = len(above)
+    keep = [c for c in range(ncol) if any(r[c] for r in out)]
+    return [[r[c] for c in keep] for r in out], at
 
 
 def page_hrules(page, drawings=None) -> list[tuple[float, float, float]]:
@@ -276,15 +406,21 @@ def content_candidates(pages, regions, specialists=None, rules_by_page=None) -> 
             continue
         seen.add(key)
         if page_num not in cache:
+            words_page, rotated_page = page_text(pages[page_num])
             rules = (rules_by_page or {}).get(page_num)
-            cache[page_num] = (page_words(pages[page_num]),
-                               rules if rules is not None else page_hrules(pages[page_num]))
-        words_all, rules = cache[page_num]
+            cache[page_num] = (words_page, rules if rules is not None else page_hrules(pages[page_num]),
+                               rotated_page)
+        words_all, rules, rotated_all = cache[page_num]
         x0, y0, x1, y1 = bbox
         words = [w for w in words_all if w[0] >= x0 - 2 and w[2] <= x1 + 2 and w[1] >= y0 - 2 and w[3] <= y1 + 2]
         if len(words) < 2:
             continue
         rows, trace = build(words, _region_rules(rules, words), specialists)
+        rot = [r for r in rotated_all if r[0] >= x0 - 2 and r[2] <= x1 + 2 and r[1] >= y0 - 40 and r[3] <= y1 + 2]
+        if rows and rot:
+            rows, at = _rotated_header(rows, rot)
+            if at is not None:
+                trace["specialists"]["rotated_header"] = {"row": at, "labels": len(rot)}
         if len(rows) < 2 or max(len(r) for r in rows) < 2:
             continue
         cells = [[_cell_lines(c, page_num) for c in r] for r in rows]
