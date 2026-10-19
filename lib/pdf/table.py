@@ -248,7 +248,8 @@ def detect_tables(blocks: list[Block]) -> tuple[list[Section], list[Block]]:
 # direct evidence; horizontal-rule tables have ambiguous columns; text
 # positions are the weakest signal. Tags from a structure tree that MuPDF
 # reports as malformed rank just below the grid.
-_SOURCE_PRIORITY = {"tags": 0, "poll": 1, "grid": 2, "tags-malformed": 3, "rules": 4, "codepair": 5, "tomd": 6}
+_SOURCE_PRIORITY = {"tags": 0, "poll": 1, "grid": 2, "tags-malformed": 3, "rules": 4, "codepair": 5, "tomd": 6,
+                    "content": 7}
 
 
 def _priority(c: TableCandidate) -> int:
@@ -543,7 +544,7 @@ def _is_bad(cand: TableCandidate) -> bool:
     bad = set(cand.flags) & BAD_TABLE_FLAGS
     if cand.source == "tags":
         bad -= _TAG_EXEMPT_FLAGS
-    if cand.source == "codepair":
+    if cand.source == "codepair" or (cand.source == "content" and getattr(cand, "trace", {}).get("code")):
         bad -= _CODEPAIR_EXEMPT_FLAGS
     return bool(bad)
 
@@ -718,7 +719,8 @@ def select_tables(tomd_sections: list[Section],
                   blocks: list[Block],
                   polls: list[TableCandidate] = (),
                   rejected: list[TableCandidate] | None = None,
-                  codepairs: list[TableCandidate] = ()) -> list[Section]:
+                  codepairs: list[TableCandidate] = (),
+                  content: list[TableCandidate] = ()) -> list[Section]:
     """Choose one table per region from the three extractors.
 
     Primary version by source priority (tags, polls, ruling lines, text positions),
@@ -739,7 +741,7 @@ def select_tables(tomd_sections: list[Section],
     # Continuation fragments (the last rows of a table on the next page) only
     # count once stitched onto the table they continue.
     ruled = [c for c in stitch_pages(ruled, blocks) if "continuation-fragment" not in c.flags]
-    cands = tagged + list(polls) + ruled + list(codepairs) + tomd
+    cands = tagged + list(polls) + ruled + list(codepairs) + tomd + list(content)
     for c in cands:
         c.flags = c.flags + table_flags(c)
 
@@ -761,8 +763,12 @@ def select_tables(tomd_sections: list[Section],
         others = [c for c in settled if c is not primary and c.source != primary.source
                   and not _is_bad(c) and _same_region(primary, c)]
         # a code pair is a witness when it agrees, not another reading to doubt by
-        others = [c for c in others if c.source != "codepair"
+        others = [c for c in others if c.source not in ("codepair", "content")
                   or candidates_agree(primary, c) or partial_reading(primary, c)]
+        content_read = [c for c in settled if c.source == "content" and c is not primary
+                        and not _is_bad(c) and _same_region(primary, c)]
+        content_disagrees = bool(content_read) and not any(
+            candidates_agree(primary, c) or partial_reading(primary, c) for c in content_read)
         # HIGH only when an independent source produced the same table.
         # A single source, however plausible, is UNCERTAIN: measured on fresh
         # papers, single-source tables carry most silent errors.
@@ -771,14 +777,15 @@ def select_tables(tomd_sections: list[Section],
         # the ruled table's extra rows are the part tomd could not see)
         # a code pair reads its cell text from the same text layer as every
         # other reader: its agreement is a witness for the record, not for HIGH
-        voters = [] if primary.source == "codepair" else [o for o in others if o.source != "codepair"]
+        voters = ([] if primary.source in ("codepair", "content")
+                  else [o for o in others if o.source not in ("codepair", "content")])
         exact = any(candidates_agree(primary, o) for o in voters)
         agree = exact or any(partial_reading(primary, o) for o in voters)
         conf = Confidence.HIGH if agree else Confidence.UNCERTAIN
         reasons = []                     # why it is UNCERTAIN; the gate reads these
         if not agree:
-            reasons.append("single-source" if not others else "disagree")
-            notes.append("Only one table source produced this table." if not others else
+            reasons.append("single-source" if not voters else "disagree")
+            notes.append("Only one table source produced this table." if not voters else
                          "The table sources disagree; every version is below.")
         if (not agree and primary.source == "codepair" and "labelled" in primary.flags
                 and os.environ.get("TOMD_CODEPAIR_HIGH") == "1"):
@@ -816,6 +823,12 @@ def select_tables(tomd_sections: list[Section],
                                           "columns continues on the adjacent page; this may be one part "
                                           "of it.").strip()
         sec.metadata["uncertain_reasons"] = reasons
+        if content_disagrees:
+            # the shared builder read this region differently: flag, don't pick silently
+            sec.metadata["content_disagrees"] = True
+            sec.metadata["table_note"] = (sec.metadata.get("table_note", "") + " The content-first reading of "
+                                          "this region (rows from baselines and gaps, columns from gutters) "
+                                          "differs from this one.").strip()
         sec.metadata["class_check"] = class_check(primary)
         # what the classifier sees: every source and rule flag in this region
         sec.metadata["region_sources"] = sorted({c.source for c in settled})
@@ -833,7 +846,7 @@ def select_tables(tomd_sections: list[Section],
         remaining = [c for c in remaining if not any(c is x for x in settled)]
     for c in remaining:
         _log.debug("Dropping %s table candidate on page %d: %s", c.source, c.pages[0], c.flags)
-        if rejected is not None:
+        if rejected is not None and c.source != "content":
             rejected.append(c)
     return out
 

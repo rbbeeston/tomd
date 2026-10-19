@@ -491,8 +491,17 @@ def split_hidden_column(sec, words):
 
 
 def switch_reader(sec, words):
-    """Another source's reading of the same region, the first that verifies."""
+    """Another source's reading of the same region, the first that verifies.
+
+    The content builder reads rows and columns from word positions, the same
+    information the verifier checks, so it passes by construction: it may
+    replace a reading that also came from words (tomd, the rule-band reader's
+    columns), never one whose rows and columns come from drawn paths or the
+    structure tree (grid, tags) - that would be one witness checking itself."""
+    primary = sec.metadata.get("table_source")
     for source, columns in sec.metadata.get("alternatives", []):
+        if source == "content" and primary in ("grid", "tags"):
+            continue
         alt = _with_columns(sec, columns)
         alt.metadata["table_source"] = source
         if not verify_layout(alt, words):
