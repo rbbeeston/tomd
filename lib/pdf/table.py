@@ -248,7 +248,7 @@ def detect_tables(blocks: list[Block]) -> tuple[list[Section], list[Block]]:
 # direct evidence; horizontal-rule tables have ambiguous columns; text
 # positions are the weakest signal. Tags from a structure tree that MuPDF
 # reports as malformed rank just below the grid.
-_SOURCE_PRIORITY = {"tags": 0, "poll": 1, "grid": 2, "tags-malformed": 3, "rules": 4, "tomd": 5}
+_SOURCE_PRIORITY = {"tags": 0, "poll": 1, "grid": 2, "tags-malformed": 3, "rules": 4, "codepair": 5, "tomd": 6}
 
 
 def _priority(c: TableCandidate) -> int:
@@ -534,12 +534,17 @@ BAD_TABLE_FLAGS = frozenset({"ragged-columns", "empty-cells", "split-code",
 # Tags are explicit markup: an empty column or an empty corner is the
 # author's choice there, not an extraction error.
 _TAG_EXEMPT_FLAGS = frozenset({"ragged-columns", "empty-cells"})
+# a code pair's cells are whole code blocks by construction: code in cells is the point
+_CODEPAIR_EXEMPT_FLAGS = frozenset({"split-code", "code-comment-column", "sparse-two-rows",
+                                    "constant-first-column", "single-cell-rows"})
 
 
 def _is_bad(cand: TableCandidate) -> bool:
     bad = set(cand.flags) & BAD_TABLE_FLAGS
     if cand.source == "tags":
         bad -= _TAG_EXEMPT_FLAGS
+    if cand.source == "codepair":
+        bad -= _CODEPAIR_EXEMPT_FLAGS
     return bool(bad)
 
 
@@ -712,7 +717,8 @@ def select_tables(tomd_sections: list[Section],
                   tagged: list[TableCandidate],
                   blocks: list[Block],
                   polls: list[TableCandidate] = (),
-                  rejected: list[TableCandidate] | None = None) -> list[Section]:
+                  rejected: list[TableCandidate] | None = None,
+                  codepairs: list[TableCandidate] = ()) -> list[Section]:
     """Choose one table per region from the three extractors.
 
     Primary version by source priority (tags, polls, ruling lines, text positions),
@@ -733,7 +739,7 @@ def select_tables(tomd_sections: list[Section],
     # Continuation fragments (the last rows of a table on the next page) only
     # count once stitched onto the table they continue.
     ruled = [c for c in stitch_pages(ruled, blocks) if "continuation-fragment" not in c.flags]
-    cands = tagged + list(polls) + ruled + tomd
+    cands = tagged + list(polls) + ruled + list(codepairs) + tomd
     for c in cands:
         c.flags = c.flags + table_flags(c)
 
@@ -754,20 +760,32 @@ def select_tables(tomd_sections: list[Section],
         # drawn around a poll is not another reading of the poll.
         others = [c for c in settled if c is not primary and c.source != primary.source
                   and not _is_bad(c) and _same_region(primary, c)]
+        # a code pair is a witness when it agrees, not another reading to doubt by
+        others = [c for c in others if c.source != "codepair"
+                  or candidates_agree(primary, c) or partial_reading(primary, c)]
         # HIGH only when an independent source produced the same table.
         # A single source, however plausible, is UNCERTAIN: measured on fresh
         # papers, single-source tables carry most silent errors.
         notes = []
         # (a tomd reading that is an exact subset of a ruled table counts:
         # the ruled table's extra rows are the part tomd could not see)
-        exact = any(candidates_agree(primary, o) for o in others)
-        agree = exact or any(partial_reading(primary, o) for o in others)
+        # a code pair reads its cell text from the same text layer as every
+        # other reader: its agreement is a witness for the record, not for HIGH
+        voters = [] if primary.source == "codepair" else [o for o in others if o.source != "codepair"]
+        exact = any(candidates_agree(primary, o) for o in voters)
+        agree = exact or any(partial_reading(primary, o) for o in voters)
         conf = Confidence.HIGH if agree else Confidence.UNCERTAIN
         reasons = []                     # why it is UNCERTAIN; the gate reads these
         if not agree:
             reasons.append("single-source" if not others else "disagree")
             notes.append("Only one table source produced this table." if not others else
                          "The table sources disagree; every version is below.")
+        if (not agree and primary.source == "codepair" and "labelled" in primary.flags
+                and os.environ.get("TOMD_CODEPAIR_HIGH") == "1"):
+            agree = True                 # geometry and shared code: two witnesses (measured variant)
+            conf = Confidence.HIGH
+            reasons.clear()
+            notes.clear()
         lost = conservation_error(primary, blocks)
         if lost:
             conf = Confidence.UNCERTAIN
@@ -830,6 +848,7 @@ _INFO = {
     "grid": {"rows": "paths", "cols": "paths", "members": "words"},
     "tags": {"rows": "tree", "cols": "tree", "members": "tree"},
     "poll": {"rows": "words", "cols": "pattern", "members": "words"},
+    "codepair": {"rows": "words", "cols": "words", "members": "words"},
 }
 _EDGE = 0.25               # a table ending in the last quarter of the page text may continue
 
