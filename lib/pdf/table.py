@@ -785,6 +785,18 @@ def select_tables(tomd_sections: list[Section],
         if notes:
             sec.metadata["table_note"] = " ".join(notes)
         sec.metadata["table_agreement"] = "exact" if exact else "subset" if agree else "none"
+        agreeing = [primary] + [o for o in others
+                                if candidates_agree(primary, o) or partial_reading(primary, o)]
+        w = sec.metadata["witness"] = witness(primary, agreeing, cands, blocks)
+        if (w["extent"] == "open" and not w["tree_extent"] and class_check(primary) != "poll"
+                and os.environ.get("TOMD_EXTENT") != "0"):
+            # no source measured where this table ends: page-local readers
+            # agreeing on a page piece is the page grid seen twice
+            sec.confidence = Confidence.UNCERTAIN
+            reasons.append("extent")
+            sec.metadata["table_note"] = (sec.metadata.get("table_note", "") + " A table with the same "
+                                          "columns continues on the adjacent page; this may be one part "
+                                          "of it.").strip()
         sec.metadata["uncertain_reasons"] = reasons
         sec.metadata["class_check"] = class_check(primary)
         # what the classifier sees: every source and rule flag in this region
@@ -806,6 +818,63 @@ def select_tables(tomd_sections: list[Section],
         if rejected is not None:
             rejected.append(c)
     return out
+
+
+# What each source actually measures, per property (stage 0: independence is
+# different underlying information, not different code). rows / cols: where
+# the boundaries are; members: which words go in which cell; extent: where
+# the table starts and ends.
+_INFO = {
+    "tomd": {"rows": "words", "cols": "words", "members": "words"},
+    "rules": {"rows": "paths", "cols": "words", "members": "words"},
+    "grid": {"rows": "paths", "cols": "paths", "members": "words"},
+    "tags": {"rows": "tree", "cols": "tree", "members": "tree"},
+    "poll": {"rows": "words", "cols": "pattern", "members": "words"},
+}
+_EDGE = 0.25               # a table ending in the last quarter of the page text may continue
+
+
+def _page_span(blocks: list[Block], page: int) -> tuple[float, float]:
+    ys = [y for b in blocks if b.page_num == page for ln in b.lines for y in (ln.bbox[1], ln.bbox[3])]
+    return (min(ys), max(ys)) if ys else (0.0, 1.0)
+
+
+def _extent_open(primary: TableCandidate, cands: list[TableCandidate], blocks: list[Block]) -> bool:
+    """A table with the same columns on the adjacent page, where this one ends
+    low (or starts high) and that one starts high (or ends low), was not
+    stitched to it: the page break cut the table and no source measured its
+    end. Agreement on a page piece is then the page grid seen twice."""
+    last, first = primary.pages[-1], primary.pages[0]
+    for c in cands:
+        if c is primary or c.shape[1] != primary.shape[1]:
+            continue
+        if c.pages[0] == last + 1:
+            top, bot = _page_span(blocks, last)
+            ntop, nbot = _page_span(blocks, c.pages[0])
+            if (primary.bboxes[last][3] >= bot - _EDGE * (bot - top)
+                    and c.bboxes[c.pages[0]][1] <= ntop + _EDGE * (nbot - ntop)
+                    and _same_columns(primary, last, c, c.pages[0])):
+                return True
+        if c.pages[-1] == first - 1:
+            top, bot = _page_span(blocks, first)
+            ptop, pbot = _page_span(blocks, c.pages[-1])
+            if (primary.bboxes[first][1] <= top + _EDGE * (bot - top)
+                    and c.bboxes[c.pages[-1]][3] >= pbot - _EDGE * (pbot - ptop)
+                    and _same_columns(c, c.pages[-1], primary, first)):
+                return True
+    return False
+
+
+def witness(primary: TableCandidate, agreeing: list[TableCandidate],
+            cands: list[TableCandidate], blocks: list[Block]) -> dict:
+    """Per property, the distinct information sources behind the agreeing readings."""
+    props = {p: sorted({_INFO.get(c.source, {}).get(p, c.source) for c in agreeing})
+             for p in ("rows", "cols", "members")}
+    # a well-formed structure tree delimits its Table elements, across pages too
+    tree = any(c.source == "tags" and "tags-malformed" not in c.flags for c in agreeing)
+    return {"agree": sorted({c.source for c in agreeing}), "props": props,
+            "extent": "open" if _extent_open(primary, cands, blocks) else "closed",
+            "tree_extent": tree}
 
 
 _VOTE = re.compile(r"^\d{1,3}$")
