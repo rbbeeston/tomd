@@ -33,6 +33,7 @@ import re
 from collections import Counter, defaultdict
 from difflib import SequenceMatcher
 
+from . import evidence
 from .types import (Block, Line, Section, SectionKind, Confidence, Span, TableCandidate,
                     BULLET_CHARS)
 
@@ -742,9 +743,40 @@ def select_tables(tomd_sections: list[Section],
     # count once stitched onto the table they continue.
     ruled = [c for c in stitch_pages(ruled, blocks) if "continuation-fragment" not in c.flags]
     cands = tagged + list(polls) + ruled + list(codepairs) + tomd + list(content)
+    rec = evidence.current()
     for c in cands:
         c.flags = c.flags + table_flags(c)
+        for pg, bb in c.bboxes.items():
+            rec.nominate(c.source, pg, bb, "candidate " + "x".join(map(str, c.shape)), _INFO_TYPE.get(c.source, "words"))
+        if len(c.bboxes) == 1:
+            rec.readings.append((c.source, c.pages[0], c.bboxes[c.pages[0]], c.text_rows()))
 
+    # A code pair inside a drawn table that is clearly larger is a fragment of
+    # that table, not a comparison of its own: the table's cells are its extent.
+    drawn = [c for c in cands if c.source in ("rules", "grid") and len(c.bboxes) == 1]
+    for c in [c for c in cands if c.source == "codepair"]:
+        pg, bb = c.pages[0], c.bboxes[c.pages[0]]
+        for d in drawn:
+            db = d.bboxes.get(pg)
+            if (db and db[0] - 2 <= bb[0] and db[1] - 2 <= bb[1] and bb[2] <= db[2] + 2 and bb[3] <= db[3] + 2
+                    and (db[2] - db[0]) * (db[3] - db[1]) >= 1.5 * (bb[2] - bb[0]) * (bb[3] - bb[1])):
+                rec.exclude("codepair", pg, bb, "fragment of a drawn table", "paths")
+                cands = [x for x in cands if x is not c]
+                break
+    # Rows inside a code pair come from the shared row builder (separators,
+    # row gaps): when the content reading of the pair's region keeps its two
+    # columns and finds more rows, the pair defers to it.
+    for c in [c for c in cands if c.source == "codepair"]:
+        pg, bb = c.pages[0], c.bboxes[c.pages[0]]
+        for k in [k for k in cands if k.source == "content" and k.pages == [pg]]:
+            kb = k.bboxes[pg]
+            if (abs(kb[0] - bb[0]) <= 8 and abs(kb[2] - bb[2]) <= 8 and min(kb[3], bb[3]) - max(kb[1], bb[1]) > 0
+                    and k.shape[1] == c.shape[1] and k.shape[0] > c.shape[0] and not _is_bad(k)
+                    and sum(all(cell for cell in r) for r in k.text_rows()) >= 0.6 * k.shape[0]):
+                rec.feature("codepair", pg, bb, "rows from the shared builder", "words", k.shape[0])
+                k.flags = k.flags + ["code-rows"]
+                cands = [x for x in cands if x is not c]
+                break
     # Greedy selection: take the best remaining candidate, settle everything
     # that overlaps it, repeat. (Grouping by overlap first would chain
     # separate tables together through one large box that overlaps them all.)
@@ -846,6 +878,9 @@ def select_tables(tomd_sections: list[Section],
         remaining = [c for c in remaining if not any(c is x for x in settled)]
     for c in remaining:
         _log.debug("Dropping %s table candidate on page %d: %s", c.source, c.pages[0], c.flags)
+        for pg, bb in c.bboxes.items():
+            rec.exclude(c.source, pg, bb, "dropped: " + (", ".join(f for f in c.flags if f in BAD_TABLE_FLAGS)
+                                                        or "outranked"), _INFO_TYPE.get(c.source, "words"))
         if rejected is not None and c.source != "content":
             rejected.append(c)
     return out
@@ -863,6 +898,9 @@ _INFO = {
     "poll": {"rows": "words", "cols": "pattern", "members": "words"},
     "codepair": {"rows": "words", "cols": "words", "members": "words"},
 }
+# the information type a source's region decision rests on (evidence record)
+_INFO_TYPE = {"tomd": "words", "rules": "paths", "grid": "paths", "tags": "tree", "poll": "meaning",
+              "codepair": "words", "content": "words"}
 _EDGE = 0.25               # a table ending in the last quarter of the page text may continue
 
 
