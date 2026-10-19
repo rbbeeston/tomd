@@ -803,7 +803,7 @@ def select_tables(tomd_sections: list[Section],
         remaining = [c for c in remaining if not any(c is x for x in settled)]
     for c in remaining:
         _log.debug("Dropping %s table candidate on page %d: %s", c.source, c.pages[0], c.flags)
-        if rejected is not None and c.source != "tomd":
+        if rejected is not None:
             rejected.append(c)
     return out
 
