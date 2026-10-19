@@ -212,16 +212,16 @@ class TestPollTables:
         counts = [(72 + 30 * i, 114, t) for i, t in enumerate(["11", "3", "7", "24", "35"])]
         assert self._polls(self._header() + counts) == [[self._HEAD, ["11", "3", "7", "24", "35"]]]
 
-    def test_suggested_poll_without_counts_is_header_only(self):
+    def test_suggested_poll_without_counts_has_a_blank_vote_row(self):
         polls = self._polls(self._header() + [(72, 160, "Poll: something else entirely")])
-        assert polls == [[self._HEAD]]
+        assert polls == [[self._HEAD, [""] * len(self._HEAD)]]
 
     def test_inline_poll_in_prose_is_ignored(self):
         assert self._polls([(72, 100, "SF F N A SA: 4 5 1 0 0")]) == []
 
     def test_counts_must_sit_under_the_columns(self):
         counts = [(300 + 30 * i, 114, t) for i, t in enumerate(["1", "2", "3", "4", "5"])]
-        assert self._polls(self._header() + counts) == [[self._HEAD]]
+        assert self._polls(self._header() + counts) == [[self._HEAD, [""] * len(self._HEAD)]]
 
 
 def test_standalone_dash_at_cell_line_break_keeps_the_break():
