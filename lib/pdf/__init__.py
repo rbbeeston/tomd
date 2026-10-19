@@ -280,6 +280,7 @@ def _run_pipeline(path: Path) -> PipelineResult:
         all_poll_tables = []
 
         keep_alive: list = []
+        page_rules: dict = {}           # drawn horizontal rules per page, read once
         pages = [_upright_page(doc, i, keep_alive) for i in range(result.page_count)]
         for pg_num in range(result.page_count):
             page = pages[pg_num]
@@ -303,7 +304,9 @@ def _run_pipeline(path: Path) -> PipelineResult:
 
             # Independent table sources, compared with detect_tables() below.
             try:
-                all_ruled_tables.extend(extract_ruled_tables(page, pg_num))
+                drawings = page.get_drawings()
+                page_rules[pg_num] = page_hrules(page, drawings)
+                all_ruled_tables.extend(extract_ruled_tables(page, pg_num, drawings))
                 all_poll_tables.extend(extract_poll_tables(page, pg_num))
             except Exception as e:  # never let a table source break conversion
                 _log.warning("Table extraction failed on page %d: %s", pg_num, e)
@@ -376,16 +379,7 @@ def _run_pipeline(path: Path) -> PipelineResult:
     rejected_tables: list = []
     code_pairs = []
     if os.environ.get("TOMD_CODEPAIR") != "0":
-        import fitz
-        with fitz.open(str(path)) as rdoc:
-            rkeep: list = []
-            rcache: dict = {}
-
-            def rules_for(pg):
-                if pg not in rcache:
-                    rcache[pg] = page_hrules(_upright_page(rdoc, pg, rkeep))
-                return rcache[pg]
-            code_pairs = find_code_pairs(all_mupdf_blocks, rules_for)
+        code_pairs = find_code_pairs(all_mupdf_blocks, lambda pg: page_rules.get(pg, []))
     # the shared content-first builder reads every region any reader located
     content_tables = []
     if os.environ.get("TOMD_CONTENT") != "0":
@@ -400,7 +394,7 @@ def _run_pipeline(path: Path) -> PipelineResult:
             with fitz.open(str(path)) as cdoc:
                 keep: list = []
                 cpages = {pg: _upright_page(cdoc, pg, keep) for pg in {pg for pg, _ in regions}}
-                content_tables = content_candidates(cpages, regions)
+                content_tables = content_candidates(cpages, regions, rules_by_page=page_rules)
         except Exception as e:  # never let the builder break conversion
             _log.warning("Content builder failed: %s", e)
     table_sections = select_tables(tomd_tables, all_ruled_tables, tagged_tables,

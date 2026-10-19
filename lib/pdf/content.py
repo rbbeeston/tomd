@@ -231,10 +231,10 @@ def page_words(page) -> list[tuple]:
     return [tuple(w[:5]) + (mono(w),) for w in page.get_text("words")]
 
 
-def page_hrules(page) -> list[tuple[float, float, float]]:
+def page_hrules(page, drawings=None) -> list[tuple[float, float, float]]:
     """Drawn horizontal separators on the page: (y, x0, x1)."""
     out = []
-    for d in page.get_drawings():
+    for d in (page.get_drawings() if drawings is None else drawings):
         for it in d["items"]:
             if it[0] == "l" and abs(it[1].y - it[2].y) <= 1:
                 out.append((it[1].y, min(it[1].x, it[2].x), max(it[1].x, it[2].x)))
@@ -264,7 +264,7 @@ def _cell_lines(cell, page_num) -> list[Line]:
     return out
 
 
-def content_candidates(pages, regions, specialists=None) -> list[TableCandidate]:
+def content_candidates(pages, regions, specialists=None, rules_by_page=None) -> list[TableCandidate]:
     """For every located region (page, bbox) - from any reader, kept or not -
     the content-first grid of the words inside it."""
     cache: dict = {}
@@ -276,7 +276,9 @@ def content_candidates(pages, regions, specialists=None) -> list[TableCandidate]
             continue
         seen.add(key)
         if page_num not in cache:
-            cache[page_num] = (page_words(pages[page_num]), page_hrules(pages[page_num]))
+            rules = (rules_by_page or {}).get(page_num)
+            cache[page_num] = (page_words(pages[page_num]),
+                               rules if rules is not None else page_hrules(pages[page_num]))
         words_all, rules = cache[page_num]
         x0, y0, x1, y1 = bbox
         words = [w for w in words_all if w[0] >= x0 - 2 and w[2] <= x1 + 2 and w[1] >= y0 - 2 and w[3] <= y1 + 2]
