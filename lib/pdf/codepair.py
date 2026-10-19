@@ -20,6 +20,7 @@ import logging
 import re
 from collections import defaultdict
 
+from . import evidence
 from .table import TableCandidate
 from .types import Block, Line
 
@@ -59,7 +60,14 @@ def _mono(line: Line) -> bool:
     return chars > 0 and mono >= _MONO_SHARE * chars
 
 
-def _blocks(lines: list[Line]) -> list[list[Line]]:
+def _ruled_between(a: Line, b: Line, rules) -> bool:
+    """A drawn horizontal rule separates the two lines where they overlap."""
+    top, bot = min(a.bbox[3], b.bbox[3]), max(a.bbox[1], b.bbox[1])
+    x0, x1 = max(a.bbox[0], b.bbox[0]), min(a.bbox[2], b.bbox[2])
+    return any(top - 1 <= y <= bot + 1 and rx0 <= x0 + 2 and rx1 >= x1 - 2 for y, rx0, rx1 in rules)
+
+
+def _blocks(lines: list[Line], rules=()) -> list[list[Line]]:
     parent = list(range(len(lines)))
 
     def find(i):
@@ -73,7 +81,7 @@ def _blocks(lines: list[Line]) -> list[list[Line]]:
             b = lines[j]
             if b.bbox[1] - a.bbox[3] > _JOIN_GAP * h:
                 break                                 # sorted by top: nothing further joins
-            if min(a.bbox[2], b.bbox[2]) > max(a.bbox[0], b.bbox[0]):
+            if min(a.bbox[2], b.bbox[2]) > max(a.bbox[0], b.bbox[0]) and not _ruled_between(a, b, rules):
                 parent[find(i)] = find(j)
     groups: dict = defaultdict(list)
     for i, ln in enumerate(lines):
@@ -113,8 +121,10 @@ def _label(block: list[Line], others: list[Line]) -> Line | None:
     return max(near, key=lambda l: l.bbox[3]) if near else None
 
 
-def find_code_pairs(blocks: list[Block]) -> list[TableCandidate]:
-    """Code-comparison candidates on every page."""
+def find_code_pairs(blocks: list[Block], rules_for=None) -> list[TableCandidate]:
+    """Code-comparison candidates on every page. rules_for(page) gives the
+    page's drawn horizontal rules (y, x0, x1): a rule between two lines
+    separates them (rows of a ruled comparison are not one block)."""
     by_page: dict = defaultdict(list)
     for b in blocks:
         for ln in b.lines:
@@ -123,7 +133,8 @@ def find_code_pairs(blocks: list[Block]) -> list[TableCandidate]:
     for page, pieces in sorted(by_page.items()):
         mono = sorted((p for p in pieces if _mono(p)), key=lambda l: (l.bbox[1], l.bbox[0]))
         rest = [p for p in pieces if not _mono(p)]
-        code_blocks = [b for b in _blocks(mono) if len(b) >= 2]
+        rules = rules_for(page) if (rules_for and mono) else []
+        code_blocks = [b for b in _blocks(mono, rules) if len(b) >= 2]
         pairs = []
         for i, a in enumerate(code_blocks):
             for b in code_blocks[i + 1:]:
@@ -134,13 +145,20 @@ def find_code_pairs(blocks: list[Block]) -> list[TableCandidate]:
                 overlap = min(lb[3], rb[3]) - max(lb[1], rb[1])
                 if overlap < _OVERLAP * min(lb[3] - lb[1], rb[3] - rb[1]):
                     continue
+                box = (lb[0], min(lb[1], rb[1]), rb[2], max(lb[3], rb[3]))
+                rec = evidence.current()
                 if _comment_share(right) >= _COMMENTS:
+                    rec.exclude("codepair", page, box, "code with a comment column", "words")
                     continue                          # code with its comments beside it
                 if not (_code_like(left) and _code_like(right)):
+                    rec.exclude("codepair", page, box, "monospace prose, not code", "words")
                     continue                          # monospace prose (a form, a template)
                 score = same_code(left, right)
+                rec.feature("codepair", page, box, "same-code", "meaning", round(score, 3))
                 if score >= _SAME_CODE:
                     pairs.append((left, right, score))
+                else:
+                    rec.exclude("codepair", page, box, "blocks do not share their code", "meaning", round(score, 3))
         # one block pairs once: keep its best partner
         pairs.sort(key=lambda p: -p[2])
         used: set[int] = set()
@@ -181,6 +199,10 @@ def find_code_pairs(blocks: list[Block]) -> list[TableCandidate]:
     seen = defaultdict(set)
     for c in out:
         seen[key(c)].add(c.pages[0])
+    for c in out:
+        if len(seen[key(c)]) >= _FURNITURE_PAGES:
+            evidence.current().exclude("codepair", c.pages[0], c.bboxes[c.pages[0]],
+                                       "page furniture (same pair on 3+ pages)", "document")
     out = [c for c in out if len(seen[key(c)]) < _FURNITURE_PAGES]
     if out:
         _log.debug("%d code-comparison candidate(s)", len(out))

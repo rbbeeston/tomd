@@ -19,7 +19,8 @@ from .flag import (text_regions, gutter_regions, rejected_regions, dropped_uncov
                    outside_view_regions)
 from .classify import gate_tables
 from .codepair import find_code_pairs
-from .content import content_candidates
+from . import evidence
+from .content import content_candidates, page_hrules
 from .ruled import extract_ruled_tables
 from .tagged import extract_tagged_tables
 from .poll import extract_poll_tables
@@ -252,6 +253,7 @@ def _run_pipeline(path: Path) -> PipelineResult:
 
     path = Path(path)
     result = PipelineResult()
+    result.evidence = evidence.reset()
     doc = None
     try:
         doc = fitz.open(str(path))
@@ -372,7 +374,18 @@ def _run_pipeline(path: Path) -> PipelineResult:
 
     tomd_tables, _ = detect_tables(all_mupdf_blocks)
     rejected_tables: list = []
-    code_pairs = find_code_pairs(all_mupdf_blocks) if os.environ.get("TOMD_CODEPAIR") != "0" else []
+    code_pairs = []
+    if os.environ.get("TOMD_CODEPAIR") != "0":
+        import fitz
+        with fitz.open(str(path)) as rdoc:
+            rkeep: list = []
+            rcache: dict = {}
+
+            def rules_for(pg):
+                if pg not in rcache:
+                    rcache[pg] = page_hrules(_upright_page(rdoc, pg, rkeep))
+                return rcache[pg]
+            code_pairs = find_code_pairs(all_mupdf_blocks, rules_for)
     # the shared content-first builder reads every region any reader located
     content_tables = []
     if os.environ.get("TOMD_CONTENT") != "0":
