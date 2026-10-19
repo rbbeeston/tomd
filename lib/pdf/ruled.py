@@ -761,9 +761,10 @@ def _overlaps(a, b) -> bool:
     return not (a[2] < b[0] or b[2] < a[0] or a[3] < b[1] or b[3] < a[1])
 
 
-def extract_ruled_tables(page, page_num: int) -> list[TableCandidate]:
+def extract_ruled_tables(page, page_num: int, drawings=None) -> list[TableCandidate]:
     """All tables on one page that ruling lines reveal."""
-    drawings = page.get_drawings()
+    if drawings is None:
+        drawings = page.get_drawings()
     if not any(it[0] in ("l", "re") for d in drawings for it in d["items"]):
         return []                       # nothing drawn: no ruled table
     raw = page.get_text("rawdict", flags=0)
