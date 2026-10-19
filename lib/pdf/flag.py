@@ -20,6 +20,7 @@ import os
 import re
 from collections import defaultdict
 
+from . import evidence
 from .types import Block, Section, SectionKind, TableCandidate
 
 _log = logging.getLogger(__name__)
@@ -305,11 +306,17 @@ def flag_possible_tables(sections: list[Section], regions: list[Region]) -> int:
                    for ln in sec.lines)
 
     n = 0
+    rec = evidence.current()
     for page, bbox, reason, rows in regions:
         hits = [sec for sec in sections if inside(sec, page, bbox)]
-        if not hits or len(hits) > rows + _EXTRA_SECTIONS:
+        rec.nominate("mark", page, bbox, reason, "words")
+        if not hits:
+            continue
+        if len(hits) > rows + _EXTRA_SECTIONS:
+            rec.exclude("mark", page, bbox, "more sections than rows (wording in a box)", "words")
             continue                     # more sections than rows: wording in a box
         if any(sec.kind in _KEEP_KINDS for sec in hits):
+            rec.exclude("mark", page, bbox, "crosses a heading or an extracted table", "words")
             continue                     # crosses a heading or an extracted table
         for sec in hits:
             if "possible_table" not in sec.metadata:

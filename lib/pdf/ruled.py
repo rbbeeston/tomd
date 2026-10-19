@@ -29,6 +29,7 @@ from collections import Counter
 
 from .types import Line, Span, TableCandidate
 from .mono import classify_monospace
+from . import evidence
 
 _log = logging.getLogger(__name__)
 
@@ -652,15 +653,19 @@ def _has_column_gap(ws) -> bool:
 
 def _bands_to_table(page_num, in_x, bands, x0, x1, header_above,
                     min_rows: int = 2, per_line: bool = False) -> TableCandidate | None:
-    if len(bands) < min_rows:
+    def excluded(rule):
+        if bands:
+            evidence.current().exclude("rules", page_num, (x0, bands[0][0], x1, bands[-1][1]), rule, "paths")
         return None
+    if len(bands) < min_rows:
+        return excluded("too few rule bands")
     row_words = [[w for w in in_x if a <= (w[1] + w[3]) / 2 <= b] for a, b in bands]
     # Prose between rules (quotations, notes) has no column gaps at all.
     if sum(1 for ws in row_words if _has_column_gap(ws)) < min_rows:
-        return None
+        return excluded("no column gaps between rules (prose)")
     seps = _column_starts(row_words)
     if len(seps) < 2:
-        return None
+        return excluded("one column start")
     top = bands[0][0]
 
     # A header line just above the first rule, aligned with the columns,
@@ -688,7 +693,7 @@ def _bands_to_table(page_num, in_x, bands, x0, x1, header_above,
     if per_line:
         rows = _join_wrapped_lines(rows)
     if len(rows) < min_rows or max(len(r) for r in rows) < 2:
-        return None
+        return excluded("too few rows or columns after cleaning")
     return TableCandidate("rules", rows, {page_num: (x0, top, x1, bands[-1][1])})
 
 
@@ -769,6 +774,11 @@ def extract_ruled_tables(page, page_num: int) -> list[TableCandidate]:
     # junk grid from section underlines and a real table's verticals, which
     # must not hide the real table from the rule-band reader.
     from .table import table_flags, BAD_TABLE_FLAGS
+    for t in tables:
+        bad = set(table_flags(t)) & BAD_TABLE_FLAGS
+        if bad:
+            evidence.current().exclude("grid", page_num, t.bboxes[page_num],
+                                       "grid failed checks: " + ", ".join(sorted(bad)), "paths")
     tables = [t for t in tables if not set(table_flags(t)) & BAD_TABLE_FLAGS]
     grids = [t.bboxes[page_num] for t in tables]
     # Rules that are part of a grid already found belong to it, not to a
@@ -780,6 +790,7 @@ def extract_ruled_tables(page, page_num: int) -> list[TableCandidate]:
               max(r[2] for r in group), group[-1][0])
         if any(_overlaps(bb, g) for g in grids):
             continue
+        evidence.current().nominate("rules", page_num, bb, "rule group", "paths", len(group))
         tables.extend(_rule_band_tables(page_num, words, group, header_above))
     # The top of a table continued from the previous page: two rules near the
     # top of the page around a row or two. Kept only if select_tables can
