@@ -315,6 +315,17 @@ def gate_tables(doc, pages, sections: list[Section], paper: str = "") -> dict:
                 sec.metadata["_above_words"] = above
                 reason = "header-above"
         sec.metadata["verified"] = reason or "ok"
+        if os.environ.get("TOMD_RELATIONS") != "0":
+            # stage 1: every contradiction between the table and the page, by dimension
+            from .content import page_hrules
+            from .relations import record_for
+            try:
+                rel = record_for(sec, words, [(y, x0, x1) for y, x0, x1 in page_hrules(pages[pg])
+                                              if x0 <= bbox[2] and x1 >= bbox[0]])
+                sec.metadata["relations"] = {"by_dimension": rel.by_dimension(),
+                                             "kinds": sorted({v.kind for v in rel.violations})}
+            except Exception as e:      # the record is diagnosis only; never fail on it
+                _log.debug("relations failed: %s", e)
         if reason and sec.confidence != Confidence.HIGH and os.environ.get("TOMD_ESCALATE") != "0":
             # escalate: a targeted re-read for what failed; kept only if it verifies
             new, moves = escalate(sec, words, reason)
