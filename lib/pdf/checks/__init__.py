@@ -48,9 +48,9 @@ def disabled() -> set[str]:
 
 
 def registry() -> list[Check]:
-    from . import caption, coherence, drawn_lines, nominations, same_code, text_alignment, wordgap, footprint
+    from . import caption, coherence, data_or_format, drawn_lines, nominations, same_code, text_alignment, wordgap, footprint
     ordered = [nominations.CHECK, drawn_lines.CHECK, text_alignment.CHECK, wordgap.CHECK, footprint.CHECK,
-               caption.CHECK, coherence.CHECK, same_code.CHECK]
+               caption.CHECK, coherence.CHECK, same_code.CHECK, data_or_format.CHECK]
     off = disabled()
     return [c for c in ordered if c.name not in off]
 

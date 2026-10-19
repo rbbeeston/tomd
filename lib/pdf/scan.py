@@ -142,6 +142,13 @@ def run_scan(path, record, tables) -> list:
             why = ", ".join(f"{n}{'+' if c > 0 else '-'}" for n, c in top[:4])
             for t in mine:
                 t.metadata["scan"] = {"p": round(p, 3), "band": bnd, "top": why}
+                # second output: tabular data or formatting (rendering unchanged; a comment marks it)
+                from .checks.data_or_format import likelihood_data
+                rows = [[" ".join(sp.text for sp in c if sp.text != "\n").strip() for c in r] for r in t.columns]
+                pd = likelihood_data(rows, x)
+                if pd is not None:
+                    t.metadata["data_vs_format"] = round(pd, 3)
+                    record.feature("data_or_format", a["page"], a["bbox"], "p_data", "meaning", round(pd, 3))
                 if t.confidence == Confidence.HIGH and p < LOW:
                     t.confidence = Confidence.UNCERTAIN
                     t.metadata.setdefault("uncertain_reasons", []).append("scan")

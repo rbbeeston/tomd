@@ -74,3 +74,13 @@ def test_page_checks_on_a_synthetic_page():
     assert w["w_known"] == 1.0 and w["w_bimodal_share"] == 0.0     # one word per cell: no in-cell spaces
     f = footprint.run(ctx)
     assert f["f_right_inset"] > 200
+
+
+def test_data_or_format_features():
+    from lib.pdf.checks.data_or_format import features, likelihood_data
+    labels = [["Document number:", "P1234R0"], ["Date:", "2026-01-01"], ["Audience:", "LEWG"]]
+    grid = [["Name", "Count", "Mean"], ["alpha", "3", "1.5"], ["beta", "4", "2.0"], ["gamma", "5", "2.5"]]
+    fl, fg = features(labels, {}), features(grid, {})
+    assert fl["d_label_colon"] == 1.0 and fg["d_label_colon"] == 0.0
+    assert fg["d_cols"] == 3 and fl["d_cols"] == 2
+    assert likelihood_data(grid, {"hrules": 3.0}) > likelihood_data(labels, {"page0": 1.0})
