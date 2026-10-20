@@ -439,6 +439,14 @@ def _run_pipeline(path: Path) -> PipelineResult:
             scan_regions = run_scan(path, result.evidence, table_sections)
         except Exception as e:  # the scan only adds marks and doubts; never fail on it
             _log.warning("Region scan failed: %s", e)
+    if os.environ.get("TOMD_FIGURES") != "0" and table_sections:
+        # small tables drawn inside a figure: labelled with the figure (figures.py)
+        try:
+            from .figures import label_figure_tables
+            with fitz.open(str(path)) as fdoc:
+                label_figure_tables(fdoc, table_sections)
+        except Exception as e:  # a label only; never fail on it
+            _log.warning("Figure labels failed: %s", e)
     possible_tables = (scan_regions + rejected_regions(rejected_tables, table_sections)
                        + text_regions(all_mupdf_blocks) + gutter_regions(all_mupdf_blocks))
 
