@@ -326,6 +326,9 @@ def gate_tables(doc, pages, sections: list[Section], paper: str = "") -> dict:
                                              "kinds": sorted({v.kind for v in rel.violations})}
             except Exception as e:      # the record is diagnosis only; never fail on it
                 _log.debug("relations failed: %s", e)
+            # stage 2: a level per dimension (rows, columns, header, cells) - diagnosis only
+            from .dimensions import dimensions
+            sec.metadata["dimensions"] = dimensions(sec.metadata)
         if reason and sec.confidence != Confidence.HIGH and os.environ.get("TOMD_ESCALATE") != "0":
             # escalate: a targeted re-read for what failed; kept only if it verifies
             new, moves = escalate(sec, words, reason)

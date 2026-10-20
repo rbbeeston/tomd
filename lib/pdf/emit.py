@@ -632,6 +632,12 @@ def emit_prompts(sections: list[Section]) -> str | None:
             if sec.metadata.get("table_note"):
                 parts.append(sec.metadata["table_note"])
                 parts.append("")
+            if sec.metadata.get("dimensions"):
+                from .dimensions import weak_note
+                note = weak_note(sec.metadata["dimensions"])
+                if note:
+                    parts.append(note)
+                    parts.append("")
             for i, (source, table_md) in enumerate(sec.metadata.get("table_versions", [])):
                 label = "emitted" if i == 0 else "alternative"
                 parts.append(f"Table from the {source} extractor ({label}):")
