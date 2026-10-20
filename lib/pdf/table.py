@@ -696,7 +696,8 @@ def stitch_pages(cands: list[TableCandidate], blocks: list[Block],
                     and not _new_header(c, prev)
                     and prev.shape[1] == c.shape[1]
                     and ((abs(pb[0] - cb[0]) <= _STITCH_X_TOL and abs(pb[2] - cb[2]) <= _STITCH_X_TOL)
-                         or _same_columns(prev, last_pg, c, c.pages[0]))
+                         or _same_columns(prev, last_pg, c, c.pages[0])
+                         or _continuation_votes(prev, last_pg, c, c.pages[0], blocks))
                     and not _text_outside(blocks, last_pg, below=pb[3] + _REGION_MARGIN, furniture=furniture)
                     and not _text_outside(blocks, c.pages[0], above=cb[1] - _REGION_MARGIN, furniture=furniture)):
                 rows = list(c.rows)
@@ -779,6 +780,37 @@ def _same_columns(a: TableCandidate, pa: int, b: TableCandidate, pb: int) -> boo
     sa, sb = _column_starts_on(a, pa), _column_starts_on(b, pb)
     pairs = [(x, y) for x, y in zip(sa, sb) if x is not None and y is not None]
     return len(pairs) >= 2 and all(abs(x - y) <= _SIGNATURE_TOL for x, y in pairs)
+
+
+def _page_left(blocks: list[Block], page: int) -> float | None:
+    """The page's text margin: where its body lines start (odd and even pages
+    of a book layout differ)."""
+    xs = sorted(ln.bbox[0] for b in blocks if b.page_num == page for ln in b.lines
+                if ln.bbox[2] - ln.bbox[0] > 200)
+    return xs[len(xs) // 10] if len(xs) >= 5 else None
+
+
+def _continuation_votes(a: TableCandidate, pa: int, b: TableCandidate, pb: int, blocks: list[Block]) -> bool:
+    """Level-0 continuation votes for a join whose only failure is position:
+    footprint - both parts sit at the same inset from their own page's text
+    margin (a page template shifts the whole page, not the table); word gaps -
+    each column starts at the same offset from the table's left edge on both
+    pages. Both must agree; stop signals (text between, a new header, a
+    different column count) are checked before and still override."""
+    if os.environ.get("TOMD_JOIN_VOTES") == "0":
+        return False
+    la, lb = _page_left(blocks, pa), _page_left(blocks, pb)
+    if la is None or lb is None:
+        return False
+    ba, bb = a.bboxes[pa], b.bboxes[pb]
+    footprint = abs((ba[0] - la) - (bb[0] - lb)) <= _STITCH_X_TOL
+    sa, sb = _column_starts_on(a, pa), _column_starts_on(b, pb)
+    pairs = [(x - ba[0], y - bb[0]) for x, y in zip(sa, sb) if x is not None and y is not None]
+    columns = len(pairs) >= 2 and all(abs(x - y) <= _SIGNATURE_TOL for x, y in pairs)
+    if footprint and columns:
+        from . import evidence
+        evidence.current().feature(a.source, pb, bb, "continuation votes: footprint and column starts", "words", 1.0)
+    return footprint and columns
 
 
 def _cell_spans(cell: list[Line]) -> list[Span]:
