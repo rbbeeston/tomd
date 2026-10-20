@@ -320,10 +320,13 @@ def gate_tables(doc, pages, sections: list[Section], paper: str = "") -> dict:
             from .content import page_hrules
             from .relations import record_for
             try:
-                rel = record_for(sec, words, [(y, x0, x1) for y, x0, x1 in page_hrules(pages[pg])
-                                              if x0 <= bbox[2] and x1 >= bbox[0]])
+                rules = [(y, x0, x1) for y, x0, x1 in page_hrules(pages[pg]) if x0 <= bbox[2] and x1 >= bbox[0]]
+                rel = record_for(sec, words, rules)
                 sec.metadata["relations"] = {"by_dimension": rel.by_dimension(),
                                              "kinds": sorted({v.kind for v in rel.violations})}
+                if (sec.confidence != Confidence.HIGH and os.environ.get("TOMD_REPAIR") != "0"
+                        and "word outside every cell" in sec.metadata["relations"]["kinds"]):
+                    _repair_stray_words(sec, words, rules, rel)
             except Exception as e:      # the record is diagnosis only; never fail on it
                 _log.debug("relations failed: %s", e)
             # stage 2: a level per dimension (rows, columns, header, cells) - diagnosis only
@@ -336,6 +339,7 @@ def gate_tables(doc, pages, sections: list[Section], paper: str = "") -> dict:
                 sec.columns, sec.text = new.columns, new.text
                 sec.metadata["table_source"] = new.metadata.get("table_source")
                 sec.metadata["escalated"] = moves
+                sec.metadata.pop("inferred_cells", None)     # a new reading: the repair no longer applies
                 sec.metadata["verified"] = "ok after " + "+".join(moves)
         kind, kp = predict(TABLE_TREE, x)
         layout, _ = predict(LAYOUT_TREE, x)
@@ -395,3 +399,33 @@ def gate_tables(doc, pages, sections: list[Section], paper: str = "") -> dict:
                 sec.confidence = Confidence.UNCERTAIN
                 sec.metadata["table_note"] = (sec.metadata.get("table_note", "") + " " + note).strip()
     return summary
+
+
+def _repair_stray_words(sec, words, rules, rel) -> None:
+    """Stage 3: page words in no cell placed by the table's own rows and
+    columns (repair.py), kept only when the relational check improves with no
+    new kind of violation. The table stays flagged; the first reading and the
+    repair are kept in the metadata, the inferred cells are marked."""
+    from .relations import record_for
+    from .repair import place_stray_words
+    from .validate import _newline_span, _with_columns
+    got = place_stray_words(sec.columns, words, _newline_span(sec))
+    if not got:
+        return
+    columns, inferred, stray = got
+    trial = _with_columns(sec, columns)
+    after = record_for(trial, words, rules)
+    kinds = {v.kind for v in rel.violations}
+    if len(after.violations) >= len(rel.violations) or not {v.kind for v in after.violations} <= kinds:
+        return
+    sec.metadata["repair"] = {"what": "stray words placed by the table's rows and columns",
+                              "stray": stray, "inferred_cells": inferred, "first_reading": sec.text,
+                              "violations_before": rel.by_dimension(), "violations_after": after.by_dimension()}
+    sec.columns, sec.text = trial.columns, trial.text
+    sec.metadata["inferred_cells"] = inferred
+    sec.metadata["relations"] = {"by_dimension": after.by_dimension(),
+                                 "kinds": sorted({v.kind for v in after.violations})}
+    reasons = sec.metadata.setdefault("uncertain_reasons", [])
+    if "repaired" not in reasons:
+        reasons.append("repaired")
+    sec.confidence = Confidence.UNCERTAIN
