@@ -315,6 +315,13 @@ def gate_tables(doc, pages, sections: list[Section], paper: str = "") -> dict:
                 sec.metadata["_above_words"] = above
                 reason = "header-above"
         sec.metadata["verified"] = reason or "ok"
+        if os.environ.get("TOMD_FULLWIDTH") != "0" and not sec.metadata.get("page_bboxes"):
+            # rows no internal vertical rule crosses: titles and spanning rows (fullwidth.py)
+            from .fullwidth import apply as _full_width
+            try:
+                _full_width(sec, pages[pg], bbox)
+            except Exception as e:      # a layout refinement only; never fail on it
+                _log.debug("full-width rows failed: %s", e)
         if os.environ.get("TOMD_RELATIONS") != "0":
             # stage 1: every contradiction between the table and the page, by dimension
             from .content import page_hrules
