@@ -22,9 +22,11 @@ record, and drives per-dimension confidence (stage 2) and diagnosis.
 """
 from __future__ import annotations
 
+import re
 from dataclasses import dataclass, field
 
 _TOL = 1.5
+_VISIBLE = re.compile(r"[^\s\u200b-\u200f\u2060\ufeff]")   # zero-width characters are not words
 _GUTTER = 8.0          # points: a gap this wide between neighbouring words is a column gap
 
 
@@ -67,6 +69,7 @@ def check(rows_boxes: dict, words: list, hrules=(), reader: str = "?", mono=froz
                   if not isinstance(r, tuple) or min(r[2], tx1) - max(r[1], tx0) >= 0.6 * (tx1 - tx0)]
     rec = RelationRecord()
     owner = {}
+    words = [w for w in words if _VISIBLE.search(w[4])]
     for i, w in enumerate(words):
         hits = _cell_of(w, rows_boxes)
         if not hits:

@@ -452,6 +452,15 @@ def _render_table(sec: Section) -> str:
     """Render a table section as a Markdown table."""
     if not sec.columns:
         return sec.text
+    out = _render_table_inner(sec)
+    if sec.metadata.get("inferred_cells") and out.lstrip().startswith(("|", "<!-- tomd:table kind=code")):
+        # stage 3: cells holding words placed by repair, not read by a reader
+        cells = ",".join(f"r{r}c{c}" for r, c in sec.metadata["inferred_cells"])
+        out += f"\n\n<!-- tomd:inferred cells={cells} (page words no reader placed; check them) -->"
+    return out
+
+
+def _render_table_inner(sec: Section) -> str:
     use = table_use(sec.columns)
     if use != "table" and os.environ.get("TOMD_USES") != "0":
         sec.metadata["table_use"] = use
