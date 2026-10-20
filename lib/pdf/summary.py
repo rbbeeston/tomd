@@ -114,6 +114,14 @@ def build(result, sections, evidence, generator: str) -> dict:
         "unfamiliarity": {"score": round(uf, 2), "reasons": why},
         "generator": generator,
     }
+    # costly witnesses used for this paper (opt-in): recorded per paper
+    jev = [e for e in (evidence.entries if evidence else []) if e.scan == "jev"]
+    if jev:
+        answers = [str(e.value) for e in jev if e.rule == "jev-answer"]
+        s["witnesses"] = {"jev": {
+            "version": next((e.value for e in jev if e.rule == "jev-version"), ""),
+            "areas_asked": len(answers),
+            "confident": sum(1 for v in answers if ":" in v and float(v.rsplit(":", 1)[1]) >= 0.9)}}
     s["confidence"] = confidence(s)
     return s
 
