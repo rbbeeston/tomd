@@ -16,6 +16,7 @@
 from __future__ import annotations
 
 import math
+import os
 from collections import Counter
 
 
@@ -151,6 +152,8 @@ def run_scan(path, record, tables, builds: list | None = None) -> list:
     from .types import Confidence
     out = []
     from .classify import generator as _generator
+    pending: list = []
+    answers: dict = {}
     with fitz.open(str(path)) as doc:
         generator = _generator(doc.metadata or {})
         doc_tagged = doc.xref_get_key(doc.pdf_catalog(), "StructTreeRoot")[0] != "null"
@@ -184,11 +187,60 @@ def run_scan(path, record, tables, builds: list | None = None) -> list:
                     t.metadata["table_note"] = (t.metadata.get("table_note", "") +
                                                 f" The region scan rates this area unlikely to be a table "
                                                 f"(p={p:.2f}; {why}).").strip()
-            if not mine and bnd in ("trust", "build") and builds is not None:
-                # likely a table no reader kept: the caller builds it (content-first), flagged
-                builds.append((a["page"], a["bbox"], round(p, 3), why, max(int(x.get("nrows", 2)), 2)))
-                continue
-            if not mine and bnd in ("build", "mark"):
-                out.append((a["page"], a["bbox"], f"the region scan rates this area a likely table "
-                            f"(p={p:.2f}; {why})", max(int(x.get("nrows", 2)), 2)))
+            if not mine:
+                pending.append((a, p, why, bnd, max(int(x.get("nrows", 2)), 2)))
+        # the optional meaning tier: undecided areas to Jev, confident answers only
+        answers = _jev_tier(doc, path, pending, generator, doc_tagged, record) if _jev_on() else {}
+    for i, (a, p, why, bnd, nrows) in enumerate(pending):
+        ans = answers.get(i)
+        if ans == "table" and bnd == "mark":
+            bnd = "build"
+        elif ans in ("not-a-table", "front-matter"):
+            continue                    # Jev is sure it is not a table: no build, no mark
+        if bnd in ("trust", "build") and builds is not None:
+            # likely a table no reader kept: the caller builds it (content-first), flagged
+            builds.append((a["page"], a["bbox"], round(p, 3), why + (", jev: table" if ans else ""), nrows))
+            continue
+        if bnd in ("build", "mark"):
+            out.append((a["page"], a["bbox"], f"the region scan rates this area a likely table "
+                        f"(p={p:.2f}; {why})", nrows))
+    return out
+
+
+# --------------------------------------------------------------- Jev tier
+# Off by default (TOMD_JEV=1 turns it on, with JEV_API_KEY or the keychain
+# entry; the key is never printed or logged). Only areas the scan left
+# undecided go, batched per paper (classify.jev_table_or_not), at most
+# TOMD_JEV_BUDGET areas per paper; an answer counts only at JEV_SURE or more.
+# Every answer and the Jev version go into the evidence record (and from
+# there the paper summary).
+JEV_SURE = 0.9
+_JEV_BUDGET = 40
+
+
+def _jev_on() -> bool:
+    from .classify import jev_enabled
+    return jev_enabled()
+
+
+def _jev_tier(doc, path, pending, generator: str, doc_tagged: bool, record) -> dict:
+    from pathlib import Path
+    from .classify import jev_table_or_not, region_features
+    budget = int(os.environ.get("TOMD_JEV_BUDGET", _JEV_BUDGET))
+    asked = [i for i, (a, p, why, bnd, n) in enumerate(pending) if bnd in ("build", "mark")][:budget]
+    if not asked:
+        return {}
+    regions = []
+    for i in asked:
+        a = pending[i][0]
+        x, text = region_features(doc[a["page"]], a["bbox"], sorted(a["cues"]), [], generator, doc_tagged)
+        regions.append((a["page"], x, generator, text))
+    got, version = jev_table_or_not(Path(path).stem, regions)
+    record.feature("jev", -1, (0, 0, 0, 0), "jev-version", "record", version or "unavailable")
+    out = {}
+    for i, (label, prob) in zip(asked, got):
+        a = pending[i][0]
+        record.feature("jev", a["page"], a["bbox"], "jev-answer", "meaning", f"{label}:{prob:.2f}")
+        if label and prob >= JEV_SURE:
+            out[i] = label
     return out
