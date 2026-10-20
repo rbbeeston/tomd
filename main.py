@@ -13,12 +13,17 @@ Also runnable as `python -m tomd.main ...`.
 """
 
 import argparse
+import os
 import glob as globmod
 import sys
 from pathlib import Path
 
 _HTML_EXTENSIONS = frozenset({".html", ".htm"})
 _PDF_EXTENSIONS = frozenset({".pdf"})
+
+
+# fresh7 (70 papers): about 4,400 tokens per paper; 5M tokens covers about 1,100 papers
+CORPUS_LLM_BUDGET = 5_000_000
 
 
 def main():
@@ -51,8 +56,24 @@ def main():
     parser.add_argument(
         "--timeout", type=int, default=120,
         help="Seconds with no progress before aborting remaining files (default: 120)")
+    parser.add_argument(
+        "--corpus", action="store_true",
+        help="Corpus-run profile: LLM repair of flagged tables on (repairs stay flagged and keep "
+             "the first reading), with a per-run token budget; needs Anthropic credentials, "
+             "and runs on without repair when they or the network are missing")
+    parser.add_argument(
+        "--llm-budget", type=int, default=None,
+        help=f"Tokens (input + output) LLM repair may spend in this run "
+             f"(default with --corpus: {CORPUS_LLM_BUDGET})")
 
     args = parser.parse_args()
+
+    if args.corpus:
+        # the corpus profile turns LLM repair on unless explicitly switched off
+        os.environ.setdefault("TOMD_LLM", "1")
+        os.environ.setdefault("TOMD_LLM_BUDGET", str(CORPUS_LLM_BUDGET))
+    if args.llm_budget is not None:
+        os.environ["TOMD_LLM_BUDGET"] = str(args.llm_budget)
 
     if args.verbose:
         import logging
@@ -145,6 +166,13 @@ def main():
 
     if len(input_files) > 1:
         print(f"\n{len(successes)} succeeded, {len(failures)} failed")
+    if os.environ.get("TOMD_LLM") == "1":
+        # the run's LLM repair status (no key or token is ever printed)
+        from .lib.pdf import llmrepair
+        rec = llmrepair.paper_record()
+        spent = llmrepair._SPENT
+        cap = os.environ.get("TOMD_LLM_BUDGET") or "none"
+        print(f"LLM repair: {rec['status'].split(' (')[0]}; tokens spent this run {spent} (budget {cap})")
 
     if failures:
         sys.exit(1)
