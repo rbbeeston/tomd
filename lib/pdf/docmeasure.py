@@ -123,3 +123,32 @@ def area_word_features(words, m: DocMeasure) -> dict:
             "f_right_inset": m.right - max(w[2] for w in words),
             "f_ends_on_measure": sum(1 for e in ends if abs(e - m.right) <= 3) / len(ends),
             "f_justified_doc": m.justified}
+
+
+def hyphenates(page_words: list[list]) -> bool:
+    """Does the document break words with a hyphen at line ends? Evidence: a
+    line ending in "word-" whose join with the next line's first word appears
+    elsewhere in the document unhyphenated ("compari-" + "son", "comparison"
+    seen elsewhere). Two or more such breaks: it hyphenates. None: a line-end
+    hyphen is the word's own ("Use-" + "cases"). One: undecided, treated as
+    hyphenating (the earlier behaviour). Measured on the keys: 4 to 223 such
+    breaks in hyphenating papers (LaTeX, and Word with hyphenation on), 0 in
+    papers that never hyphenate. The maker alone does not tell (Word can do
+    either)."""
+    import re
+    from collections import Counter
+    lines = []
+    for words in page_words:
+        cur: dict = {}
+        for w in words:
+            cur.setdefault((w[5], w[6]), []).append(w)
+        lines += [" ".join(w[4] for w in sorted(ln, key=lambda w: w[0])) for ln in cur.values()]
+    seen = Counter(t.lower() for ln in lines for t in re.findall(r"[A-Za-z]+", ln))
+    breaks = 0
+    for a, b in zip(lines, lines[1:]):
+        m, n = re.search(r"([A-Za-z]+)-$", a), re.match(r"([a-z]+)", b)
+        if m and n and seen[(m.group(1) + n.group(1)).lower()] > 0:
+            breaks += 1
+            if breaks >= 2:
+                return True
+    return breaks != 0
