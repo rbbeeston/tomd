@@ -1,5 +1,6 @@
 """Markdown and companion prompts file generation."""
 
+import dataclasses
 import logging
 import os
 import re
@@ -303,7 +304,7 @@ def _render_cell_spans(spans: list, suppress_bold: bool = False) -> str:
             parts.append([])
         else:
             parts[-1].append(s)
-    rendered = [r for r in (_render_line_spans(Line(spans=p), suppress_bold=suppress_bold).strip()
+    rendered = [r for r in (_render_line_spans(Line(spans=_coalesce(p)), suppress_bold=suppress_bold).strip()
                             for p in parts if p) if r]
     if len(rendered) > 1 and all(len(r) == 1 and r.isalpha() for r in rendered):
         return "".join(rendered)          # letters stacked in a narrow cell: "S" / "F" -> "SF"
@@ -323,13 +324,34 @@ def _render_cell_spans(spans: list, suppress_bold: bool = False) -> str:
     return _escape_angle("<br>".join(out)).replace("|", "\\|")
 
 
+def _coalesce(spans: list) -> list:
+    """Neighbouring spans with the same style as one span: rendered apart,
+    two italic runs touch as "*a**b*", which Markdown reads as bold."""
+    out: list = []
+    for s in spans:
+        p = out[-1] if out else None
+        if (p is not None and (p.bold, p.italic, p.monospace, p.link_url) == (s.bold, s.italic, s.monospace, s.link_url)
+                and (s.bold or s.italic) and not s.monospace and not s.link_url):
+            out[-1] = dataclasses.replace(p, text=p.text + s.text,
+                                          bbox=(min(p.bbox[0], s.bbox[0]), min(p.bbox[1], s.bbox[1]),
+                                                max(p.bbox[2], s.bbox[2]), max(p.bbox[3], s.bbox[3])))
+        else:
+            out.append(s)
+    return out
+
+
 _HYPHEN_END = re.compile(r"([A-Za-z_][\w]*(?:-[\w]+)*)-(\*\*|\*)?$")
 
 
 def _escape_angle(text: str) -> str:
-    """Escape "<" outside code spans so "<a@b.org>" is not read as a link or HTML."""
+    """Escape "<" outside code spans so "<a@b.org>" is not read as a link or
+    HTML, and a backslash before punctuation ("\\"" in a table of escapes), which
+    Markdown would read as an escape and drop."""
     parts = re.split(r"(`[^`]*`|<br>)", text)
-    return "".join(p if i % 2 else p.replace("<", "\\<") for i, p in enumerate(parts))
+    return "".join(p if i % 2 else _BACKSLASH.sub(r"\\\\", p).replace("<", "\\<") for i, p in enumerate(parts))
+
+
+_BACKSLASH = re.compile(r"\\(?=[!-/:-@\[-`{-~])")
 
 
 _CODE_SHARE = 0.8       # body text this monospace...
@@ -383,7 +405,9 @@ def _render_code_comparison(rows) -> str:
     body = rows[-1]
     parts = [f"<!-- tomd:table kind=code-comparison cols={len(body)} -->"]
     for h, cell in zip(list(header) + [[]] * (len(body) - len(header)), body):
-        title = " ".join(s.text for s in h if s.text != "\n").strip()
+        # spans carry their own spacing ("variant", "<", "T, T", ">"): joined as
+        # they are within a line, lines with a space
+        title = _escape_angle(" ".join("".join(s.text for s in ln).strip() for ln in _cell_lines(h)).strip())
         if title:
             parts.append(f"**{title}**")
         parts.append("```cpp\n" + _code_text(cell) + "\n```")
