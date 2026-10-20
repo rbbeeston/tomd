@@ -10,4 +10,4 @@ def run(ctx) -> dict:
     return {k: v for k, v in ctx.cache["words"].items() if k.startswith("f_")}
 
 
-CHECK = Check("footprint", ("region", "document"), "words", 1, False, run)
+CHECK = Check("footprint", ("region", "document"), "words", 1, False, run, tier=2)

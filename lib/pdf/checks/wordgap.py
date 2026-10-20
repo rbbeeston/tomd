@@ -13,4 +13,4 @@ def run(ctx) -> dict:
     return {k: v for k, v in ctx.cache["words"].items() if k.startswith("w_")}
 
 
-CHECK = Check("wordgap", ("region", "rows", "columns"), "words", 1, False, run)
+CHECK = Check("wordgap", ("region", "rows", "columns"), "words", 1, False, run, tier=2)

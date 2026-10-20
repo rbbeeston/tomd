@@ -18,4 +18,4 @@ def run(ctx) -> dict:
     return {"d_caption_near": 1.0 if has_caption(above, below) else 0.0}
 
 
-CHECK = Check("caption", ("region",), "document", 1, False, run)
+CHECK = Check("caption", ("region",), "document", 1, False, run, tier=2)

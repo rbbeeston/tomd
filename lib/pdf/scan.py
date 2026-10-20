@@ -80,10 +80,26 @@ def areas(record) -> list[dict]:
     return out
 
 
-def area_features(page, a, generator: str, doc_tagged: bool, measure=None) -> dict:
-    """Every enabled region-level check's evidence for one area (checks/)."""
+def area_features(page, a, generator: str, doc_tagged: bool, measure=None, decided=None) -> dict:
+    """Every enabled region-level check's evidence for one area (checks/); the
+    last-resort tier only while decided(features) is False."""
     from .checks import AreaContext, run_region_checks
-    return run_region_checks(AreaContext(page, a, generator, doc_tagged, measure))
+    return run_region_checks(AreaContext(page, a, generator, doc_tagged, measure), decided)
+
+
+# early stop (ledger ordering): an area whose likelihood without the last-resort
+# tier is below this is not a table whatever that tier says. Measured on the
+# 4991 tuning areas: below 0.02 (24% of areas) the full likelihood never
+# exceeded 0.043 (LOW is 0.3); at 0.05 one area reached 0.26, too close.
+EARLY_NONE = 0.02
+
+
+def _at_mean(x: dict, model: dict) -> dict:
+    """Features the skipped checks would have given, held at their training mean."""
+    y = dict(x)
+    for name, (mean, _, _) in model["weights"].items():
+        y.setdefault(name, mean)
+    return y
 
 
 def likelihood(x: dict, model: dict) -> tuple[float, list[tuple[str, float]]]:
@@ -132,12 +148,17 @@ def run_scan(path, record, tables) -> list:
         doc_tagged = doc.xref_get_key(doc.pdf_catalog(), "StructTreeRoot")[0] != "null"
         for a in areas(record):
             page = doc[a["page"]]
-            x = area_features(page, a, generator, doc_tagged, getattr(record, "doc_measure", None))
+            mine = [t for t in tables if t.metadata.get("region_bbox") and t.metadata["region_bbox"][0] == a["page"]
+                    and _inter(t.metadata["region_bbox"][1], a["bbox"]) >= 0.3 * _area(a["bbox"])]
+            # an emitted table gets every check (its data-vs-formatting score and doubt need them)
+            decided = None if mine else (lambda f: likelihood(_at_mean(f, MODEL), MODEL)[0] < EARLY_NONE)
+            x = area_features(page, a, generator, doc_tagged, getattr(record, "doc_measure", None), decided)
+            if x.pop("_skipped", None):
+                x = _at_mean(x, MODEL)
+                record.feature("scan", a["page"], a["bbox"], "early-stop", "record", 1.0)
             p, top = likelihood(x, MODEL)
             info = len({info_of(n) for n, c in top if c > 0} | {_SOURCE_INFO.get(s_, "words") for s_ in a["cues"]})
             bnd = band(p, info)
-            mine = [t for t in tables if t.metadata.get("region_bbox") and t.metadata["region_bbox"][0] == a["page"]
-                    and _inter(t.metadata["region_bbox"][1], a["bbox"]) >= 0.3 * _area(a["bbox"])]
             record.feature("scan", a["page"], a["bbox"], "likelihood", "model", round(p, 3))
             why = ", ".join(f"{n}{'+' if c > 0 else '-'}" for n, c in top[:4])
             for t in mine:
