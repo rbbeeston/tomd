@@ -84,3 +84,19 @@ def test_data_or_format_features():
     assert fl["d_label_colon"] == 1.0 and fg["d_label_colon"] == 0.0
     assert fg["d_cols"] == 3 and fl["d_cols"] == 2
     assert likelihood_data(grid, {"hrules": 3.0}) > likelihood_data(labels, {"page0": 1.0})
+
+
+def test_last_resort_tier_skipped_only_when_decided(monkeypatch):
+    import lib.pdf.checks as C
+    calls = []
+    first = C.Check("first", ("region",), "words", 0, False, lambda ctx: calls.append("first") or {"a": 1.0})
+    last = C.Check("last", ("region",), "words", 1, False, lambda ctx: calls.append("last") or {"b": 1.0}, tier=2)
+    monkeypatch.setattr(C, "registry", lambda: [first, last])
+    monkeypatch.delenv("TOMD_SCAN_FULL", raising=False)
+    out = C.run_region_checks(None, decided=lambda f: True)
+    assert calls == ["first"] and out["_skipped"] == ["last"]
+    calls.clear()
+    assert C.run_region_checks(None, decided=lambda f: False) == {"a": 1.0, "b": 1.0} and calls == ["first", "last"]
+    calls.clear()
+    monkeypatch.setenv("TOMD_SCAN_FULL", "1")
+    assert "b" in C.run_region_checks(None, decided=lambda f: True)

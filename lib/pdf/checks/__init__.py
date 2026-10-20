@@ -8,7 +8,11 @@ Checks never change a grid; what they return goes into the evidence record
 and the scan's decision through the core.
 
 The registry is explicit and ordered (cheapest and most decisive first, as
-the effectiveness ledger ranks them), not filesystem order. Any check can be
+the effectiveness ledger ranks them), not filesystem order. Checks the ledger
+rates least effective (word gaps, footprint, caption: little unique
+contribution, about 30 of the scan's 78 ms per paper) form a last-resort
+tier, run only while an area is undecided; TOMD_SCAN_FULL=1 runs everything
+(training data and the ledger). Any check can be
 switched off: TOMD_CHECKS_OFF=name,name - the same switch the ledger uses to
 measure what each check contributes.
 """
@@ -30,6 +34,7 @@ class Check:
     cost: int                       # 0 = microseconds .. 3 = network / model call
     optional: bool
     run: Callable[["AreaContext"], dict]
+    tier: int = 1                   # 1 = effective (ledger); 2 = last resort, run only while undecided
 
 
 @dataclass
@@ -55,9 +60,22 @@ def registry() -> list[Check]:
     return [c for c in ordered if c.name not in off]
 
 
-def run_region_checks(ctx: AreaContext) -> dict:
+def full_mode() -> bool:
+    """Every check on every area (training data, the ledger): TOMD_SCAN_FULL=1."""
+    return os.environ.get("TOMD_SCAN_FULL") == "1"
+
+
+def run_region_checks(ctx: AreaContext, decided: Callable[[dict], bool] | None = None) -> dict:
+    """Tier 1 first; the last-resort tier only while decided(features) is False
+    (or in full mode). Returns the features; "_skipped" lists the checks not run."""
     out: dict = {}
-    for check in registry():
-        if "region" in check.levels:
-            out.update(check.run(ctx))
+    checks = [c for c in registry() if "region" in c.levels]
+    for check in (c for c in checks if c.tier == 1):
+        out.update(check.run(ctx))
+    rest = [c for c in checks if c.tier > 1]
+    if rest and decided is not None and not full_mode() and decided(out):
+        out["_skipped"] = [c.name for c in rest]
+        return out
+    for check in rest:
+        out.update(check.run(ctx))
     return out
