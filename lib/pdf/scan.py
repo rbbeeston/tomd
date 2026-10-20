@@ -128,7 +128,15 @@ def band(p: float, info_types: int) -> str:
 
 
 
-def run_scan(path, record, tables) -> list:
+def _table_boxes(t):
+    """Every page piece of a table: a stitched table covers its continuation pages too."""
+    boxes = list((t.metadata.get("page_bboxes") or {}).items())
+    if t.metadata.get("region_bbox"):
+        boxes.append(tuple(t.metadata["region_bbox"]))
+    return boxes
+
+
+def run_scan(path, record, tables, builds: list | None = None) -> list:
     """Score every area in the evidence record and decide by band.
 
     Emitted tables get their likelihood and top features in metadata; a HIGH
@@ -148,8 +156,8 @@ def run_scan(path, record, tables) -> list:
         doc_tagged = doc.xref_get_key(doc.pdf_catalog(), "StructTreeRoot")[0] != "null"
         for a in areas(record):
             page = doc[a["page"]]
-            mine = [t for t in tables if t.metadata.get("region_bbox") and t.metadata["region_bbox"][0] == a["page"]
-                    and _inter(t.metadata["region_bbox"][1], a["bbox"]) >= 0.3 * _area(a["bbox"])]
+            mine = [t for t in tables if any(pg == a["page"] and _inter(bb, a["bbox"]) >= 0.3 * _area(a["bbox"])
+                                             for pg, bb in _table_boxes(t))]
             # an emitted table gets every check (its data-vs-formatting score and doubt need them)
             decided = None if mine else (lambda f: likelihood(_at_mean(f, MODEL), MODEL)[0] < EARLY_NONE)
             x = area_features(page, a, generator, doc_tagged, getattr(record, "doc_measure", None), decided)
@@ -176,6 +184,10 @@ def run_scan(path, record, tables) -> list:
                     t.metadata["table_note"] = (t.metadata.get("table_note", "") +
                                                 f" The region scan rates this area unlikely to be a table "
                                                 f"(p={p:.2f}; {why}).").strip()
+            if not mine and bnd in ("trust", "build") and builds is not None:
+                # likely a table no reader kept: the caller builds it (content-first), flagged
+                builds.append((a["page"], a["bbox"], round(p, 3), why, max(int(x.get("nrows", 2)), 2)))
+                continue
             if not mine and bnd in ("build", "mark"):
                 out.append((a["page"], a["bbox"], f"the region scan rates this area a likely table "
                             f"(p={p:.2f}; {why})", max(int(x.get("nrows", 2)), 2)))
