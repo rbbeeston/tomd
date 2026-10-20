@@ -519,6 +519,12 @@ def emit_markdown(metadata: dict, sections: list[Section]) -> str:
         rendered = _render_section_md(sec)
         if not rendered.strip():
             continue
+        label = sec.metadata.get("figure_label") if sec.kind == SectionKind.TABLE and sec.columns else None
+        if label:
+            # a table drawn inside a figure: a label line naming the figure, before
+            # the table and before any uncertainty marker (which must touch the table)
+            parts.append("*" + label.replace("*", "\\*") + "*")
+            line_num += 2
         if _is_uncertain_table(sec) or "possible_table" in sec.metadata:
             # Table sources disagreed, or text that looks like an unextracted
             # table: mark it like any uncertain region, keeping its rendering.
