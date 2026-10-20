@@ -55,7 +55,7 @@ def _cell_of(word, boxes):
             if b[0] - _TOL <= xc <= b[2] + _TOL and b[1] - _TOL <= yc <= b[3] + _TOL]
 
 
-def check(rows_boxes: dict, words: list, hrules=(), reader: str = "?") -> RelationRecord:
+def check(rows_boxes: dict, words: list, hrules=(), reader: str = "?", mono=frozenset()) -> RelationRecord:
     """rows_boxes: {(row, col): bbox of the cell's text}; words: fitz word tuples in the
     table's region; hrules: (y, x0, x1) of drawn horizontal rules - only those
     crossing most of the table are row boundaries (an underline, a strike-through
@@ -94,14 +94,25 @@ def check(rows_boxes: dict, words: list, hrules=(), reader: str = "?") -> Relati
     for (r, c), b in rows_boxes.items():
         lo, hi = row_span.get(r, (b[1], b[3]))
         row_span[r] = (min(lo, b[1]), max(hi, b[3]))
+    centres: dict = {}
+    for (r, c), b in rows_boxes.items():
+        centres.setdefault(r, []).append((b[1] + b[3]) / 2)
+    line_ys: dict = {}
+    for i, (r, c) in owner.items():
+        line_ys.setdefault(r, []).append((words[i][1] + words[i][3]) / 2)
     for r, (lo, hi) in row_span.items():
-        inside = [y for y in hrules if lo + 2 < y < hi - 2]
+        # a rule merges rows only with the row's text on both sides of it: text
+        # boxes carry the line's leading, so a row's own border can fall inside
+        ys = line_ys.get(r) or centres.get(r, [])
+        inside = [y for y in hrules if lo + 2 < y < hi - 2
+                  and any(c < y - 1 for c in ys) and any(c > y + 1 for c in ys)]
         if inside:
             rec.observed.append(("rule-between", r, inside[0], "paths"))
             rec.violations.append(Violation("rows", "rows merged: a drawn rule inside one row", (r,),
                                             "observed: a horizontal rule crosses the row"))
     # columns: a gutter-sized gap between two words of one cell (column merged)
     import re as _re
+    lines = {k: [words[i] for i in ids] for k, ids in by_line.items()}
     for key, ids in by_line.items():
         ws = sorted((i for i in ids if i in owner), key=lambda i: words[i][0])
         gaps = sorted(words[b][0] - words[a][2] for a, b in zip(ws, ws[1:]) if owner[a] == owner[b])
@@ -111,7 +122,9 @@ def check(rows_boxes: dict, words: list, hrules=(), reader: str = "?") -> Relati
             gap = words[b][0] - words[a][2]
             # a gutter: wide in absolute terms and against the cell's own spacing
             # (justified text stretches every gap; code aligns comments)
-            if owner[a] == owner[b] and gap >= max(_GUTTER, 3 * usual) and not code:
+            if owner[a] == owner[b] and gap >= max(_GUTTER, 3 * usual) and not code \
+                    and owner[a] not in mono \
+                    and _recurs(words, lines, key, words[a][2] + 1, words[b][0] - 1):
                 rec.violations.append(Violation("columns", "column merged: a gutter inside one cell",
                                                 (owner[a],), "observed: wide gap between neighbouring words"))
             if owner[a][0] == owner[b][0] and owner[a][1] != owner[b][1] and gap < 1.0:
@@ -120,13 +133,32 @@ def check(rows_boxes: dict, words: list, hrules=(), reader: str = "?") -> Relati
     return rec
 
 
+def _recurs(words, lines, key, x0, x1) -> bool:
+    """A column gutter runs down the table: the band [x0, x1] is empty in at
+    least two other lines that cross it, and in at least half of them. A wide
+    space in one line of prose is not a gutter."""
+    if x1 <= x0:
+        return False
+    crossing = empty = 0
+    for k, ln in lines.items():
+        if k == key or min(w[0] for w in ln) > x0 or max(w[2] for w in ln) < x1:
+            continue
+        crossing += 1
+        empty += not any(w[0] < x1 and w[2] > x0 for w in ln)
+    return empty >= 2 and empty >= 0.5 * crossing
+
+
 def record_for(sec, words, hrules=()) -> RelationRecord:
     """The relationship record of an emitted table section (cells from its spans)."""
     boxes = {}
+    mono = set()        # code cells: aligned operands and comments are the code's own layout
     for r, row in enumerate(sec.columns):
         for c, cell in enumerate(row):
+            text = [s for s in cell if s.text.strip() and s.text != "\n"]
+            if text and sum(len(s.text) for s in text if s.monospace) >= 0.6 * sum(len(s.text) for s in text):
+                mono.add((r, c))
             bs = [s.bbox for s in cell if s.text.strip() and s.text != "\n" and s.bbox and s.bbox[2] > s.bbox[0]]
             if bs:
                 boxes[(r, c)] = (min(b[0] for b in bs), min(b[1] for b in bs), max(b[2] for b in bs),
                                  max(b[3] for b in bs))
-    return check(boxes, words, hrules, sec.metadata.get("table_source", "?"))
+    return check(boxes, words, hrules, sec.metadata.get("table_source", "?"), frozenset(mono))
