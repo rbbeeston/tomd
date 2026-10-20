@@ -440,7 +440,15 @@ def _run_pipeline(path: Path) -> PipelineResult:
     if os.environ.get("TOMD_SCAN") != "0":
         try:
             from .scan import run_scan
-            scan_regions = run_scan(path, result.evidence, table_sections)
+            builds: list | None = [] if os.environ.get("TOMD_SCAN_BUILD") != "0" else None
+            scan_regions = run_scan(path, result.evidence, table_sections, builds)
+            if builds:
+                built, unbuilt = _build_scan_tables(path, builds, all_mupdf_blocks)
+                scan_regions += unbuilt
+                if built:
+                    table_sections += built
+                    all_mupdf_blocks = remove_table_regions(all_mupdf_blocks, built)
+                    all_spatial_blocks = remove_table_regions(all_spatial_blocks, built)
         except Exception as e:  # the scan only adds marks and doubts; never fail on it
             _log.warning("Region scan failed: %s", e)
     if os.environ.get("TOMD_FIGURES") != "0" and table_sections:
@@ -569,3 +577,53 @@ def convert_pdf_with_summary(path: Path) -> tuple[str, str | None, dict | None]:
     the Markdown by the command line."""
     r = _run_pipeline(path)
     return r.md, r.prompts, getattr(r, "summary", None)
+
+
+def _build_scan_tables(path, builds, blocks):
+    """The scan's build band: an area likely to be a table that no reader kept
+    is built by the shared content-first builder (pieces on consecutive pages
+    joined by the same continuation step as every reader) and emitted
+    UNCERTAIN, then gated like every table (verification, relations,
+    dimensions). An area the builder cannot read as a grid, or reads as
+    contents or label: value entries, stays a possible-table mark.
+    Returns (sections, marks for the areas not built)."""
+    import fitz
+    from .emit import table_use
+    from .table import _is_bad, _to_section, page_furniture, stitch_pages
+    from .types import Confidence
+    built, unbuilt, cands, info = [], [], [], {}
+    with fitz.open(str(path)) as doc:
+        keep: list = []
+        pages = {pg: _upright_page(doc, pg, keep) for pg in {b[0] for b in builds}}
+        for page, bbox, p, why, nrows in builds:
+            reason = f"the region scan rates this area a likely table (p={p:.2f}; {why})"
+            got = [c for c in content_candidates(pages, [(page, bbox)]) if not _is_bad(c)]
+            if not got:
+                unbuilt.append((page, bbox, reason, nrows))
+                continue
+            first = got[0].pages[0]
+            info[(first, tuple(round(v) for v in got[0].bboxes[first]))] = (p, why, reason, bbox, nrows)
+            cands.append(got[0])
+        for cand in stitch_pages(cands, blocks, page_furniture(blocks)):
+            first = cand.pages[0]
+            p, why, reason, bbox, nrows = info[(first, tuple(round(v) for v in cand.bboxes[first]))]
+            sec = _to_section(cand, Confidence.UNCERTAIN, [])
+            if table_use(sec.columns) != "table":
+                unbuilt.append((cand.pages[0], bbox, reason, nrows))  # contents, label: value: not tables (user)
+                continue
+            first = cand.pages[0]
+            sec.metadata["region_bbox"] = (first, tuple(cand.bboxes[first]))
+            if len(cand.pages) > 1:
+                sec.metadata["page_bboxes"] = dict(cand.bboxes)
+                if getattr(cand, "pieces", None):
+                    sec.metadata["pieces"] = cand.pieces
+            sec.metadata["uncertain_reasons"] = ["single-source", "scan-build"]
+            sec.metadata["table_note"] = ("No reader kept a table here; the region scan rates the area a likely "
+                                          f"table (p={p:.2f}) and the content-first builder read it.")
+            sec.metadata["scan"] = {"p": p, "band": "build", "top": why}
+            built.append(sec)
+        if built:
+            gpages = {pg: _upright_page(doc, pg, keep) for s in built
+                      for pg in ([s.page_num] + list(s.metadata.get("page_bboxes") or {}))}
+            gate_tables(doc, gpages, built, paper=Path(path).stem)
+    return built, unbuilt
