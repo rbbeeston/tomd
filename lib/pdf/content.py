@@ -102,6 +102,22 @@ def gutters(lines_pieces, x_lo, x_hi):
 SPECIALISTS = {"code_rows": True, "separators": True}
 
 
+_LABEL_LINE = re.compile(r"^\s*(//|/\*)[^;{}()]*:?\s*(\*/)?\s*$")
+
+
+def _per_unit_relation(i, cl, prev_cl, code_cols, hrules, bots, tops) -> bool:
+    """Something in the table relates to the unit starting on line i on its own:
+    a non-code column starts an entry there (notes, status, an explanation per
+    unit), every code column carries an aligned comment-only label there (a
+    sub-header), or a drawn rule lies at the boundary."""
+    if any(c not in code_cols and c not in prev_cl for c in cl):
+        return True
+    labels = [c for c in code_cols if c in cl]
+    if len(labels) >= 2 and all(_LABEL_LINE.match(" ".join(w[4] for w in cl[c])) for c in labels):
+        return True
+    return any(bots[i - 1] - 1 <= y <= tops[i] + 1 for y in hrules)
+
+
 def build(words, hrules=(), specialists=None):
     """-> (rows of cell strings, trace).
 
@@ -167,6 +183,10 @@ def build(words, hrules=(), specialists=None):
     # specialist at the row level: code cells. In code, every line has text
     # in the key column, so key-column starts say nothing; only row gaps do.
     trace["code"] = code
+    # code columns: mostly monospace text (the others hold notes, labels, status)
+    code_cols = {c for c in range(ncol)
+                 if sum(w[5] for cl in grid_lines for w in cl.get(c, []) if len(w) > 5)
+                 >= 0.6 * max(sum(len(cl.get(c, [])) for cl in grid_lines), 1)}
     # content's own row starts first
     content_new = [True]
     unit_votes: list = [None]
@@ -198,9 +218,15 @@ def build(words, hrules=(), specialists=None):
             same_name = len(names) >= 2 and names[0] != "" and all(n == names[0] for n in names)
             aligned = len(at_base) >= 2 and len(at_base) == len(both)
             votes = complete + same_name + aligned
-            new = gap_votes[i - 1] or votes >= _ROW_VOTES
+            # the votes find candidate boundaries; a unit becomes its own row only when
+            # something relates to it individually (user: a third column explaining each
+            # unit, a label per unit, a rule) - otherwise each side is one block, one row
+            relation = _per_unit_relation(i, cl, prev_cl, code_cols, hrules, bots, tops)
+            new = gap_votes[i - 1] or (votes >= _ROW_VOTES and relation)
             if votes == 1 and aligned:
                 unit_votes.append("flag: tops aligned but unit incomplete or names differ")
+            elif votes >= _ROW_VOTES and not relation and not gap_votes[i - 1]:
+                unit_votes.append("candidate boundary: no per-unit relation")
             else:
                 unit_votes.append(votes if new else None)
         elif gap_votes[i - 1]:

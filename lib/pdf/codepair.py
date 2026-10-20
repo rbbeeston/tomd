@@ -16,6 +16,7 @@ candidate like any other ("codepair"); it renders with the code-comparison
 convention.
 """
 
+import dataclasses
 import logging
 import re
 from collections import defaultdict
@@ -87,6 +88,21 @@ def _blocks(lines: list[Line], rules=()) -> list[list[Line]]:
     for i, ln in enumerate(lines):
         groups[find(i)].append(ln)
     return [sorted(g, key=lambda l: (l.bbox[1], l.bbox[0])) for g in groups.values()]
+
+
+def _spaced(line: Line) -> Line:
+    """A copy of the line with a space where the PDF leaves a word-sized gap
+    between two runs and encodes no space ("int" "f(int" "x)" -> "int f(int x)")."""
+    out = []
+    for sp in line.spans:
+        if out:
+            prev = out[-1]
+            gap = sp.bbox[0] - prev.bbox[2]
+            if (gap >= 0.25 * max(sp.font_size or prev.font_size, 1.0) and prev.text[-1:].strip()
+                    and sp.text[:1].strip()):
+                out.append(dataclasses.replace(prev, text=" ", bbox=(prev.bbox[2], prev.bbox[1], sp.bbox[0], prev.bbox[3])))
+        out.append(sp)
+    return dataclasses.replace(line, spans=out)
 
 
 def _box(block: list[Line]) -> tuple[float, float, float, float]:
@@ -169,28 +185,51 @@ def find_code_pairs(blocks: list[Block], rules_for=None) -> list[TableCandidate]
             used |= {id(left), id(right)}
             kept.append((left, right, score))
         kept.sort(key=lambda p: _box(p[0])[1])
-        # stacked pairs with the same column starts are rows of one table
-        tables: list[list] = []
-        for p in kept:
-            if tables:
-                last = tables[-1][-1]
-                if (abs(_box(p[0])[0] - _box(last[0])[0]) <= _STACK_TOL
-                        and abs(_box(p[1])[0] - _box(last[1])[0]) <= _STACK_TOL):
-                    tables[-1].append(p)
-                    continue
-            tables.append([p])
-        for rows in tables:
-            first = rows[0]
-            lab_l, lab_r = _label(first[0], rest), _label(first[1], rest)
-            body = [[left, right] for left, right, _ in rows]
-            header = []
+
+        def labels(pair):
+            """The pair's own label lines: aligned across the sides ("// P2935R0:" |
+            "// This paper:"). Labels are header material, never a code unit."""
+            lab_l, lab_r = _label(pair[0], rest), _label(pair[1], rest)
             if lab_l is not None and lab_r is not None and lab_l is not lab_r \
                     and abs(lab_l.bbox[1] - lab_r.bbox[1]) <= 3:
-                header = [[[lab_l], [lab_r]]]
-            cells = header + body
+                return [[lab_l], [lab_r]]
+            return None
+
+        def prose_between(last, p, labs):
+            """Text between two stacked pairs (other than the pair's labels): a
+            heading, caption or prose between them makes two tables."""
+            top, bot = max(_box(last[0])[3], _box(last[1])[3]), min(_box(p[0])[1], _box(p[1])[1])
+            x0, x1 = _box(p[0])[0], _box(p[1])[2]
+            skip = {id(c[0]) for c in (labs or [])}
+            return any(top + 1 < (l.bbox[1] + l.bbox[3]) / 2 < bot - 1 and l.bbox[0] < x1 and l.bbox[2] > x0
+                       and id(l) not in skip for l in rest)
+
+        # stacked pairs with the same column starts are rows of one table; text
+        # between them splits the table; a recurring label pair inside a table
+        # starts a row group (a sub-header row, then its code row)
+        tables: list[list] = []
+        for p in kept:
+            labs = labels(p)
+            if tables:
+                last = tables[-1][-1][1]
+                if (abs(_box(p[0])[0] - _box(last[0])[0]) <= _STACK_TOL
+                        and abs(_box(p[1])[0] - _box(last[1])[0]) <= _STACK_TOL
+                        and not prose_between(last, p, labs)):
+                    tables[-1].append((labs, p))
+                    continue
+            tables.append([(labs, p)])
+        for group in tables:
+            cells = []
+            for i, (labs, (left, right, _)) in enumerate(group):
+                if labs:
+                    cells.append(labs)
+                cells.append([left, right])
+            rows = [p for _, p in group]
+            header = cells[:1] if group[0][0] else []
             lines = [ln for r in cells for c in r for ln in c]
             bbox = (min(l.bbox[0] for l in lines), min(l.bbox[1] for l in lines),
                     max(l.bbox[2] for l in lines), max(l.bbox[3] for l in lines))
+            cells = [[[_spaced(ln) for ln in c] for c in r] for r in cells]
             cand = TableCandidate("codepair", cells, {page: bbox})
             cand.flags = ["same-code=%.2f" % min(s for _, _, s in rows)] + (["labelled"] if header else [])
             out.append(cand)
