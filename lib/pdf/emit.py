@@ -304,7 +304,8 @@ def _render_cell_spans(spans: list, suppress_bold: bool = False) -> str:
             parts.append([])
         else:
             parts[-1].append(s)
-    rendered = [r for r in (_render_line_spans(Line(spans=_coalesce(p)), suppress_bold=suppress_bold).strip()
+    rendered = [r for r in (_render_line_spans(Line(spans=_coalesce(_mark_asterisks(p))),
+                                               suppress_bold=suppress_bold).strip()
                             for p in parts if p) if r]
     if len(rendered) > 1 and all(len(r) == 1 and r.isalpha() for r in rendered):
         return "".join(rendered)          # letters stacked in a narrow cell: "S" / "F" -> "SF"
@@ -321,7 +322,17 @@ def _render_cell_spans(spans: list, suppress_bold: bool = False) -> str:
             out[-1] = _join_hyphenated(head, r[len(mark):], m.group(1))
         else:
             out.append(r)
-    return _escape_angle("<br>".join(out)).replace("|", "\\|")
+    return _escape_angle("<br>".join(out)).replace("|", "\\|").replace(_STAR, "\\*")
+
+
+_STAR = "\x00"      # a literal asterisk in cell text, escaped once the cell is rendered
+
+
+def _mark_asterisks(spans: list) -> list:
+    """Asterisks in plain text ("/*...*/" in a cell of prose) would read as
+    emphasis and vanish; code spans keep theirs literally."""
+    return [s if s.monospace or "*" not in s.text else dataclasses.replace(s, text=s.text.replace("*", _STAR))
+            for s in spans]
 
 
 def _coalesce(spans: list) -> list:
