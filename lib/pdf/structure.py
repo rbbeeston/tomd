@@ -693,10 +693,13 @@ def _merge_paragraphs(sections: list[Section]) -> list[Section]:
     result = [replace(sections[0], lines=list(sections[0].lines))]
     for sec in sections[1:]:
         prev = result[-1]
+        # a possible-table mark is not a sentence's continuation: never merge
+        # text marked as a possible table with text that is not (the mark would be lost)
         if (prev.kind in mergeable
                 and sec.kind == SectionKind.PARAGRAPH
                 and prev.text.rstrip()
-                and sec.text.lstrip()):
+                and sec.text.lstrip()
+                and ("possible_table" in prev.metadata) == ("possible_table" in sec.metadata)):
             prev_end = prev.text.rstrip()[-1]
             cur_start = sec.text.lstrip()[0]
             if prev_end not in TERMINAL_PUNCTUATION and cur_start.islower():
@@ -785,6 +788,9 @@ def _detect_code_blocks(sections: list[Section]) -> list[Section]:
             page_num=mono_run[0].page_num,
             fence_lang=fence_lang,
         ))
+        mark = next((s.metadata["possible_table"] for s in mono_run if "possible_table" in s.metadata), None)
+        if mark:
+            result[-1].metadata["possible_table"] = mark     # keep a possible-table mark
         # Remove the language label that preceded this block
         if pending_label_idx >= 0 and pending_label_idx < len(result) - 1:
             del result[pending_label_idx]
