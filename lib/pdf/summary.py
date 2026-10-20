@@ -122,6 +122,12 @@ def build(result, sections, evidence, generator: str) -> dict:
             "version": next((e.value for e in jev if e.rule == "jev-version"), ""),
             "areas_asked": len(answers),
             "confident": sum(1 for v in answers if ":" in v and float(v.rsplit(":", 1)[1]) >= 0.9)}}
+    # LLM repair of flagged tables (opt-in; on in the corpus-run profile): model,
+    # calls, results, tokens, seconds, budget, and why it did not run if it did not
+    from .llmrepair import paper_record
+    llm = paper_record()
+    if llm["status"] != "off":
+        s.setdefault("witnesses", {})["llm"] = llm
     s["confidence"] = confidence(s)
     return s
 

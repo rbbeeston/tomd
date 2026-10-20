@@ -70,10 +70,57 @@ def _has_credentials() -> bool:
 
 
 _DISABLED = False          # set after an authentication failure, for the rest of the run
+_SPENT = 0                 # tokens (in + out) spent in this run, against TOMD_LLM_BUDGET
+_PAPER: dict = {}          # this paper's record (reset_paper / paper_record)
+
+
+def _budget() -> int | None:
+    """Tokens (input + output) this run may spend: TOMD_LLM_BUDGET; none = no cap."""
+    v = os.environ.get("TOMD_LLM_BUDGET")
+    return int(v) if v and v.isdigit() else None
+
+
+def reset_paper() -> None:
+    _PAPER.clear()
+    _PAPER.update({"calls": 0, "verified": 0, "rejected": 0, "errors": 0, "skipped": 0,
+                   "input_tokens": 0, "output_tokens": 0, "seconds": 0.0, "models": []})
+
+
+def _note(key: str, n=1) -> None:
+    if not _PAPER:
+        reset_paper()
+    _PAPER[key] = _PAPER.get(key, 0) + n
+
+
+def paper_record() -> dict:
+    """What LLM repair did for this paper, for the paper summary: whether it
+    was asked for and available, the model(s), calls, results, tokens, seconds,
+    and the run's budget. With no credentials, no network or no budget left the
+    run goes on without repair, and the status says so."""
+    asked = os.environ.get("TOMD_LLM") == "1"
+    if not asked:
+        status = "off"
+    elif _DISABLED:
+        status = "unavailable: the API rejected the credentials"
+    elif not _has_credentials():
+        status = "unavailable: no credentials"
+    elif _budget() is not None and _SPENT >= _budget():
+        status = "budget reached"
+    elif _PAPER.get("errors"):
+        status = f"on ({_PAPER['errors']} call(s) failed: network or API error)"
+    else:
+        status = "on"
+    rec = {"status": status, **({k: v for k, v in _PAPER.items()} if _PAPER else {})}
+    if _budget() is not None:
+        rec["run_budget_tokens"], rec["run_spent_tokens"] = _budget(), _SPENT
+    if "seconds" in rec:
+        rec["seconds"] = round(rec["seconds"], 2)
+    return rec
 
 
 def llm_enabled() -> bool:
-    return os.environ.get("TOMD_LLM") == "1" and not _DISABLED and _has_credentials()
+    return (os.environ.get("TOMD_LLM") == "1" and not _DISABLED and _has_credentials()
+            and (_budget() is None or _SPENT < _budget()))
 
 
 def _client():
@@ -119,6 +166,7 @@ def ask(client, page, bbox, words):
             _log.warning("LLM repair disabled: the API rejected the credentials")
         else:
             _log.warning("LLM repair call failed (%s); table stays flagged", type(e).__name__)
+        _note("errors")
         return None
     if getattr(resp, "stop_reason", None) == "refusal":
         return None
@@ -165,6 +213,7 @@ def build_columns(rows, words):
 def repair(sec, page, bbox, words, verify, client=None) -> str:
     """Try to repair one flagged table in place. Returns what happened."""
     if len(words) > _MAX_WORDS or not words:
+        _note("skipped")
         return "skipped-size"
     client = client or _client()
     if client is None:
@@ -173,10 +222,19 @@ def repair(sec, page, bbox, words, verify, client=None) -> str:
     if answer is None:
         return "no-answer"
     rows, model, seconds, usage = answer
+    global _SPENT
+    _SPENT += usage.get("input_tokens", 0) + usage.get("output_tokens", 0)
+    _note("calls")
+    _note("input_tokens", usage.get("input_tokens", 0))
+    _note("output_tokens", usage.get("output_tokens", 0))
+    _note("seconds", seconds)
+    if model not in _PAPER["models"]:
+        _PAPER["models"].append(model)
     columns, why = build_columns(rows, words)
     record = {"model": model, "seconds": round(seconds, 2), **usage}
     if columns is None:
         sec.metadata["llm_repair"] = {**record, "result": "rejected:" + why}
+        _note("rejected")
         return "rejected:" + why
     import copy
     new = copy.copy(sec)
@@ -184,9 +242,26 @@ def repair(sec, page, bbox, words, verify, client=None) -> str:
     failed = verify(new, words)
     if failed:
         sec.metadata["llm_repair"] = {**record, "result": "rejected:" + failed}
+        _note("rejected")
         return "rejected:" + failed
+    # the repair replaces the emitted structure; the first deterministic reading
+    # is kept (metadata, evidence record, prompts) and the table stays flagged
+    first = sec.text
+    first_source = sec.metadata.get("table_source")
     sec.columns = columns
     sec.text = "\n".join(" | ".join("".join(s.text for s in c) for c in r) for r in columns)
-    sec.metadata["llm_repair"] = {**record, "result": "verified"}
+    sec.metadata["llm_repair"] = {**record, "result": "verified", "first_reading": first,
+                                  "first_source": first_source}
     sec.metadata["table_source"] = "llm-structure"
+    reasons = sec.metadata.setdefault("uncertain_reasons", [])
+    if "llm-repaired" not in reasons:
+        reasons.append("llm-repaired")
+    from .types import Confidence
+    sec.confidence = Confidence.UNCERTAIN
+    try:
+        from . import evidence
+        evidence.current().feature("llm", sec.page_num, tuple(bbox), "first-reading", "record", first)
+    except Exception:
+        pass
+    _note("verified")
     return "verified"

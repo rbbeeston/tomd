@@ -652,6 +652,13 @@ def emit_prompts(sections: list[Section]) -> str | None:
             if sec.metadata.get("table_note"):
                 parts.append(sec.metadata["table_note"])
                 parts.append("")
+            rep = sec.metadata.get("llm_repair") or {}
+            if rep.get("result") == "verified":
+                parts.append(f"An LLM ({rep.get('model', '')}) re-read this table's structure from the page "
+                             "image and words (structure only, verified); its reading is the one emitted, "
+                             "and the table stays flagged. The first reading, from the "
+                             f"{rep.get('first_source', '')} extractor, is the first version below.")
+                parts.append("")
             if sec.metadata.get("dimensions"):
                 from .dimensions import weak_note
                 note = weak_note(sec.metadata["dimensions"])

@@ -255,6 +255,8 @@ def _run_pipeline(path: Path) -> PipelineResult:
     path = Path(path)
     result = PipelineResult()
     result.evidence = evidence.reset()
+    from .llmrepair import reset_paper
+    reset_paper()                       # this paper's LLM repair record (summary)
     doc = None
     try:
         doc = fitz.open(str(path))
