@@ -250,7 +250,7 @@ def detect_tables(blocks: list[Block]) -> tuple[list[Section], list[Block]]:
 # positions are the weakest signal. Tags from a structure tree that MuPDF
 # reports as malformed rank just below the grid.
 _SOURCE_PRIORITY = {"tags": 0, "poll": 1, "grid": 2, "tags-malformed": 3, "rules": 4, "codepair": 5, "tomd": 6,
-                    "content": 7}
+                    "content": 7, "records": 8}
 
 
 def _row_top(row) -> float | None:
@@ -922,6 +922,24 @@ def select_tables(tomd_sections: list[Section],
                     k.flags = k.flags + ["refines-rules"]
                     cands = [x for x in cands if x is not c]
                     break
+    # Two or more runs of records (records.py) inside one reading's region that
+    # together hold its text: the region is several stacked tables read as one.
+    # The records readings take its place (single source: flagged). Tags and
+    # polls delimit their own tables and are never split.
+    if os.environ.get("TOMD_RECORDS_SPLIT") != "0":
+        splits = [k for k in cands if k.source == "records" and "records-split" in k.flags]
+        for c in [c for c in cands if c.source not in ("records", "tags", "poll") and len(c.pages) == 1]:
+            pg = c.pages[0]
+            inside = [k for k in splits if k.pages == [pg] and _same_region(c, k)]
+            # stacked tables: each run has its own header, and they share a column count
+            if (len(inside) < 2 or not all("records-headed" in k.flags for k in inside)
+                    or len({k.shape[1] for k in inside}) != 1):
+                continue
+            have = Counter(w for r in c.text_rows() for x in r for w in x.split())
+            got = Counter(w for k in inside for r in k.text_rows() for x in r for w in x.split())
+            if sum((have & got).values()) >= 0.9 * max(sum(have.values()), 1):
+                rec.feature("records", pg, c.bboxes[pg], "region holds several runs of records", "meaning", len(inside))
+                cands = [x for x in cands if x is not c]
     # A poll whose vote row was inferred (blank) yields to another reading of
     # the same region that has the votes under the same header.
     for c in [c for c in cands if c.source == "poll" and "blank-row-inferred" in c.flags]:
@@ -944,7 +962,8 @@ def select_tables(tomd_sections: list[Section],
     remaining = sorted(cands, key=_priority)
     out: list[Section] = []
     while True:
-        good = [c for c in remaining if not _is_bad(c)]
+        # a records reading of code is an alternative only, never the emitted reading
+        good = [c for c in remaining if not _is_bad(c) and not (c.source == "records" and "records-code" in c.flags)]
         if not good:
             break
         primary = good[0]
@@ -956,7 +975,7 @@ def select_tables(tomd_sections: list[Section],
         others = [c for c in settled if c is not primary and c.source != primary.source
                   and not _is_bad(c) and _same_region(primary, c)]
         # a code pair is a witness when it agrees, not another reading to doubt by
-        others = [c for c in others if c.source not in ("codepair", "content")
+        others = [c for c in others if c.source not in ("codepair", "content", "records")
                   or candidates_agree(primary, c) or partial_reading(primary, c)]
         content_read = [c for c in settled if c.source == "content" and c is not primary
                         and not _is_bad(c) and _same_region(primary, c)]
@@ -970,8 +989,8 @@ def select_tables(tomd_sections: list[Section],
         # the ruled table's extra rows are the part tomd could not see)
         # a code pair reads its cell text from the same text layer as every
         # other reader: its agreement is a witness for the record, not for HIGH
-        voters = ([] if primary.source in ("codepair", "content")
-                  else [o for o in others if o.source not in ("codepair", "content")])
+        voters = ([] if primary.source in ("codepair", "content", "records")
+                  else [o for o in others if o.source not in ("codepair", "content", "records")])
         exact = any(candidates_agree(primary, o) for o in voters)
         agree = exact or any(partial_reading(primary, o) for o in voters)
         conf = Confidence.HIGH if agree else Confidence.UNCERTAIN
@@ -1048,7 +1067,7 @@ def select_tables(tomd_sections: list[Section],
         for pg, bb in c.bboxes.items():
             rec.exclude(c.source, pg, bb, "dropped: " + (", ".join(f for f in c.flags if f in BAD_TABLE_FLAGS)
                                                         or "outranked"), _INFO_TYPE.get(c.source, "words"))
-        if rejected is not None and c.source != "content":
+        if rejected is not None and c.source not in ("content", "records"):
             rejected.append(c)
     return out
 
@@ -1064,10 +1083,11 @@ _INFO = {
     "tags": {"rows": "tree", "cols": "tree", "members": "tree"},
     "poll": {"rows": "words", "cols": "pattern", "members": "words"},
     "codepair": {"rows": "words", "cols": "words", "members": "words"},
+    "records": {"rows": "meaning", "cols": "meaning", "members": "words"},
 }
 # the information type a source's region decision rests on (evidence record)
 _INFO_TYPE = {"tomd": "words", "rules": "paths", "grid": "paths", "tags": "tree", "poll": "meaning",
-              "codepair": "words", "content": "words"}
+              "codepair": "words", "content": "words", "records": "meaning"}
 _EDGE = 0.25               # a table ending in the last quarter of the page text may continue
 
 

@@ -406,6 +406,10 @@ def _run_pipeline(path: Path) -> PipelineResult:
                 keep: list = []
                 cpages = {pg: _upright_page(cdoc, pg, keep) for pg in {pg for pg, _ in regions}}
                 content_tables = content_candidates(cpages, regions, rules_by_page=page_rules)
+                if os.environ.get("TOMD_RECORDS") != "0":
+                    # the record-pattern reading of the same regions (records.py): an alternative only
+                    from .records import records_candidates
+                    content_tables += records_candidates(cpages, regions)
         except Exception as e:  # never let the builder break conversion
             _log.warning("Content builder failed: %s", e)
     table_sections = select_tables(tomd_tables, all_ruled_tables, tagged_tables,
