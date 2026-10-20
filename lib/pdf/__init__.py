@@ -323,6 +323,8 @@ def _run_pipeline(path: Path) -> PipelineResult:
 
         # level 0: what ordinary prose looks like in this document
         result.doc_measure = doc_measure(page_words)
+        from .docmeasure import hyphenates
+        result.hyphenates = hyphenates(page_words)
         result.evidence.doc_measure = result.doc_measure
         try:
             tagged_tables = extract_tagged_tables(doc)
@@ -510,6 +512,11 @@ def _run_pipeline(path: Path) -> PipelineResult:
         sections = [s for i, s in enumerate(sections)
                     if i not in toc_indices or s.kind == SectionKind.TABLE]
 
+    from . import emit as _emit
+    # does this document hyphenate words at line ends? The document's own text
+    # says (docmeasure.hyphenates); where it never does, a line-end hyphen in a
+    # cell is the word's own ("Use-cases")
+    _emit.set_hyphenating(getattr(result, "hyphenates", True))
     md = emit_markdown(metadata, sections)
     prompts = emit_prompts(sections)
 

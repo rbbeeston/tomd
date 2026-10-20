@@ -267,6 +267,13 @@ def _set_lexicon(sections: list[Section]) -> None:
             _LEXICON.update(w.lower() for w in _LEX_WORD.findall(sec.text))
 
 
+_HYPHENATES = [True]      # does this document's maker hyphenate words at line ends?
+
+
+def set_hyphenating(value: bool) -> None:
+    _HYPHENATES[0] = value
+
+
 def _join_hyphenated(line: str, nxt: str, prefix: str) -> str:
     """Join a cell line ending in "word-" with the next line.
 
@@ -283,6 +290,8 @@ def _join_hyphenated(line: str, nxt: str, prefix: str) -> str:
         return (line if _LEXICON[hyphened] >= _LEXICON[joined] else line[:-1]) + nxt
     if "-" in prefix:
         return line + nxt                 # inside a hyphenated chain: "warnings-as-" + "errors"
+    if not _HYPHENATES[0]:
+        return line + nxt                 # a maker that never hyphenates: the hyphen is the word's ("Use-cases")
     p = prefix.lower()
     # An acronym before the hyphen is a compound ("ABI-" + "independent").
     acronym = len(prefix) >= 2 and prefix.isupper()
