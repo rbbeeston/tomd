@@ -187,6 +187,9 @@ def build(words, hrules=(), specialists=None):
     code_cols = {c for c in range(ncol)
                  if sum(w[5] for cl in grid_lines for w in cl.get(c, []) if len(w) > 5)
                  >= 0.6 * max(sum(len(cl.get(c, [])) for cl in grid_lines), 1)}
+    # each column's extent over the whole table (for the per-column wrap test)
+    col_left = {c: min((min(w[0] for w in cl[c]) for cl in grid_lines if c in cl), default=0.0) for c in range(ncol)}
+    col_right = {c: max((max(w[2] for w in cl[c]) for cl in grid_lines if c in cl), default=0.0) for c in range(ncol)}
     # content's own row starts first
     content_new = [True]
     unit_votes: list = [None]
@@ -237,12 +240,14 @@ def build(words, hrules=(), specialists=None):
             prev = grid_lines[i - 1]
             lone_key_wrap = set(prev) == {key}
             new = key in cl and not (lone_key_wrap and len(cl) == 1)
-            # an empty key column still starts a row when the line starts items in
-            # two or more columns, at least one where the line above had none (user's
-            # line-alignment rule); a wrap continuation only extends columns in use
-            if (not new and key not in cl and len(cl) >= 2 and any(c not in prev for c in cl if c != key)
-                    and len(hrules) <= 3):     # rows not drawn (booktabs or none): a drawn grid's rules decide
-                new = True
+            # rows not drawn (few rules for the lines): where rules separate the rows, they decide
+            if not new and len(cl) >= 2 and len(hrules) < 0.3 * len(lines):
+                # per column, a line continues a cell only when that column's line above ran
+                # to the column's right edge (wrapping); a short or empty line above means a
+                # new item. Two or more columns starting items: a new row (user, blank pattern)
+                starts = [c for c in cl if c not in prev
+                          or max(w[2] for w in prev[c]) < col_right[c] - 0.15 * max(col_right[c] - col_left[c], 1)]
+                new = len(starts) >= 2
         content_new.append(new)
         if new:
             balance = {c: 0 for c in range(ncol)}
