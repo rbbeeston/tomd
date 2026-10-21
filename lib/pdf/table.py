@@ -727,6 +727,69 @@ def stitch_pages(cands: list[TableCandidate], blocks: list[Block],
     return out
 
 
+def cross_reader_continuation(cands: list[TableCandidate], blocks: list[Block],
+                              furniture: frozenset = frozenset()) -> list[TableCandidate]:
+    """A table continuing across a page is the same table whichever reader read
+    each piece (user: preserve meaningful spatial relationships regardless of
+    mechanism). After every reader's own stitching, a piece ending low on page N
+    joins a piece from a different reader starting high on page N+1 under the
+    same conditions as same-reader stitching: the same column count and column
+    starts (or extent), no different header, nothing between them (page
+    furniture aside). Polls are never joined this way. The joined table keeps
+    the first piece's reader, is flagged 'cross-reader' and records both."""
+    # the tag tree states where a tagged table ends; never extend one with another reader's piece
+    single = [c for c in cands if len(c.pages) >= 1 and c.source not in ("poll", "tags")]
+    used: set = set()
+    out_extra = []
+    for a in single:
+        if id(a) in used:
+            continue
+        pa = a.pages[-1]
+        ab = a.bboxes[pa]
+        top_a, bot_a = _page_span(blocks, pa)
+        if ab[3] < bot_a - _EDGE * (bot_a - top_a):
+            continue                              # does not end low on its page
+        best = None
+        for b in single:
+            if b is a or b.source == a.source or id(b) in used or b.pages[0] != pa + 1:
+                continue
+            bb = b.bboxes[b.pages[0]]
+            top_b, bot_b = _page_span(blocks, b.pages[0])
+            if bb[1] > top_b + _EDGE * (bot_b - top_b):
+                continue                          # does not start high on its page
+            if a.shape[1] != b.shape[1] or _new_header(b, a):
+                continue
+            if not ((abs(ab[0] - bb[0]) <= _STITCH_X_TOL and abs(ab[2] - bb[2]) <= _STITCH_X_TOL)
+                    or _same_columns(a, pa, b, b.pages[0])):
+                continue
+            if (_text_outside(blocks, pa, below=ab[3] + _REGION_MARGIN, furniture=furniture)
+                    or _text_outside(blocks, b.pages[0], above=bb[1] - _REGION_MARGIN, furniture=furniture)):
+                continue
+            # the first piece on page N+1 and the last on page N, as in stitching
+            if any(d is not b and d.pages[0] == b.pages[0] and d.bboxes[d.pages[0]][1] < bb[1] - 2
+                   and _overlap(d, b) < _GROUP_OVERLAP for d in single):
+                continue
+            best = b
+            break
+        if best is None:
+            continue
+        rows = list(best.rows)
+        if _same_header(best.text_rows()[0], a.text_rows()[0]):
+            rows = rows[1:]
+        joined = TableCandidate(a.source, list(a.rows) + rows, {**a.bboxes, **best.bboxes})
+        joined.flags = list(a.flags) + ["cross-reader"]
+        joined.pieces = list(getattr(a, "pieces", None) or [(pa, 0, len(a.rows))]) + \
+            [(best.pages[0], len(a.rows), len(a.rows) + len(rows))]
+        evidence.current().feature(a.source, best.pages[0], best.bboxes[best.pages[0]],
+                                   "continues from previous page (another reader)", "words",
+                                   {"readers": [a.source, best.source], "pages": joined.pages})
+        used |= {id(a), id(best)}
+        out_extra.append(joined)
+    if not out_extra:
+        return cands
+    return [c for c in cands if id(c) not in used] + out_extra
+
+
 _CONT = re.compile(r"\((cont(inued|\.|'d)?)\)|\bcontinued\b", re.I)
 
 
@@ -931,6 +994,8 @@ def select_tables(tomd_sections: list[Section],
         codepairs = stitch_pages(list(codepairs), blocks, furniture) if codepairs else []
         content = stitch_pages(list(content), blocks, furniture) if content else []
     cands = tagged + list(polls) + ruled + list(codepairs) + tomd + list(content)
+    if os.environ.get("TOMD_CROSS_READER") != "0":
+        cands = cross_reader_continuation(cands, blocks, furniture)
     if os.environ.get("TOMD_HEADER_SPLIT") != "0":
         cands = [part for c in cands for part in split_at_headers(c)]
     rec = evidence.current()
@@ -1080,6 +1145,11 @@ def select_tables(tomd_sections: list[Section],
             conf = Confidence.HIGH
             reasons.clear()
             notes.clear()
+        if "cross-reader" in primary.flags:
+            # joined from two readers' pieces: no single reading backs the whole table
+            conf = Confidence.UNCERTAIN
+            reasons.append("cross-reader")
+            notes.append("This table was joined across a page break from two different readers' pieces.")
         lost = conservation_error(primary, blocks)
         if lost:
             conf = Confidence.UNCERTAIN
