@@ -253,6 +253,7 @@ def repair(sec, page, bbox, words, verify, client=None) -> str:
     sec.metadata["llm_repair"] = {**record, "result": "verified", "first_reading": first,
                                   "first_source": first_source}
     sec.metadata["table_source"] = "llm-structure"
+    sec.metadata.pop("likely", None)          # the fit was for the first reading
     reasons = sec.metadata.setdefault("uncertain_reasons", [])
     if "llm-repaired" not in reasons:
         reasons.append("llm-repaired")

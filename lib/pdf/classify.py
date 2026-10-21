@@ -336,6 +336,11 @@ def gate_tables(doc, pages, sections: list[Section], paper: str = "") -> dict:
                         fr = {**fr, "pass": False, "why": "the table may continue on the next page"}
                     f = {**f, "rows": fr}
                 sec.metadata["fit"] = f
+                if f.get("pass") and os.environ.get("TOMD_LIKELY") != "0":
+                    # LIKELY (user): a table that stays flagged but whose words fit the
+                    # drawn cells evenly - probably right, never HIGH (not yet proven
+                    # out of sample); it still counts as flagged everywhere
+                    sec.metadata["likely"] = {"reason": "fit", "cells": f.get("cells")}
             except Exception as e:
                 _log.debug("fit failed: %s", e)
         if os.environ.get("TOMD_RELATIONS") != "0":
@@ -362,6 +367,7 @@ def gate_tables(doc, pages, sections: list[Section], paper: str = "") -> dict:
                 sec.columns, sec.text = new.columns, new.text
                 sec.metadata["table_source"] = new.metadata.get("table_source")
                 sec.metadata["escalated"] = moves
+                sec.metadata.pop("likely", None)              # a new reading: the fit was for the old one
                 sec.metadata.pop("inferred_cells", None)     # a new reading: the repair no longer applies
                 sec.metadata["verified"] = "ok after " + "+".join(moves)
         kind, kp = predict(TABLE_TREE, x)
@@ -446,6 +452,7 @@ def _repair_stray_words(sec, words, rules, rel) -> None:
                               "violations_before": rel.by_dimension(), "violations_after": after.by_dimension()}
     sec.columns, sec.text = trial.columns, trial.text
     sec.metadata["inferred_cells"] = inferred
+    sec.metadata.pop("likely", None)                         # repaired: the fit was for the first reading
     sec.metadata["relations"] = {"by_dimension": after.by_dimension(),
                                  "kinds": sorted({v.kind for v in after.violations})}
     reasons = sec.metadata.setdefault("uncertain_reasons", [])

@@ -3,8 +3,9 @@ and how unlike the measured papers this one is.
 
 The output feeds AI analysis of WG21 papers, where a trusted-but-wrong
 conversion is the costly failure, so every conversion carries:
-  - tables trusted (HIGH), flagged (UNCERTAIN) and marked (possible tables),
-    with their pages; removed and skipped content; table types present;
+  - tables trusted (HIGH), flagged (UNCERTAIN; of those, "likely correct":
+    the words fit the drawn cells evenly) and marked (possible tables), with
+    their pages; removed and skipped content; table types present;
   - an unfamiliarity score: how unlike the measured papers this one is
     (generator not seen in the measured sets, rare layout classes, the share
     of areas the scan left undecided, rotated text, no prose measure);
@@ -60,6 +61,7 @@ def features(s: dict) -> dict:
     """The paper-level model's inputs."""
     n = max(s["tables"]["total"], 1)
     return {"n_tables": float(s["tables"]["total"]), "share_trusted": s["tables"]["trusted"] / n,
+            "share_likely": s["tables"].get("likely", 0) / n,
             "share_flagged": s["tables"]["flagged"] / n, "marks": float(s["marks"]),
             "undecided": float(s["scan"]["undecided"]), "unfamiliar": s["unfamiliarity"]["score"],
             "relations": float(s["tables"]["with_violations"]), "low_scan": float(s["scan"]["low_tables"])}
@@ -90,6 +92,7 @@ def build(result, sections, evidence, generator: str) -> dict:
     tables = [s for s in sections if s.kind.value == "table"]
     trusted = [s for s in tables if s.confidence.value == "high"]
     flagged = [s for s in tables if s.confidence.value != "high"]
+    likely = [s for s in flagged if s.metadata.get("likely")]       # flagged, but the fit passes
     marks = [s for s in sections if (s.metadata or {}).get("possible_table")]
     layouts = [((s.metadata or {}).get("gate") or {}).get("layout", "?") for s in tables]
     scan_ps = [e.value for e in (evidence.entries if evidence else []) if e.kind == "feature" and e.rule == "likelihood"]
@@ -102,6 +105,7 @@ def build(result, sections, evidence, generator: str) -> dict:
                             bool(dm and getattr(dm, "known", False)), skipped)
     s = {
         "tables": {"total": len(tables), "trusted": len(trusted), "flagged": len(flagged),
+                   "likely": len(likely), "likely_pages": sorted({t.page_num + 1 for t in likely}),
                    "trusted_pages": sorted({t.page_num + 1 for t in trusted}),
                    "flagged_pages": sorted({t.page_num + 1 for t in flagged}),
                    "types": dict(sorted({x: layouts.count(x) for x in set(layouts)}.items())),
@@ -137,6 +141,7 @@ def header_comment(s: dict) -> str:
     c = s["confidence"]
     conf = "n/a" if c is None else f"{c['value']:.2f}"
     return (f"<!-- tomd:summary tables={t['total']} trusted={t['trusted']} flagged={t['flagged']} "
+            f"likely={t.get('likely', 0)} "
             f"marked={s['marks']} confidence={conf} unfamiliarity={s['unfamiliarity']['score']:.2f} -->")
 
 
@@ -146,6 +151,9 @@ def prompts_section(s: dict) -> str:
              f"- Tables: {t['total']} ({t['trusted']} trusted on pages {t['trusted_pages'] or '-'}, "
              f"{t['flagged']} flagged on pages {t['flagged_pages'] or '-'}); possible tables marked: {s['marks']}"
              + (f" (pages {s['marked_pages']})" if s["marked_pages"] else ""),
+             f"- Likely correct (flagged, but the words fit the drawn cells evenly): {t.get('likely', 0)}"
+             + (f" (pages {t['likely_pages']})" if t.get("likely_pages") else "")
+             + "; probably right, not proven - cite the page and verify exact values",
              f"- Table types: {t['types'] or '-'}",
              "- Confidence that no table error is silent: "
              + ("not estimated" if s["confidence"] is None else
