@@ -322,6 +322,22 @@ def gate_tables(doc, pages, sections: list[Section], paper: str = "") -> dict:
                 _full_width(sec, pages[pg], bbox)
             except Exception as e:      # a layout refinement only; never fail on it
                 _log.debug("full-width rows failed: %s", e)
+        if os.environ.get("TOMD_FIT") != "0" and not sec.metadata.get("page_bboxes"):
+            # the fit witness: words against the drawn cells (fit.py) - recorded
+            from .fit import fit as _fit
+            try:
+                f = _fit(pages[pg], bbox, words, sec.columns)
+                if f.get("pass") and (sec.metadata.get("witness") or {}).get("extent") == "open":
+                    f = {**f, "pass": False, "why": "the table may continue on the next page"}
+                if not f.get("ruled"):
+                    from .fit import fit_rows as _fit_rows
+                    fr = _fit_rows(pages[pg], bbox, words, sec.columns)
+                    if fr.get("pass") and (sec.metadata.get("witness") or {}).get("extent") == "open":
+                        fr = {**fr, "pass": False, "why": "the table may continue on the next page"}
+                    f = {**f, "rows": fr}
+                sec.metadata["fit"] = f
+            except Exception as e:
+                _log.debug("fit failed: %s", e)
         if os.environ.get("TOMD_RELATIONS") != "0":
             # stage 1: every contradiction between the table and the page, by dimension
             from .content import page_hrules
