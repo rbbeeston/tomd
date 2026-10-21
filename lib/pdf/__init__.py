@@ -418,6 +418,19 @@ def _run_pipeline(path: Path) -> PipelineResult:
                     content_tables += records_candidates(cpages, regions)
         except Exception as e:  # never let the builder break conversion
             _log.warning("Content builder failed: %s", e)
+    if os.environ.get("TOMD_EXTENT") != "0":
+        # the extent step (extent.py): stop reasons, and rows just outside a reading
+        try:
+            import fitz
+            from .extent import extend
+            ecands = [c for c in all_ruled_tables + tagged_tables + all_poll_tables + code_pairs + content_tables
+                      if c.bboxes]
+            with fitz.open(str(path)) as edoc:
+                keep_e: list = []
+                epages = {pg: _upright_page(edoc, pg, keep_e) for c in ecands for pg in c.pages}
+                extend(ecands, epages)
+        except Exception as e:  # never let the extent step break conversion
+            _log.warning("Extent step failed: %s", e)
     table_sections = select_tables(tomd_tables, all_ruled_tables, tagged_tables,
                                    all_mupdf_blocks, all_poll_tables, rejected_tables, code_pairs,
                                    content_tables)

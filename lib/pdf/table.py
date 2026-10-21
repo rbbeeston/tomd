@@ -950,6 +950,9 @@ def _to_section(cand: TableCandidate, confidence: Confidence,
         columns=[[_cell_spans(cell) for cell in row] for row in cand.rows],
     )
     sec.metadata["table_source"] = cand.source
+    if "extent:header-below" in cand.flags:
+        # the header row was found under its columns on the page (extent.py)
+        sec.metadata["header_below"] = True
     if confidence == Confidence.UNCERTAIN:
         sec.mupdf_text = _as_markdown_rows(cand)
         sec.spatial_text = "\n\n".join(

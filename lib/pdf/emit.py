@@ -572,6 +572,10 @@ def emit_markdown(metadata: dict, sections: list[Section]) -> str:
         rendered = _render_section_md(sec)
         if not rendered.strip():
             continue
+        if sec.kind == SectionKind.TABLE and sec.metadata.get("header_below"):
+            # the header row sits under its columns on the page; Markdown puts it on top
+            parts.append("<!-- tomd:header-below (on the page this header row appears below the columns it labels) -->")
+            line_num += 2
         if is_likely(sec):
             # LIKELY: still flagged (the uncertainty marker follows), but the words fit the
             # drawn cells evenly - probably right; cite the page, verify exact values
