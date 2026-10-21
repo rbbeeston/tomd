@@ -152,6 +152,7 @@ def find_code_pairs(blocks: list[Block], rules_for=None) -> list[TableCandidate]
         rules = rules_for(page) if (rules_for and mono) else []
         code_blocks = [b for b in _blocks(mono, rules) if len(b) >= 2]
         pairs = []
+        weak = []                     # pairs whose sides share too little code on their own
         for i, a in enumerate(code_blocks):
             for b in code_blocks[i + 1:]:
                 left, right = (a, b) if _box(a)[0] <= _box(b)[0] else (b, a)
@@ -175,6 +176,7 @@ def find_code_pairs(blocks: list[Block], rules_for=None) -> list[TableCandidate]
                     pairs.append((left, right, score))
                 else:
                     rec.exclude("codepair", page, box, "blocks do not share their code", "meaning", round(score, 3))
+                    weak.append((left, right, score))
         # one block pairs once: keep its best partner
         pairs.sort(key=lambda p: -p[2])
         used: set[int] = set()
@@ -184,6 +186,24 @@ def find_code_pairs(blocks: list[Block], rules_for=None) -> list[TableCandidate]
                 continue
             used |= {id(left), id(right)}
             kept.append((left, right, score))
+        # a weak pair stacked directly on a kept pair (the same column starts, nothing
+        # between) is a row of the same comparison: the layout is the evidence
+        for w in weak:
+            if id(w[0]) in used or id(w[1]) in used:
+                continue
+            for k in kept:
+                same_cols = (abs(_box(w[0])[0] - _box(k[0])[0]) <= _STACK_TOL
+                             and abs(_box(w[1])[0] - _box(k[1])[0]) <= _STACK_TOL)
+                top, bot = sorted((w, k), key=lambda p: _box(p[0])[1])
+                gap_lo = max(_box(top[0])[3], _box(top[1])[3])
+                gap_hi = min(_box(bot[0])[1], _box(bot[1])[1])
+                between = any(gap_lo + 1 < (l.bbox[1] + l.bbox[3]) / 2 < gap_hi - 1 and
+                              l.bbox[0] < _box(w[1])[2] and l.bbox[2] > _box(w[0])[0] for l in rest)
+                if same_cols and 0 <= gap_hi - gap_lo <= 60 and not between:
+                    evidence.current().feature("codepair", page, _box(w[0]), "stacked on a kept pair", "words", 1.0)
+                    kept.append(w)
+                    used |= {id(w[0]), id(w[1])}
+                    break
         kept.sort(key=lambda p: _box(p[0])[1])
 
         def labels(pair):
