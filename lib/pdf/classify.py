@@ -357,6 +357,11 @@ def gate_tables(doc, pages, sections: list[Section], paper: str = "") -> dict:
                     _repair_stray_words(sec, words, rules, rel)
             except Exception as e:      # the record is diagnosis only; never fail on it
                 _log.debug("relations failed: %s", e)
+            # content plausibility (checks/plausible.py) - diagnosis only: measured, a
+            # violation is right about a wrong table 34% of the time (12% recall)
+            from .checks.plausible import plausibility
+            rows_text = [[" ".join(sp.text for sp in c if sp.text != "\n").strip() for c in r] for r in sec.columns]
+            sec.metadata["plausibility"] = [d for _, d in plausibility(rows_text)]
             # stage 2: a level per dimension (rows, columns, header, cells) - diagnosis only
             from .dimensions import dimensions
             sec.metadata["dimensions"] = dimensions(sec.metadata)

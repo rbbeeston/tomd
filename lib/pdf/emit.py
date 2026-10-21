@@ -687,6 +687,9 @@ def emit_prompts(sections: list[Section]) -> str | None:
                              "and the table stays flagged. The first reading, from the "
                              f"{rep.get('first_source', '')} extractor, is the first version below.")
                 parts.append("")
+            if sec.metadata.get("plausibility"):
+                parts.append("The content looks odd here: " + "; ".join(sec.metadata["plausibility"][:3]) + ".")
+                parts.append("")
             if sec.metadata.get("dimensions"):
                 from .dimensions import weak_note
                 note = weak_note(sec.metadata["dimensions"])
