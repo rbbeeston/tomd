@@ -237,6 +237,12 @@ def build(words, hrules=(), specialists=None):
             prev = grid_lines[i - 1]
             lone_key_wrap = set(prev) == {key}
             new = key in cl and not (lone_key_wrap and len(cl) == 1)
+            # an empty key column still starts a row when the line starts items in
+            # two or more columns, at least one where the line above had none (user's
+            # line-alignment rule); a wrap continuation only extends columns in use
+            if (not new and key not in cl and len(cl) >= 2 and any(c not in prev for c in cl if c != key)
+                    and len(hrules) <= 3):     # rows not drawn (booktabs or none): a drawn grid's rules decide
+                new = True
         content_new.append(new)
         if new:
             balance = {c: 0 for c in range(ncol)}

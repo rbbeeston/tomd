@@ -753,6 +753,44 @@ def _is_header_row(cand: TableCandidate) -> bool:
             and all(len(t.split()) <= 6 and not re.search(r"[;{}()<>=]|::|&&", t) for t in texts))
 
 
+def split_at_headers(cand: TableCandidate) -> list[TableCandidate]:
+    """Two tables stacked in one reading: a different header row inside the body
+    (short bold labels after a non-bold row) starts a new table (the user's
+    header rule; an identical header repeated is the same table and stays).
+    Single-page readings only; tags and polls delimit their own tables."""
+    if len(cand.pages) != 1 or cand.source in ("tags", "poll") or len(cand.rows) < 4 or not _is_header_row(cand):
+        return [cand]
+    head = cand.text_rows()[0]
+    text = cand.text_rows()
+    cuts = []
+    for i in range(2, len(cand.rows) - 1):
+        probe = TableCandidate(cand.source, cand.rows[i:], {})
+        if (_is_header_row(probe) and not _bold_row(cand.rows[i - 1])
+                and not _same_header(text[i], head)):
+            cuts.append(i)
+    if not cuts:
+        return [cand]
+    # only a clean reading splits: a cell of absorbed prose (40+ words) means the
+    # reading is wrong anyway, and splitting it would lose the region's flag
+    if any(len(x.split()) >= 40 for r in text for x in r):
+        return [cand]
+    out = []
+    pg = cand.pages[0]
+    for a, b in zip([0] + cuts, cuts + [len(cand.rows)]):
+        rows = cand.rows[a:b]
+        lines = [ln for r in rows for c in r for ln in c]
+        if not lines:
+            continue
+        box = (min(l.bbox[0] for l in lines), min(l.bbox[1] for l in lines),
+               max(l.bbox[2] for l in lines), max(l.bbox[3] for l in lines))
+        part = TableCandidate(cand.source, rows, {pg: box})
+        part.flags = list(cand.flags) + ["split-at-header"]
+        if hasattr(cand, "trace"):
+            part.trace = cand.trace
+        out.append(part)
+    return out
+
+
 def _new_header(c: TableCandidate, prev: TableCandidate) -> bool:
     """A different header row starts a new table (user, 2026-10-19)."""
     if _same_header(c.text_rows()[0], prev.text_rows()[0]):
@@ -893,6 +931,8 @@ def select_tables(tomd_sections: list[Section],
         codepairs = stitch_pages(list(codepairs), blocks, furniture) if codepairs else []
         content = stitch_pages(list(content), blocks, furniture) if content else []
     cands = tagged + list(polls) + ruled + list(codepairs) + tomd + list(content)
+    if os.environ.get("TOMD_HEADER_SPLIT") != "0":
+        cands = [part for c in cands for part in split_at_headers(c)]
     rec = evidence.current()
     for c in cands:
         c.flags = c.flags + table_flags(c)
@@ -947,8 +987,11 @@ def select_tables(tomd_sections: list[Section],
                 extra = [r for r, t in zip(k.rows[1:], tops_k[1:])
                          if t is not None and not any(u is not None and abs(u - t) <= 3 for u in tops_r)]
                 keys = [" ".join(ln.text.strip() for ln in r[0]).strip() if r else "" for r in extra]
-                records = all(kk and len(kk.split()) <= 6 and not kk[0].islower() and not kk.startswith(('"', "“"))
-                              for kk in keys)
+                # an empty key is a record too when two or more other cells start items
+                # (the line-alignment rule: "| graph_reference_t<G> | g | Graph reference")
+                filled = [sum(any(ln.text.strip() for ln in cell) for cell in r[1:]) for r in extra]
+                records = all((kk and len(kk.split()) <= 6 and not kk[0].islower() and not kk.startswith(('"', "“")))
+                              or (not kk and n >= 2) for kk, n in zip(keys, filled))
                 if records and all(t is None or any(u is not None and abs(u - t) <= 3 for u in tops_k) for t in tops_r):
                     rec.feature("rules", pg, bb, "content rows refine the rule bands", "words", k.shape[0])
                     k.flags = k.flags + ["refines-rules"]
