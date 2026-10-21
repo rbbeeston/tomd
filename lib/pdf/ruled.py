@@ -28,6 +28,7 @@ import logging
 import os
 from collections import Counter
 
+from .pagecache import rawdict as _rawdict
 from .types import Line, Span, TableCandidate
 from .mono import classify_monospace
 from . import evidence
@@ -775,7 +776,7 @@ def extract_ruled_tables(page, page_num: int, drawings=None) -> list[TableCandid
         drawings = page.get_drawings()
     if not any(it[0] in ("l", "re") for d in drawings for it in d["items"]):
         return []                       # nothing drawn: no ruled table
-    raw = page.get_text("rawdict", flags=0)
+    raw = _rawdict(page)
     chars = _page_chars(raw)
     words = _page_words(raw)
     tables = _grid_tables(page, page_num, chars, drawings)
