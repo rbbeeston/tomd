@@ -572,6 +572,12 @@ def emit_markdown(metadata: dict, sections: list[Section]) -> str:
         rendered = _render_section_md(sec)
         if not rendered.strip():
             continue
+        if is_likely(sec):
+            # LIKELY: still flagged (the uncertainty marker follows), but the words fit the
+            # drawn cells evenly - probably right; cite the page, verify exact values
+            parts.append("<!-- tomd:likely reason=fit (the words fit the drawn cells evenly: probably "
+                         "right, not proven; cite the page and verify exact values before quoting) -->")
+            line_num += 2
         label = sec.metadata.get("figure_label") if sec.kind == SectionKind.TABLE and sec.columns else None
         if label:
             # a table drawn inside a figure: a label line naming the figure, before
@@ -593,6 +599,14 @@ def emit_markdown(metadata: dict, sections: list[Section]) -> str:
     md = "\n\n".join(parts)
     md = md.rstrip() + "\n"
     return md
+
+
+def is_likely(sec: Section) -> bool:
+    """A flagged table whose words fit its drawn cells evenly (fit.py): 'likely
+    correct', between trusted (HIGH) and flagged. Never HIGH until a fresh
+    sample proves the fit about 99% precise out of sample."""
+    return (sec.kind == SectionKind.TABLE and bool(sec.metadata.get("likely"))
+            and sec.confidence != Confidence.HIGH)
 
 
 def _is_uncertain_table(sec: Section) -> bool:
@@ -660,6 +674,11 @@ def emit_prompts(sections: list[Section]) -> str | None:
             parts.append("")
             if sec.metadata.get("table_note"):
                 parts.append(sec.metadata["table_note"])
+                parts.append("")
+            if is_likely(sec):
+                parts.append("Likely correct: the words fit this table's drawn cells evenly (every word inside "
+                             "one cell, even padding, rows and columns as drawn). Treat it as probably right; "
+                             "cite the page and verify exact values before quoting them.")
                 parts.append("")
             rep = sec.metadata.get("llm_repair") or {}
             if rep.get("result") == "verified":
