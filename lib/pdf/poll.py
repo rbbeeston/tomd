@@ -18,6 +18,7 @@ the same line ("SF F N A SA: 4 5 1 0 0") is inline prose and is left alone.
 import logging
 import re
 
+from .pagecache import rawdict as _rawdict
 from .types import TableCandidate
 from .ruled import _page_words, _word_chars, _chars_to_lines, _text_lines
 
@@ -83,9 +84,12 @@ def _strip_zero_width(lines):
     return [ln for ln in lines if ln.spans]
 
 
-def extract_poll_tables(page, page_num: int) -> list[TableCandidate]:
-    """Poll result tables on one page."""
-    raw = page.get_text("rawdict", flags=0)
+def extract_poll_tables(page, page_num: int, words_hint=None) -> list[TableCandidate]:
+    """Poll result tables on one page. `words_hint` (the page's words, already
+    extracted) lets a page with no vote label skip the character extraction."""
+    if words_hint is not None and not any(VOTE_LABELS.get(_clean(w[4]).lower()) == -1 for w in words_hint):
+        return []
+    raw = _rawdict(page)
     words = [w for w in _page_words(raw) if _clean(w[4])]
     if not any(VOTE_LABELS.get(_clean(w[4]).lower()) == -1 for w in words):
         return []

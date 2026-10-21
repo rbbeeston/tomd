@@ -255,6 +255,8 @@ def _run_pipeline(path: Path) -> PipelineResult:
     path = Path(path)
     result = PipelineResult()
     result.evidence = evidence.reset()
+    from .pagecache import clear as _clear_pages
+    _clear_pages()
     from .llmrepair import reset_paper
     reset_paper()                       # this paper's LLM repair record (summary)
     doc = None
@@ -317,7 +319,7 @@ def _run_pipeline(path: Path) -> PipelineResult:
                 drawings = page.get_drawings()
                 page_rules[pg_num] = page_hrules(page, drawings)
                 all_ruled_tables.extend(extract_ruled_tables(page, pg_num, drawings))
-                all_poll_tables.extend(extract_poll_tables(page, pg_num))
+                all_poll_tables.extend(extract_poll_tables(page, pg_num, page_words[-1] if page_words else None))
             except Exception as e:  # never let a table source break conversion
                 _log.warning("Table extraction failed on page %d: %s", pg_num, e)
 
