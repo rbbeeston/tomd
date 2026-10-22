@@ -933,8 +933,11 @@ def join_split_words(cands: list[TableCandidate], blocks: list[Block]) -> None:
     that runs to the cell's right edge ending mid-token, followed by a line that
     continues the token, is joined without a space - when the joined token occurs
     elsewhere in the document and one of the pieces never occurs on its own there, or
-    when the break splits one identifier (underscores on both sides) and a piece never
-    occurs on its own. A name followed by a number ("SC 22") is never joined.
+    when the break splits one identifier (underscores on both sides) or one long number
+    or paper name (a run of 5+ characters ending in a digit, broken before a remainder
+    of at most two digits: "P0876R1" / "1", "20210" / "6") and a piece never occurs on
+    its own. A name followed by a number ("SC 22") and a year followed by a version
+    ("2022" / "17.14") are never joined.
     The next line is marked (joins_prev); cell text and spans honour the mark."""
     vocab = Counter(t for b in blocks for ln in b.lines for t in _WORDTOK.findall(ln.text))
     for c in cands:
@@ -953,10 +956,10 @@ def join_split_words(cands: list[TableCandidate], blocks: list[Block]) -> None:
                         continue                      # the line ended well short of the edge: a real break
                     pa, pb = _WORDTOK.findall(ta)[-1], _WORDTOK.findall(tb)[0]
                     # the joined token is a word elsewhere and a piece is not; or the break splits
-                    # one identifier (an underscore in both pieces)
+                    # one identifier (an underscore in both pieces) or one long number cut short
                     if pa.isalpha() and pb.isdigit():
                         continue                      # a name and a number ("SC 22"): not one token
-                    ident = "_" in pa and "_" in pb
+                    ident = ("_" in pa and "_" in pb) or (len(pa) >= 5 and pa[-1].isdigit() and pb.isdigit() and len(pb) <= 2)
                     if (vocab[pa + pb] >= 1 and (vocab[pa] <= 1 or vocab[pb] <= 1)) or (ident and (vocab[pa] <= 1 or vocab[pb] <= 1)):
                         b.joins_prev = True
 
