@@ -874,7 +874,7 @@ def extract_ruled_tables(page, page_num: int, drawings=None) -> list[TableCandid
     chars = _page_chars(raw)
     words = _page_words(raw)
     tables = _grid_tables(page, page_num, chars, drawings)
-    if os.environ.get("TOMD_COLRULES", "0") == "1":
+    if os.environ.get("TOMD_COLRULES", "1") == "1":
         tables += _column_ruled_tables(page_num, chars, drawings, [t.bboxes[page_num] for t in tables])
     # Only plausible grids claim their area: find_tables can also build a
     # junk grid from section underlines and a real table's verticals, which
