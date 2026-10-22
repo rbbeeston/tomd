@@ -770,6 +770,100 @@ def _overlaps(a, b) -> bool:
     return not (a[2] < b[0] or b[2] < a[0] or a[3] < b[1] or b[3] < a[1])
 
 
+def _column_ruled_tables(page_num, chars, drawings, taken) -> list[TableCandidate]:
+    """Tables drawn with column rules only (LaTeX `|c|c|` with an \\hline under the
+    header, no outer frame): vertical segments stacked row by row at the same x
+    positions are the column dividers, each band of segments is a row, and a
+    horizontal rule across the band gives the table's width. find_tables needs
+    closed cells and misses them."""
+    vs = []
+    hs = []
+    for d in drawings:
+        for it in d["items"]:
+            if it[0] == "l":
+                a, b = it[1], it[2]
+                if abs(a.x - b.x) < 1.0 and abs(a.y - b.y) >= 6.0:
+                    vs.append((a.x, min(a.y, b.y), max(a.y, b.y)))
+                elif abs(a.y - b.y) < 1.0 and abs(a.x - b.x) >= 20.0:
+                    hs.append((a.y, min(a.x, b.x), max(a.x, b.x)))
+            elif it[0] == "re":
+                r = it[1]
+                if r.width <= _RULE_MAX_THICK and r.height >= 6.0:
+                    vs.append(((r.x0 + r.x1) / 2, r.y0, r.y1))
+                elif r.height <= _RULE_MAX_THICK and r.width >= 20.0:
+                    hs.append(((r.y0 + r.y1) / 2, r.x0, r.x1))
+    # bands: segments sharing their top and bottom
+    bands: list[list] = []
+    for x, y0, y1 in sorted(vs, key=lambda v: (round(v[1]), v[0])):
+        if bands and abs(bands[-1][0] - y0) <= 1.2 and abs(bands[-1][1] - y1) <= 1.2:
+            bands[-1][2].append(x)
+        else:
+            bands.append([y0, y1, [x]])
+    for b in bands:
+        b[2] = sorted(b[2])
+    # tables: consecutive bands with the same dividers, touching
+    groups: list[list] = []
+    for b in sorted(bands, key=lambda b: b[0]):
+        g = groups[-1] if groups else None
+        if (g and -1.5 <= b[0] - g[-1][1] <= 2.5 and len(b[2]) == len(g[-1][2])
+                and all(abs(p - q) <= 1.5 for p, q in zip(b[2], g[-1][2]))):
+            g.append(b)
+        else:
+            groups.append([b])
+    out = []
+    for g in groups:
+        if len(g) < 2:
+            continue
+        top, bot, xs = g[0][0], g[-1][1], g[0][2]
+        across = [h for h in hs if top - 1.5 <= h[0] <= bot + 1.5 and h[1] < xs[0] and h[2] > xs[-1]]
+        if not across:
+            continue                    # no rule gives the width: leave it to the other readers
+        x0, x1 = min(h[1] for h in across), max(h[2] for h in across)
+        box = (x0, top, x1, bot)
+        if any(_overlaps(box, t) for t in taken):
+            continue
+        edges = [x0] + xs + [x1]
+        rows = []
+        ok = True
+        for b in g:
+            cell_chars = [_chars_in(chars, (a, b[0], c, b[1])) for a, c in zip(edges, edges[1:])]
+            row = [_chars_to_lines(cc, page_num) for cc in cell_chars]
+            # the rules must mark the rows and the columns: one text line per band
+            # (a band over several lines is not a row), and no cell holding a
+            # column-sized gap (columns separated by space, not by rules)
+            if any(len([ln for ln in cell if ln.text.strip()]) > 1 for cell in row):
+                ok = False
+                break
+            for cc in cell_chars:
+                vis = sorted((c for c in cc if c[0].strip()), key=lambda c: c[1][0])
+                if vis:
+                    h = sorted(c[1][3] - c[1][1] for c in vis)[len(vis) // 2] or 8
+                    if any(q[1][0] - p_[1][2] >= 1.5 * h for p_, q in zip(vis, vis[1:])):
+                        ok = False
+            if not ok:
+                break
+            rows.append(row)
+        if not ok:
+            evidence.current().exclude("grid", page_num, box, "column rules do not mark the rows or columns", "paths")
+            continue
+        rows = [r for r in rows if any(r)]
+        if len(rows) < 2 or max(len(r) for r in rows) < 2:
+            continue
+        evidence.current().nominate("grid", page_num, box, "column rules (no frame)", "paths", len(xs))
+        out.append(TableCandidate("grid", rows, {page_num: box}))
+    return out
+
+
+_EXCLUDED_GRIDS: list[TableCandidate] = []
+
+
+def take_excluded_grids() -> list[TableCandidate]:
+    """Grids the reader excluded since the last call (for the drop marks)."""
+    out = list(_EXCLUDED_GRIDS)
+    _EXCLUDED_GRIDS.clear()
+    return out
+
+
 def extract_ruled_tables(page, page_num: int, drawings=None) -> list[TableCandidate]:
     """All tables on one page that ruling lines reveal."""
     if drawings is None:
@@ -780,6 +874,8 @@ def extract_ruled_tables(page, page_num: int, drawings=None) -> list[TableCandid
     chars = _page_chars(raw)
     words = _page_words(raw)
     tables = _grid_tables(page, page_num, chars, drawings)
+    if os.environ.get("TOMD_COLRULES", "0") == "1":
+        tables += _column_ruled_tables(page_num, chars, drawings, [t.bboxes[page_num] for t in tables])
     # Only plausible grids claim their area: find_tables can also build a
     # junk grid from section underlines and a real table's verticals, which
     # must not hide the real table from the rule-band reader.
@@ -789,6 +885,10 @@ def extract_ruled_tables(page, page_num: int, drawings=None) -> list[TableCandid
         if bad:
             evidence.current().exclude("grid", page_num, t.bboxes[page_num],
                                        "grid failed checks: " + ", ".join(sorted(bad)), "paths")
+            # a drop is never silent: the excluded reading goes on as a rejected
+            # candidate, so a table-level mark is left where no kept table covers it
+            t.flags = sorted(set(t.flags) | set(table_flags(t)))
+            _EXCLUDED_GRIDS.append(t)
     tables = [t for t in tables if not set(table_flags(t)) & BAD_TABLE_FLAGS]
     grids = [t.bboxes[page_num] for t in tables]
     # Rules that are part of a grid already found belong to it, not to a

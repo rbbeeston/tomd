@@ -22,7 +22,7 @@ from .codepair import find_code_pairs
 from . import evidence
 from .docmeasure import measure as doc_measure
 from .content import content_candidates, page_hrules
-from .ruled import extract_ruled_tables
+from .ruled import extract_ruled_tables, take_excluded_grids
 from .tagged import extract_tagged_tables
 from .poll import extract_poll_tables
 from .wg21 import extract_metadata_from_blocks
@@ -287,6 +287,7 @@ def _run_pipeline(path: Path) -> PipelineResult:
         all_spatial_blocks = []
         all_edge_items = []
         all_ruled_tables = []
+        take_excluded_grids()                   # start the run with no leftovers
         all_poll_tables = []
 
         keep_alive: list = []
@@ -450,6 +451,8 @@ def _run_pipeline(path: Path) -> PipelineResult:
         all_mupdf_blocks = remove_table_regions(all_mupdf_blocks, table_sections)
         all_spatial_blocks = remove_table_regions(all_spatial_blocks, table_sections)
     # Table-like areas left in the text, marked uncertain once sections exist.
+    # grids the reader excluded are drops too: marked where no kept table covers them
+    rejected_tables += take_excluded_grids()
     dropped = dropped_uncovered(rejected_tables, table_sections)
     if dropped:
         result.discards.append(("dropped table candidates", f"{len(dropped)} reading(s) failed the "

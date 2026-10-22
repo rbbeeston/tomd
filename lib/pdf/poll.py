@@ -84,16 +84,89 @@ def _strip_zero_width(lines):
     return [ln for ln in lines if ln.spans]
 
 
+def _split_pipes(words):
+    """Pipe-delimited polls ("SF|WF| N|WA|SA"): a word holding '|' is split at
+    its '|' characters into words of their own (the pipes themselves dropped)."""
+    out = []
+    for w in words:
+        if "|" not in w[4]:
+            out.append(w)
+            continue
+        chars = w[5] if len(w) > 5 and isinstance(w[5], list) else None
+        if not chars:
+            # no character boxes (page words from fitz): place parts by their share of the text
+            t, n_, pos = w[4], max(len(w[4]), 1), 0
+            for prt in t.split("|"):
+                if prt.strip():
+                    out.append((w[0] + (w[2] - w[0]) * pos / n_, w[1], w[0] + (w[2] - w[0]) * (pos + len(prt)) / n_,
+                                w[3], prt.strip()))
+                pos += len(prt) + 1
+            continue
+        part: list = []
+        for k, ch in enumerate(chars + [("|", None)]):
+            if ch[0] == "|":
+                if part:
+                    bbs = [c[1] for c in part]
+                    last = k == len(chars)
+                    out.append((min(b[0] for b in bbs), min(b[1] for b in bbs), max(b[2] for b in bbs),
+                                max(b[3] for b in bbs), "".join(c[0] for c in part), list(part),
+                                w[6] if last and len(w) > 6 else False))
+                part = []
+            else:
+                part.append(ch)
+    return out
+
+
+def _header_prefix(lw):
+    """The leading words that are a poll header, when the rest of the line is an
+    annotation set apart from it - "(21 present)" after a gap, or a raised
+    footnote mark on the last label. None when there is no such header."""
+    labels = [_clean(w[4]) for w in lw]
+    h = sorted(w[3] - w[1] for w in lw)[len(lw) // 2] or 8
+    for k in range(len(lw) - 1, 2, -1):
+        if not vote_header(labels[:k]):
+            continue
+        rest = lw[k:]
+        if VOTE_LABELS.get(labels[k].lower()) is not None:
+            continue                    # the header does not stop before a vote label
+        if len(rest) == 1 and re.fullmatch(r"\d{1,2}", labels[k]) and rest[0][0] - lw[k - 1][2] <= 1.2 * h:
+            return lw                   # a footnote mark after the last label stays with it ("SA 3")
+        gap = rest[0][0] - lw[k - 1][2]
+        raised = all((w[3] - w[1]) < 0.85 * h and w[3] < lw[k - 1][3] - 0.15 * h for w in rest)
+        if gap >= 0.9 * h or raised or _clean(rest[0][4]).startswith("("):
+            return lw[:k]
+    return None
+
+
+def _baseline_lines(words):
+    """Lines by shared baseline. A note set between two lines (an outcome
+    centred beside a poll's header and counts) stays a line of its own instead
+    of chaining the header and the counts into one line."""
+    if not words:
+        return []
+    hs = sorted(w[3] - w[1] for w in words)
+    tol = max(1.5, 0.25 * hs[len(hs) // 2])
+    out = []
+    for w in sorted(words, key=lambda w: w[3]):
+        if out and abs(out[-1][2][-1][3] - w[3]) <= tol:
+            out[-1][2].append(w)
+            out[-1][0] = min(out[-1][0], w[1])
+            out[-1][1] = max(out[-1][1], w[3])
+        else:
+            out.append([w[1], w[3], [w]])
+    return [(a, b, ws) for a, b, ws in out]
+
+
 def extract_poll_tables(page, page_num: int, words_hint=None) -> list[TableCandidate]:
     """Poll result tables on one page. `words_hint` (the page's words, already
     extracted) lets a page with no vote label skip the character extraction."""
-    if words_hint is not None and not any(VOTE_LABELS.get(_clean(w[4]).lower()) == -1 for w in words_hint):
+    if words_hint is not None and not any(VOTE_LABELS.get(_clean(w[4]).lower()) == -1 for w in _split_pipes(words_hint)):
         return []
     raw = _rawdict(page)
-    words = [w for w in _page_words(raw) if _clean(w[4])]
+    words = [w for w in _split_pipes(_page_words(raw)) if _clean(w[4])]
     if not any(VOTE_LABELS.get(_clean(w[4]).lower()) == -1 for w in words):
         return []
-    lines = _text_lines(words)
+    lines = _baseline_lines(words)
     out = []
     for i, (top, bot, lw) in enumerate(lines):
         lw = sorted(lw, key=lambda w: w[0])
@@ -103,16 +176,41 @@ def extract_poll_tables(page, page_num: int, words_hint=None) -> list[TableCandi
         if not vote_header([_clean(w[4]) for w in lw]):
             head = _label_cells(lw)
             if not vote_header([" ".join(_clean(w[4]) for w in c) for c in head]):
-                continue
+                pre = _header_prefix(lw)
+                if pre is None:
+                    continue
+                if pre is lw:                   # header plus a footnote mark on its last label
+                    head = [[w] for w in lw[:-2]] + [[lw[-2], lw[-1]]]
+                    lw = lw[:-1]
+                else:
+                    head = [[w] for w in pre]   # an annotation after the header is not part of the poll
+                    lw = pre
         centers = [(c[0][0] + c[-1][2]) / 2 for c in head]
         half = min(b - a for a, b in zip(centers, centers[1:])) / 2
         height = bot - top
+        # a raised footnote mark right after the last label belongs to it ("SA 3")
+        last = head[-1][-1]
+        marks = [w for _, _, l2 in lines for w in l2
+                 if w not in lw and w[1] < bot and w[3] > top and len(_clean(w[4])) <= 2
+                 and 0 <= w[0] - last[2] <= 1.2 * height and _clean(w[4]).isdigit()]
+        if marks:
+            head[-1] = head[-1] + marks[:1]
         rows = [head]
         last_bot = bot
-        for top2, bot2, lw2 in lines[i + 1:i + 1 + _MAX_ROWS]:
+        right = max(w[2] for w in lw) + half
+        for top2, bot2, lw2 in lines[i + 1:i + 1 + _MAX_ROWS + 2]:
+            if len(rows) > _MAX_ROWS:
+                break
+            # a line wholly right of the header's columns (an outcome note) or a
+            # footnote mark taken into the header is skipped, not a row
+            if all(w[0] > right for w in lw2) or all(any(w is m for m in marks) for w in lw2):
+                continue
             if top2 - last_bot > _ROW_GAP_RATIO * height:
                 break
-            if not all(_COUNT_RE.match(_clean(w[4])) for w in lw2):
+            # words wholly right of the header's columns are an annotation
+            # beside the poll (an outcome note), not counts
+            lw2 = [w for w in lw2 if w[0] <= right]
+            if not lw2 or not all(_COUNT_RE.match(_clean(w[4])) for w in lw2):
                 break
             cells = _row_cells(lw2, centers, half)
             if cells is None:
