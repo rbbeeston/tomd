@@ -37,6 +37,7 @@ import urllib.error
 import urllib.request
 from collections import Counter
 
+from .pagecache import words_in
 from .types import Confidence, Section, SectionKind
 from .validate import verify_pieces, escalate, verify_layout
 from .ocrcheck import check_table, ocr_enabled
@@ -301,16 +302,16 @@ def gate_tables(doc, pages, sections: list[Section], paper: str = "") -> dict:
     summary = {"jev_version": version, "tables": len(tables)}
     for i, (sec, (pg, x, _, _)) in enumerate(zip(tables, regions)):
         _, bbox = sec.metadata["region_bbox"]
-        words = pages[pg].get_text("words", clip=bbox)
+        words = words_in(pages[pg], bbox)
         reason = verify_layout(sec, words)
         if reason == "multi-page" and sec.metadata.get("pieces"):
             def words_on(p, b):
-                return pages[p].get_text("words", clip=b) if (b and p in pages) else []
+                return words_in(pages[p], b) if (b and p in pages) else []
             reason = verify_pieces(sec, words_on)
         if (not reason and "conservation" in sec.metadata.get("uncertain_reasons", [])
                 and os.environ.get("TOMD_HEADER") != "0"):
             # an aligned row just above the table may be its header (checked by content contrast)
-            above = pages[pg].get_text("words", clip=(bbox[0] - 2, bbox[1] - 22, bbox[2] + 2, bbox[1] - 0.5))
+            above = words_in(pages[pg], (bbox[0] - 2, bbox[1] - 22, bbox[2] + 2, bbox[1] - 0.5))
             if above:
                 sec.metadata["_above_words"] = above
                 reason = "header-above"
@@ -411,7 +412,7 @@ def gate_tables(doc, pages, sections: list[Section], paper: str = "") -> dict:
                 client = _client()
                 if client is None:
                     break
-            repair(sec, pages[pg], bbox, pages[pg].get_text("words", clip=bbox),
+            repair(sec, pages[pg], bbox, words_in(pages[pg], bbox),
                    verify_layout, client)
             if not llm_enabled():      # credentials rejected: stop for this paper
                 break

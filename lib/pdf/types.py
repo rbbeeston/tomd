@@ -134,7 +134,16 @@ class TableCandidate:
     def cell_text(self, r: int, c: int) -> str:
         if c >= len(self.rows[r]):
             return ""
-        return " ".join(ln.text.strip() for ln in self.rows[r][c] if ln.text.strip())
+        parts: list[str] = []
+        for ln in self.rows[r][c]:
+            t = ln.text.strip()
+            if not t:
+                continue
+            if parts and getattr(ln, "joins_prev", False):
+                parts[-1] += t                  # a word split by the cell's width
+            else:
+                parts.append(t)
+        return " ".join(parts)
 
     def text_rows(self) -> list[list[str]]:
         return [[self.cell_text(r, c) for c in range(len(row))]

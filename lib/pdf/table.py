@@ -915,13 +915,50 @@ def _continuation_votes(a: TableCandidate, pa: int, b: TableCandidate, pb: int, 
 
 
 def _cell_spans(cell: list[Line]) -> list[Span]:
-    """A cell's spans, with a "\\n" span between wrapped lines."""
+    """A cell's spans, with a "\\n" span between wrapped lines (none where a word
+    split by the cell's width continues on the next line)."""
     out: list[Span] = []
     for i, ln in enumerate(cell):
-        if i:
+        if i and not getattr(ln, "joins_prev", False):
             out.append(Span(text="\n"))
         out.extend(ln.spans)
     return out
+
+
+_WORDTOK = re.compile(r"\w+")
+
+
+def join_split_words(cands: list[TableCandidate], blocks: list[Block]) -> None:
+    """A word split by a narrow cell is still one word (user, 2026-10-21): a cell line
+    that runs to the cell's right edge ending mid-token, followed by a line that
+    continues the token, is joined without a space - when the joined token occurs
+    elsewhere in the document and one of the pieces never occurs on its own there, or
+    when the break splits one identifier (underscores on both sides) and a piece never
+    occurs on its own. A name followed by a number ("SC 22") is never joined.
+    The next line is marked (joins_prev); cell text and spans honour the mark."""
+    vocab = Counter(t for b in blocks for ln in b.lines for t in _WORDTOK.findall(ln.text))
+    for c in cands:
+        for row in c.rows:
+            for cell in row:
+                lines = [ln for ln in cell if ln.text.strip()]
+                if len(lines) < 2:
+                    continue
+                right = max(ln.bbox[2] for ln in lines)
+                for a, b in zip(lines, lines[1:]):
+                    ta, tb = a.text.rstrip(), b.text.lstrip()
+                    if not re.search(r"\w$", ta) or not re.match(r"\w", tb):
+                        continue
+                    h = (a.bbox[3] - a.bbox[1]) or 8.0
+                    if a.bbox[2] < right - 2.0 * h:
+                        continue                      # the line ended well short of the edge: a real break
+                    pa, pb = _WORDTOK.findall(ta)[-1], _WORDTOK.findall(tb)[0]
+                    # the joined token is a word elsewhere and a piece is not; or the break splits
+                    # one identifier (an underscore in both pieces)
+                    if pa.isalpha() and pb.isdigit():
+                        continue                      # a name and a number ("SC 22"): not one token
+                    ident = "_" in pa and "_" in pb
+                    if (vocab[pa + pb] >= 1 and (vocab[pa] <= 1 or vocab[pb] <= 1)) or (ident and (vocab[pa] <= 1 or vocab[pb] <= 1)):
+                        b.joins_prev = True
 
 
 def _as_markdown_rows(cand: TableCandidate) -> str:
@@ -1001,6 +1038,8 @@ def select_tables(tomd_sections: list[Section],
         cands = cross_reader_continuation(cands, blocks, furniture)
     if os.environ.get("TOMD_HEADER_SPLIT") != "0":
         cands = [part for c in cands for part in split_at_headers(c)]
+    if os.environ.get("TOMD_WORD_JOIN") != "0":
+        join_split_words(cands, blocks)
     rec = evidence.current()
     for c in cands:
         c.flags = c.flags + table_flags(c)

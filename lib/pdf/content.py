@@ -455,7 +455,9 @@ def content_candidates(pages, regions, specialists=None, rules_by_page=None) -> 
                                rotated_page)
         words_all, rules, rotated_all = cache[page_num]
         x0, y0, x1, y1 = bbox
-        words = [w for w in words_all if w[0] >= x0 - 2 and w[2] <= x1 + 2 and w[1] >= y0 - 2 and w[3] <= y1 + 2]
+        # a word that starts inside the region belongs to it, even when it runs past the
+        # region's right edge (code overflowing its cell or frame)
+        words = [w for w in words_all if w[0] >= x0 - 2 and w[0] < x1 - 1 and w[1] >= y0 - 2 and w[3] <= y1 + 2]
         if len(words) < 2:
             continue
         rows, trace = build(words, _region_rules(rules, words), specialists)
