@@ -26,6 +26,7 @@ this grid; they do not build it.
 from __future__ import annotations
 
 import logging
+import os
 import re
 from collections import Counter
 
@@ -326,8 +327,13 @@ def page_text(page) -> tuple[list[tuple], list[tuple]]:
         hits = [(m, h) for bb, m, h in spans if bb[0] <= xc <= bb[2] and bb[1] <= yc <= bb[3]]
         return any(m for m, _ in hits), (not hits or any(h for _, h in hits))
     words = []
+    by_content = os.environ.get("TOMD_CODE_BY_CONTENT") == "1"
+    if by_content:
+        from .checks.codereader import looks_like_cpp
     for w in page.get_text("words"):
         mono, horizontal = look(w)
+        if by_content and not mono and looks_like_cpp(w[4]):
+            mono = True                 # C++ by its content, set in an ordinary font
         if horizontal:
             words.append(tuple(w[:5]) + (mono,))
     return words, rotated

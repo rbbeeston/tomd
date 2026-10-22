@@ -135,3 +135,15 @@ def read_lines(lines: list[str]) -> list[dict]:
     """per-line facts for one stream of code lines"""
     st = CodeStream()
     return [st.feed(x) for x in lines]
+
+
+_CPP_TOKEN = re.compile(r"::|->|\w<[\w:,\s*&<>]*>|\w\([^)]*\)|[{};]|==|!=|&&|\|\||\+\+|--|<<|>>|"
+                        r"^(?:std|const|constexpr|auto|template|typename|noexcept|nullptr|static_cast|decltype)\b")
+
+
+def looks_like_cpp(text: str) -> bool:
+    """C++ by its content (any font): a token pattern only code has - scope '::', member
+    '->', a template argument list, a call, braces or semicolons, C++ operators, or a
+    leading C++ keyword. Abstains (False) on plain words, numbers and math."""
+    t = text.strip()
+    return bool(t) and not _NOT_CPP.match(t) and bool(_CPP_TOKEN.search(t))
