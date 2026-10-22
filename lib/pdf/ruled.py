@@ -304,15 +304,36 @@ def _grid_tables(page, page_num, chars, drawings) -> list[TableCandidate]:
     return out
 
 
+def _with_overflow(cell_chars, chars, right):
+    """a cell's characters plus those that continue its lines past the table's right
+    edge (same baseline, no gap): text overflowing the last column"""
+    if not cell_chars:
+        return cell_chars
+    out = list(cell_chars)
+    have = {id(c) for c in out}
+    beyond = sorted((c for c in chars if c[1][0] >= right - 1 and id(c) not in have), key=lambda c: c[1][0])
+    for c in beyond:
+        yc = (c[1][1] + c[1][3]) / 2
+        h = (c[1][3] - c[1][1]) or 8.0
+        same = [d for d in out if abs((d[1][1] + d[1][3]) / 2 - yc) < 0.3 * h]
+        if same and 0 <= c[1][0] - max(d[1][2] for d in same) <= 0.3 * h:
+            out.append(c)
+    return out
+
+
 def _grid_tables_in(page, page_num, chars, clip) -> list[TableCandidate]:
     out = []
     finder = page.find_tables(strategy="lines", clip=clip) if clip else page.find_tables(strategy="lines")
     for t in finder.tables:
         rows = []
+        tx1 = t.bbox[2]
         for r in t.rows:
             row = []
             for cell in r.cells:
-                row.append(_chars_to_lines(_chars_in(chars, cell), page_num) if cell else [])
+                cc = _chars_in(chars, cell) if cell else []
+                if cell and abs(cell[2] - tx1) < 1.0:
+                    cc = _with_overflow(cc, chars, tx1)
+                row.append(_chars_to_lines(cc, page_num) if cell else [])
             rows.append(row)
         rows = _drop_empty(rows)
         if len(rows) == 1:
