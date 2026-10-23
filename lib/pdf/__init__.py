@@ -542,11 +542,17 @@ def _run_pipeline(path: Path) -> PipelineResult:
             # regions no reader proposed, found by their whitespace gutters (flag.py):
             # a table without rules (LaTeX tabular, a revision history) is read, not
             # only marked - as the vision readers commit to what they see
+            # a grid the rule reader found but whose reading failed the checks (a struck or
+            # underlined word read as a rule): the content reader reads the same region from
+            # its words, and that reading is checked like any other
             gutter_keys = set()
+            def _ov(a, b):
+                ix = max(0.0, min(a[2], b[2]) - max(a[0], b[0])) * max(0.0, min(a[3], b[3]) - max(a[1], b[1]))
+                return ix / max(1e-6, min((a[2] - a[0]) * (a[3] - a[1]), (b[2] - b[0]) * (b[3] - b[1])))
+            if os.environ.get("TOMD_REREAD_EXCLUDED") != "0":
+                from .ruled import _EXCLUDED_GRIDS
+                regions += [(c.pages[0], c.bboxes[c.pages[0]]) for c in _EXCLUDED_GRIDS if len(c.pages) == 1]
             if os.environ.get("TOMD_ALIGNED_TABLES") != "0":
-                def _ov(a, b):
-                    ix = max(0.0, min(a[2], b[2]) - max(a[0], b[0])) * max(0.0, min(a[3], b[3]) - max(a[1], b[1]))
-                    return ix / max(1e-6, min((a[2] - a[0]) * (a[3] - a[1]), (b[2] - b[0]) * (b[3] - b[1])))
                 for pg, bb, _why, _n in aligned_regions(all_mupdf_blocks):
                     if not any(p == pg and _ov(bb, b) > 0.3 for p, b in regions):
                         regions.append((pg, bb))
@@ -680,6 +686,26 @@ def _run_pipeline(path: Path) -> PipelineResult:
     # does this document hyphenate words at line ends? The document's own text
     # says (docmeasure.hyphenates); where it never does, a line-end hyphen in a
     # cell is the word's own ("Use-cases")
+    errs = list(getattr(result.evidence, "errors", []) or [])
+    if errs:
+        # a reader that raised: every table it touched is at most UNCERTAIN (before the
+        # Markdown is written, so the table is marked there too)
+        pages = {e["page"] for e in errs}
+        for sec in sections:
+            if sec.kind.value != "table":
+                continue
+            spans = {sec.page_num} | {ln.page_num for ln in (sec.lines or [])}
+            if None in pages or spans & pages:
+                sec.confidence = Confidence.UNCERTAIN
+                reasons = sec.metadata.setdefault("uncertain_reasons", [])
+                if "reader error" not in reasons:
+                    reasons.append("reader error")
+    if os.environ.get("TOMD_LEVELS") != "0":
+        # graded levels (L0-L5) and cell markers: metadata, the content is unchanged
+        from .levels import assign as assign_level
+        for sec in sections:
+            if sec.kind.value == "table" and sec.columns:
+                sec.metadata["level"] = assign_level(sec)
     _emit.set_hyphenating(getattr(result, "hyphenates", True))
     md = emit_markdown(metadata, sections)
     prompts = emit_prompts(sections)
@@ -705,20 +731,8 @@ def _run_pipeline(path: Path) -> PipelineResult:
         lines += [f"- {what}: {why}" + (f" (e.g. \"{detail}\")" if detail else "")
                   for what, why, detail in result.discards]
         prompts = (prompts or "# tomd - Conversion Issues\n") + "\n".join(lines) + "\n"
-    errs = list(getattr(result.evidence, "errors", []) or [])
     if errs:
-        # a reader that raised: every table it touched is at most UNCERTAIN, and the
-        # prompts note lists the failure (never a silent loss of a reader)
-        pages = {e["page"] for e in errs}
-        for sec in sections:
-            if sec.kind.value != "table":
-                continue
-            spans = {sec.page_num} | {ln.page_num for ln in (sec.lines or [])}
-            if None in pages or spans & pages:
-                sec.confidence = Confidence.UNCERTAIN
-                reasons = sec.metadata.setdefault("uncertain_reasons", [])
-                if "reader error" not in reasons:
-                    reasons.append("reader error")
+        # the prompts note lists every failure (never a silent loss of a reader)
         prompts = (prompts or "# tomd - Conversion Issues\n") + "\n## Reader errors\n\n" + "\n".join(
             f"- {e['stage']}" + ("" if e["page"] is None else f" (page {e['page'] + 1})")
             + f": {e['type']}: {e['message']}" for e in errs) + (

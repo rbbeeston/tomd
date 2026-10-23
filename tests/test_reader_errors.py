@@ -49,3 +49,6 @@ def test_a_raising_reader_is_recorded_and_flags_its_tables(monkeypatch):
             assert "reader error" in sec.metadata.get("uncertain_reasons", [])
     assert "Reader errors" in (res.prompts or "")
     assert "NameError" in (res.prompts or "")
+    # the Markdown marks them too (the downgrade happens before it is written)
+    flagged = sum(1 for sec in res.sections if sec.kind.value == "table" and sec.confidence == Confidence.UNCERTAIN)
+    assert (res.md or "").count("tomd:uncertain:") >= flagged
