@@ -132,6 +132,10 @@ def build(result, sections, evidence, generator: str) -> dict:
     llm = paper_record()
     if llm["status"] != "off":
         s.setdefault("witnesses", {})["llm"] = llm
+    # text the PDF holds but the page does not show (visibility.py): removed and listed
+    vis = getattr(result, "visibility", None)
+    if vis is not None:
+        s["visibility"] = vis
     s["confidence"] = confidence(s)
     return s
 
@@ -142,12 +146,21 @@ def header_comment(s: dict) -> str:
     conf = "n/a" if c is None else f"{c['value']:.2f}"
     return (f"<!-- tomd:summary tables={t['total']} trusted={t['trusted']} flagged={t['flagged']} "
             f"likely={t.get('likely', 0)} "
-            f"marked={s['marks']} confidence={conf} unfamiliarity={s['unfamiliarity']['score']:.2f} -->")
+            f"marked={s['marks']} confidence={conf} unfamiliarity={s['unfamiliarity']['score']:.2f}"
+            + (f" hidden={s['visibility']['regions']}" if (s.get("visibility") or {}).get("regions") else "")
+            + " -->")
 
 
 def prompts_section(s: dict) -> str:
     t = s["tables"]
-    lines = ["", "## Paper summary", "",
+    vis = s.get("visibility") or {}
+    lines = []
+    if vis.get("regions"):
+        lines += ["", "## Visibility", "",
+                  f"- Text present in the PDF but not shown on the page: {vis['regions']} region(s), "
+                  f"{vis['chars']} characters ({', '.join(vis['by_why'])}), removed from the body and listed at "
+                  "the end of the Markdown (pages and reasons under Removed content)."]
+    lines += ["", "## Paper summary", "",
              f"- Tables: {t['total']} ({t['trusted']} trusted on pages {t['trusted_pages'] or '-'}, "
              f"{t['flagged']} flagged on pages {t['flagged_pages'] or '-'}); possible tables marked: {s['marks']}"
              + (f" (pages {s['marked_pages']})" if s["marked_pages"] else ""),
