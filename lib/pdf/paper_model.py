@@ -1,56 +1,58 @@
-"""Paper-level confidence model (P(no silent table error)), fitted by paper_calibration.py on the existing keys.
+"""Paper-level confidence model (P(no silent table error)), fitted by paper_calibration.py on the existing keys
+(2026-10-23, after the determinism and locality commits: corrected page-restricted labels, tuning sets
+only; calibrated base rate, weak discrimination, cross-validated AUC 0.59).
 
 MODEL gives a raw score; BANDS maps it to the rate measured on the keys
 (cross-validated, adjacent bands pooled where the order breaks), with its
 95% Wilson interval and the number of papers behind it."""
 
 MODEL = {
- "bias": 2.9155544150499475,
+ "bias": 2.1812236057423053,
  "weights": {
   "low_scan": [
-   0.47265625,
-   1.80905771586645,
-   0.0379160711725052
+   0.3837837837837838,
+   1.1872096546361803,
+   0.08505239230877888
   ],
   "marks": [
-   2.74609375,
-   8.033741367893974,
-   -0.183150160246663
+   2.4135135135135135,
+   6.823198194480997,
+   -0.06654406295651383
   ],
   "n_tables": [
-   5.84375,
-   10.915111013521576,
-   0.2548587347155123
+   5.321621621621621,
+   9.156998066318433,
+   -0.45308338198518544
   ],
   "relations": [
-   0.7890625,
-   5.382483661943969,
-   0.04777006380461611
+   0.754054054054054,
+   4.97252421594498,
+   0.2706194568169974
   ],
   "share_flagged": [
-   0.6870022056268326,
-   0.3984035820445578,
-   0.5871451370302395
+   0.7229996683059488,
+   0.3794475635100564,
+   0.13863425589707654
   ],
   "share_likely": [
-   0.03263495162885452,
-   0.14702054218301244,
-   0.036290421988186314
+   0.045549937468536375,
+   0.17072498847372466,
+   0.06630313043601982
   ],
   "share_trusted": [
-   0.25831029437316744,
-   0.3678060974062962,
-   0.5909615903940091
+   0.23645979115351073,
+   0.3524994522540854,
+   0.7750138313751875
   ],
   "undecided": [
-   1.42578125,
-   2.5970158985166876,
-   0.10281723668233653
+   1.272972972972973,
+   2.7925720633493545,
+   -0.1931872188602158
   ],
   "unfamiliar": [
-   0.089453125,
-   0.1359302934512185,
-   0.06506405973917578
+   0.09351351351351352,
+   0.15158114794386388,
+   0.3282199281884949
   ]
  }
 }
@@ -58,23 +60,30 @@ MODEL = {
 BANDS = [
  {
   "from": 0.0,
-  "n": 10,
-  "rate": 0.8,
-  "low": 0.49,
-  "high": 0.943
+  "n": 18,
+  "rate": 0.722,
+  "low": 0.491,
+  "high": 0.875
+ },
+ {
+  "from": 0.7,
+  "n": 22,
+  "rate": 0.727,
+  "low": 0.518,
+  "high": 0.868
  },
  {
   "from": 0.8,
-  "n": 71,
-  "rate": 0.915,
-  "low": 0.828,
-  "high": 0.961
+  "n": 278,
+  "rate": 0.888,
+  "low": 0.846,
+  "high": 0.92
  },
  {
-  "from": 0.9,
-  "n": 175,
-  "rate": 0.966,
-  "low": 0.927,
-  "high": 0.984
+  "from": 0.95,
+  "n": 52,
+  "rate": 0.981,
+  "low": 0.899,
+  "high": 0.997
  }
 ]

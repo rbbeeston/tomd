@@ -14,6 +14,12 @@ conversion is the costly failure, so every conversion carries:
     no mark), from a model calibrated on the answer keys (paper_model.py).
     An unfamiliar paper never gets the familiar papers' figure: confidence
     is capped by unfamiliarity.
+    Calibrated base rate, weak discrimination: refitted 2026-10-23 on the
+    corrected (page-restricted) labels of the tuning sets, the stated figure
+    matches the observed rate within its interval, but the score barely tells
+    papers apart (cross-validated AUC 0.59): most papers get 0.80-0.90. Read
+    it as the rate for papers like this one, not as a judgement of this
+    paper's tables.
 
 Machine-readable (result.summary, written as JSON beside the Markdown), a
 short header comment in the Markdown, and a section in the prompts file.
