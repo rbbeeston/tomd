@@ -321,8 +321,9 @@ def gate_tables(doc, pages, sections: list[Section], paper: str = "") -> dict:
             from .fullwidth import apply as _full_width
             try:
                 _full_width(sec, pages[pg], bbox)
-            except Exception as e:      # a layout refinement only; never fail on it
-                _log.debug("full-width rows failed: %s", e)
+            except Exception as e:      # a layout refinement only; never fail on it, never silently
+                from . import evidence
+                evidence.reader_error("full-width rows", pg, e)
         if os.environ.get("TOMD_FIT") != "0" and not sec.metadata.get("page_bboxes"):
             # the fit witness: words against the drawn cells (fit.py) - recorded
             from .fit import fit as _fit
@@ -343,7 +344,8 @@ def gate_tables(doc, pages, sections: list[Section], paper: str = "") -> dict:
                     # out of sample); it still counts as flagged everywhere
                     sec.metadata["likely"] = {"reason": "fit", "cells": f.get("cells")}
             except Exception as e:
-                _log.debug("fit failed: %s", e)
+                from . import evidence
+                evidence.reader_error("fit", pg, e)
         if os.environ.get("TOMD_RELATIONS") != "0":
             # stage 1: every contradiction between the table and the page, by dimension
             from .content import page_hrules
@@ -356,8 +358,9 @@ def gate_tables(doc, pages, sections: list[Section], paper: str = "") -> dict:
                 if (sec.confidence != Confidence.HIGH and os.environ.get("TOMD_REPAIR") != "0"
                         and "word outside every cell" in sec.metadata["relations"]["kinds"]):
                     _repair_stray_words(sec, words, rules, rel)
-            except Exception as e:      # the record is diagnosis only; never fail on it
-                _log.debug("relations failed: %s", e)
+            except Exception as e:      # the record is diagnosis only; never fail on it, never silently
+                from . import evidence
+                evidence.reader_error("relations", pg, e)
             # content plausibility (checks/plausible.py) - diagnosis only: measured, a
             # violation is right about a wrong table 34% of the time (12% recall)
             from .checks.plausible import plausibility
@@ -417,10 +420,13 @@ def gate_tables(doc, pages, sections: list[Section], paper: str = "") -> dict:
             if not llm_enabled():      # credentials rejected: stop for this paper
                 break
     # the lossless model: spans from the geometry, flattened by emit
-    for sec in tables:
+    for sec, (pg, _, _, _) in zip(tables, regions):
         if (sec.metadata.get("table_source") != "poll" and os.environ.get("TOMD_SPANS") != "0"
                 and not sec.metadata.get("sparse_by_design")):
             sp = detect_spans(sec.columns)
+            if sp and sec.metadata.get("closed_grid") and pg in pages and os.environ.get("TOMD_CLOSED_GRID") != "0":
+                from .ruled import drawn_spans
+                sp = drawn_spans(pages[pg], sec.columns, sp)
             if sp:
                 sec.metadata["spans"] = sp
     if ocr_enabled():

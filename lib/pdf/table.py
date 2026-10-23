@@ -273,6 +273,9 @@ _REGION_MARGIN = 2.0
 _TRAIL_OP_RE = re.compile(r"(&&|\|\||==|!=|>=|<=|::|[,(<\[{=]|\s[+\-*/])\s*$")
 _LEAD_CONT_RE = re.compile(r"^\s*(&&|\|\||[)>\]},.;=]|::)")
 _PAGE_NUM_CELL_RE = re.compile(r"^\d{1,4}$")
+# a cell holding only a reference or pointer qualifier ("&&", "const&", "*") is a value
+# in a table of qualifiers, not a code line split at an operator
+_QUALIFIER_CELL = re.compile(r"^\s*((const|volatile)\s*)*[&*]{0,2}\s*$")
 _WORD_RE = re.compile(r"\w+")
 _REF_LABEL_RE = re.compile(r"(^|\S)\[[A-Z][A-Za-z0-9.+_'\u2019-]{1,29}\]$")    # [N2529], [P3847R1], [O'Dwyer2018]
 _REF_LEAD_RE = re.compile(r"^\[[A-Z][A-Za-z0-9.+_'\u2019-]{1,29}\]\s+\S")  # "[P2831R0] Timur ..."
@@ -407,6 +410,25 @@ def _aligned_neighbour_row(cand: TableCandidate, blocks: list[Block]) -> bool:
     return False
 
 
+def _order_contradiction(cand: TableCandidate) -> str:
+    """A cell whose lines are read in an order the page contradicts: a line read after
+    another shares its baseline band (each centre inside the other's height) but starts
+    left of where the earlier one ends - one printed line read as two, its end first
+    (an arrow set larger than its line, read before the text it follows)."""
+    if os.environ.get("TOMD_ORDER_CHECK") == "0":
+        return ""
+    for row in cand.rows:
+        for cell in row:
+            ls = [ln for ln in cell if ln.text.strip()]
+            for a, b in zip(ls, ls[1:]):
+                if a.page_num != b.page_num:
+                    continue
+                ca, cb = (a.bbox[1] + a.bbox[3]) / 2, (b.bbox[1] + b.bbox[3]) / 2
+                if b.bbox[1] <= ca <= b.bbox[3] and a.bbox[1] <= cb <= a.bbox[3] and b.bbox[0] < a.bbox[0] - 1.0:
+                    return f"'{a.text.strip()[:20]}' is read before '{b.text.strip()[:20]}' but sits to its right"
+    return ""
+
+
 def _damaged_text(cand: TableCandidate) -> str:
     """Characters showing that the PDF's own text layer is wrong."""
     bad = sorted({ch for row in cand.text_rows() for cell in row for ch in cell
@@ -488,7 +510,7 @@ def table_flags(cand: TableCandidate) -> list[str]:
     cells = [c for r in rows for c in r] + [""] * sum(ncol - len(r) for r in rows)
     if sum(1 for c in cells if not c) / max(1, len(cells)) > 0.4:
         flags.append("empty-cells")
-    split = sum(1 for c in cells if c and (_TRAIL_OP_RE.search(c) or _LEAD_CONT_RE.search(c)
+    split = sum(1 for c in cells if c and not _QUALIFIER_CELL.match(c) and (_TRAIL_OP_RE.search(c) or _LEAD_CONT_RE.search(c)
                                             or any(c.count(o) != c.count(k) for o, k in ("()", "[]", "{}"))))
     if split >= 2 or (cells and split / len(cells) >= 0.1):
         flags.append("split-code")
@@ -574,6 +596,17 @@ def _is_bad(cand: TableCandidate) -> bool:
         bad -= _SPARSE_FLAGS | {"sparse-two-rows"}   # a framed header over short entries (a "TBD" row)
     if cand.source == "tags":
         bad -= _TAG_EXEMPT_FLAGS
+        rows = cand.text_rows()
+        # a tagged two-row table under a title row (Word: "Sender Adaptors" over one entry)
+        if (len(rows) == 2 and sum(1 for c in rows[0] if c.strip()) == 1 and rows[0][0].strip()
+                and all(c.strip() for c in rows[1]) and os.environ.get("TOMD_TAG_TITLE") != "0"):
+            bad.discard("sparse-two-rows")
+    if "icon-cells" in cand.flags:
+        bad -= _SPARSE_FLAGS | {"single-cell-rows"}   # its empty cells hold icons (check, cross)
+    if "closed-grid" in cand.flags:
+        from .ruled import CLOSED_GRID_EXEMPT, closed_exempt
+        if closed_exempt(cand):
+            bad -= CLOSED_GRID_EXEMPT
     if cand.source == "poll":
         bad -= {"empty-cells", "sparse-two-rows", "single-cell-rows", "ragged-columns"}   # a suggested poll's blank vote row
     if cand.source == "codepair" or (cand.source == "content" and getattr(cand, "trace", {}).get("code")):
@@ -860,6 +893,14 @@ def _new_header(c: TableCandidate, prev: TableCandidate) -> bool:
     """A different header row starts a new table (user, 2026-10-19)."""
     if _same_header(c.text_rows()[0], prev.text_rows()[0]):
         return False
+    # the first row repeats most of the first table's header but not all of it
+    # ("Namespace Poisoning | 0 | 1 | 3" then "Intermediate inline namespace | 0 | 1 | 3"):
+    # a repeated header on a continuation is repeated whole
+    a, b = _norm_header(c.text_rows()[0]), _norm_header(prev.text_rows()[0])
+    if os.environ.get("TOMD_HEADER_VARIANT") != "0" and len(a) == len(b):
+        shared = sum(1 for x, y in zip(a, b) if x and x == y)
+        if shared >= max(2, len(a) / 2):
+            return True
     return _is_header_row(c) and _is_header_row(prev)
 
 
@@ -997,6 +1038,8 @@ def _to_section(cand: TableCandidate, confidence: Confidence,
         columns=[[_cell_spans(cell) for cell in row] for row in cand.rows],
     )
     sec.metadata["table_source"] = cand.source
+    if "closed-grid" in cand.flags and len(cand.pages) == 1:
+        sec.metadata["closed_grid"] = True       # its spans are checked against the drawn lines
     if "extent:header-below" in cand.flags:
         # the header row was found under its columns on the page (extent.py)
         sec.metadata["header_below"] = True
@@ -1098,7 +1141,8 @@ def select_tables(tomd_sections: list[Section],
                 kb = k.bboxes[pg]
                 if not (abs(kb[0] - bb[0]) <= 8 and abs(kb[2] - bb[2]) <= 8 and min(kb[3], bb[3]) > max(kb[1], bb[1])):
                     continue
-                if k.shape[1] != c.shape[1] or k.shape[0] < c.shape[0] + 2 or _is_bad(k):
+                more = 1 if os.environ.get("TOMD_REFINE_ONE") != "0" else 2
+                if k.shape[1] != c.shape[1] or k.shape[0] < c.shape[0] + more or _is_bad(k):
                     continue
                 tops_k = [_row_top(r) for r in k.rows]
                 # the extra rows (not at a drawn boundary) must be records with
@@ -1150,6 +1194,16 @@ def select_tables(tomd_sections: list[Section],
                     break
             if c not in cands:
                 break
+    # A closed grid's exemption (its lines explain its empty and merged cells) is for a
+    # table no other reader can read: where another reader's reading of the same region
+    # passes the checks on its own, the grid yields to it.
+    if os.environ.get("TOMD_CLOSED_YIELD") != "0":
+        for c in [c for c in cands if "closed-grid" in c.flags]:
+            if not (set(c.flags) & BAD_TABLE_FLAGS):
+                continue                      # clean without the exemption: no change
+            if any(o is not c and o.source != c.source and not _is_bad(o) and set(o.pages) & set(c.pages)
+                   and _overlap(o, c) >= _GROUP_OVERLAP for o in cands):
+                c.flags = [f for f in c.flags if f != "closed-grid"] + ["closed-grid-yields"]
     # Greedy selection: take the best remaining candidate, settle everything
     # that overlaps it, repeat. (Grouping by overlap first would chain
     # separate tables together through one large box that overlaps them all.)
@@ -1209,6 +1263,12 @@ def select_tables(tomd_sections: list[Section],
             conf = Confidence.UNCERTAIN
             reasons.append("conservation")
             notes.append(lost)
+        disorder = _order_contradiction(primary)
+        if disorder:
+            conf = Confidence.UNCERTAIN
+            reasons.append("glyph-order")
+            notes.append(f"Text in a cell is read in an order its page positions contradict ({disorder}); "
+                         "check the cell against the page.")
         damaged = _damaged_text(primary)
         if damaged:
             conf = Confidence.UNCERTAIN

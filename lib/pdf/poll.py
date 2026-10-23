@@ -54,7 +54,7 @@ def _label_cells(lw: list) -> list[list]:
             cells.append([w])
     return cells
 _ZERO_WIDTH = "​‌‍﻿"
-_COUNT_RE = re.compile(r"^(\d{1,3}|[-–—])$")
+_COUNT_RE = re.compile(r"^(\d{1,3}|[-–—]{1,2})$")   # "--" under SF and SA in a consent poll
 _MAX_ROWS = 3
 _ROW_GAP_RATIO = 2.5      # a count row starts within this many line heights
 _EMPTY_ROW_RATIO = 3.0    # rules this close below the header bound an empty vote row

@@ -26,6 +26,7 @@ disagreement with the other extractors.
 
 import logging
 import os
+import re
 from collections import Counter
 
 from .pagecache import rawdict as _rawdict
@@ -86,6 +87,44 @@ def _page_chars(raw: dict) -> list[tuple]:
     return out
 
 
+def _unrotate(raw: dict) -> dict:
+    """Rotated lines (column headers set at 90 degrees) as one horizontal unit each:
+    a single character carrying the whole label, at the label's centre, so the label
+    lands whole in the cell it sits in (its letters, read by position, interleave
+    with its neighbours': "s d a e r h T")."""
+    if os.environ.get("TOMD_UNROTATE") == "0":
+        return raw
+    if not any(abs(ln.get("dir", (1, 0))[0] - 1) > 0.01 for blk in raw.get("blocks", []) if blk.get("type") == 0
+               for ln in blk.get("lines", [])):
+        return raw
+    out = {**raw, "blocks": []}
+    for blk in raw.get("blocks", []):
+        if blk.get("type") != 0:
+            out["blocks"].append(blk)
+            continue
+        lines = []
+        for ln in blk.get("lines", []):
+            d = ln.get("dir", (1, 0))
+            if abs(d[0] - 1) <= 0.01:
+                lines.append(ln)
+                continue
+            if abs(d[0]) > 0.01:
+                continue                  # slanted text: no cell content
+            sps = [sp for sp in ln.get("spans", []) if sp.get("chars")]
+            text = "".join(c["c"] for sp in sps for c in sp["chars"]).strip()
+            if not sps or not text:
+                continue
+            x0, y0, x1, y1 = ln["bbox"]
+            cx, cy, h = (x0 + x1) / 2, (y0 + y1) / 2, max(x1 - x0, 1.0)
+            ch = {"c": " ".join(text.split()), "bbox": (cx - 0.5, cy - h / 2, cx + 0.5, cy + h / 2),
+                  "origin": (cx - 0.5, cy + h / 2)}
+            sp = {**sps[0], "chars": [ch], "bbox": ch["bbox"], "origin": ch["origin"]}
+            lines.append({**ln, "dir": (1.0, 0.0), "bbox": ch["bbox"], "spans": [sp]})
+        if lines:
+            out["blocks"].append({**blk, "lines": lines})
+    return out
+
+
 def _page_words(raw: dict) -> list[tuple]:
     """Words from the PDF's own character runs.
 
@@ -143,6 +182,30 @@ def _word_chars(ws: list[tuple]) -> list[tuple]:
     return out
 
 
+def _merge_tall_glyph_rows(rows):
+    """A glyph set larger than its line (an arrow or symbol at twice the size) has its
+    box centre off the line's, so it formed a row of its own and was read before the
+    line ("→ then(sender, fn) sender"). Rows whose centres each lie inside the other's
+    vertical extent, and whose glyphs do not overlap horizontally, are one line."""
+    if os.environ.get("TOMD_TALL_GLYPH") == "0" or len(rows) < 2:
+        return rows
+    def ext(row):
+        return min(c[1][1] for c in row[1]), max(c[1][3] for c in row[1])
+    out = [rows[0]]
+    for row in rows[1:]:
+        prev = out[-1]
+        (a0, a1), (b0, b1) = ext(prev), ext(row)
+        ca, cb = (a0 + a1) / 2, (b0 + b1) / 2
+        ink_a = [c for c in prev[1] if not c[0].isspace()]
+        ink_b = [c for c in row[1] if not c[0].isspace()]
+        apart = not any(min(x[1][2], y[1][2]) - max(x[1][0], y[1][0]) > 1.0 for x in ink_a for y in ink_b)
+        if b0 <= ca <= b1 and a0 <= cb <= a1 and apart and min(len(ink_a), len(ink_b)) <= 3:
+            prev[1].extend(row[1])
+            continue
+        out.append(row)
+    return out
+
+
 def _chars_to_lines(chars: list[tuple], page_num: int) -> list[Line]:
     """Group characters into Lines of Spans (same font run = one span).
 
@@ -186,6 +249,7 @@ def _chars_to_lines(chars: list[tuple], page_num: int) -> list[Line]:
         else:
             rows.append([(ch[1][1] + ch[1][3]) / 2, [ch]])
     rows.sort(key=lambda r: r[0])
+    rows = _merge_tall_glyph_rows(rows)
     has_spaces = any(c[0] == " " for c in chars)
     lines = []
     for _, row in rows:
@@ -211,10 +275,13 @@ def _chars_to_lines(chars: list[tuple], page_num: int) -> list[Line]:
             # is word-sized (a third of the font size): LaTeX leaves some word
             # gaps as positioning only ("Recommendedpractice"); kerning never
             # reaches that width
-            limit = (0.25 if not has_spaces else 0.33) * max(size, 1.0)
+            # (sized by the larger glyph: a symbol set at twice the size has side bearings
+            # to match, "→sender" is not "→ sender")
+            ref = max(size, prev[3]) if prev is not None and os.environ.get("TOMD_TALL_GLYPH") != "0" else size
+            limit = (0.25 if not has_spaces else 0.33) * max(ref, 1.0)
             space = (prev is not None and gap > limit and c != " " and prev[0] != " "
                      and os.environ.get("TOMD_GAP_SPACES") != "0" or
-                     (not has_spaces and prev is not None and gap > 0.25 * max(size, 1.0)
+                     (not has_spaces and prev is not None and gap > 0.25 * max(ref, 1.0)
                       and c != " " and prev[0] != " "))
             same_run = (spans and prev is not None and font == prev[2]
                         and size == prev[3] and flags == prev[4] and color == prev[5])
@@ -283,24 +350,224 @@ def _vertical_spans(drawings) -> list[tuple[float, float, float, float]]:
     return [tuple(b) for b in boxes if b[2] - b[0] > _RULE_MIN_LEN]
 
 
+def _segments(drawings):
+    """(horizontal, vertical) drawn segments as (position, lo, hi): lines, thin
+    rectangles and the edges of stroked rectangles"""
+    hs, vs = [], []
+    for d in drawings:
+        stroked = "s" in (d.get("type") or "")
+        for it in d["items"]:
+            if it[0] == "l":
+                a, b = it[1], it[2]
+                if abs(a.y - b.y) < 1.0:
+                    hs.append(((a.y + b.y) / 2, min(a.x, b.x), max(a.x, b.x)))
+                elif abs(a.x - b.x) < 1.0:
+                    vs.append(((a.x + b.x) / 2, min(a.y, b.y), max(a.y, b.y)))
+            elif it[0] == "re":
+                r = it[1]
+                if r.height <= _RULE_MAX_THICK:
+                    hs.append(((r.y0 + r.y1) / 2, r.x0, r.x1))
+                elif r.width <= _RULE_MAX_THICK:
+                    vs.append(((r.x0 + r.x1) / 2, r.y0, r.y1))
+                elif stroked or d.get("fill") is not None:
+                    # a stroked box, or a filled one (cells drawn as coloured boxes)
+                    hs += [(r.y0, r.x0, r.x1), (r.y1, r.x0, r.x1)]
+                    vs += [(r.x0, r.y0, r.y1), (r.x1, r.y0, r.y1)]
+    return hs, vs
+
+
+def _covered(segs, pos, lo, hi, tol=2.0) -> float:
+    """share of [lo, hi] that drawn segments at pos (within tol) cover"""
+    iv = sorted((max(a, lo), min(b, hi)) for p, a, b in segs if abs(p - pos) <= tol and b > lo and a < hi)
+    tot, end = 0.0, lo
+    for a, b in iv:
+        if b > end:
+            tot += b - max(a, end)
+            end = b
+    return tot / max(hi - lo, 1e-6)
+
+
+def _closed_frame(bb, drawings) -> bool:
+    """a grid drawn closed on all four sides (learned from the vision readers: a
+    drawn grid is the table's structure, empty and merged cells included); a
+    junk grid (a section underline joined to a table's verticals) is open"""
+    hs, vs = _segments(drawings)
+    x0, y0, x1, y1 = bb
+    return (min(_covered(vs, x0, y0, y1), _covered(vs, x1, y0, y1)) >= 0.9
+            and min(_covered(hs, y0, x0, x1), _covered(hs, y1, x0, x1)) >= 0.9)
+
+
+# a closed drawn grid's lines fix its cells: empty, merged and full-width cells are the
+# author's layout there, not a misread (the content checks still apply)
+CLOSED_GRID_EXEMPT = frozenset({"ragged-columns", "empty-cells", "sparse-columns"})
+
+
+def closed_exempt(t) -> bool:
+    """a closed grid's own layout explains its empty cells, unless a whole column is
+    empty (a doubled rule read as a column of its own)"""
+    if "closed-grid" not in t.flags or os.environ.get("TOMD_CLOSED_GRID") == "0":
+        return False
+    rows = t.text_rows()
+    ncol = max((len(r) for r in rows), default=0)
+    # a row of running prose across the grid (a framed section holding a table and its
+    # text, "Abstract" then paragraphs) is not the grid's own layout
+    for r in rows:
+        filled = [c for c in r if c.strip()]
+        if len(filled) == 1 and len(filled[0].split()) >= 15 and re.search(r"[a-z]\.(\s|$)", filled[0]):
+            return False
+    filled = [[c < len(r) and bool(r[c].strip()) for c in range(ncol)] for r in rows]
+    # two neighbouring columns never filled in the same row, each filled somewhere: one
+    # column split by a rule the header and the body place differently (staggered cells)
+    for j in range(ncol - 1):
+        if not any(f[j] and f[j + 1] for f in filled) and sum(f[j] or f[j + 1] for f in filled) >= 2 \
+                and any(f[j] for f in filled) and any(f[j + 1] for f in filled):
+            return False
+    return all(any(f[c] for f in filled) for c in range(ncol))
+
+
+def _bad_flags(t) -> set:
+    from .table import table_flags, BAD_TABLE_FLAGS
+    bad = set(table_flags(t)) & BAD_TABLE_FLAGS
+    if closed_exempt(t):
+        bad -= CLOSED_GRID_EXEMPT
+    return bad
+
+
+def drawn_spans(page, columns, spans) -> list[dict]:
+    """the spans a closed grid's own lines allow: a span inferred from the text's
+    position is dropped when a drawn line separates the cells it would join (the
+    grid draws every cell it has; an empty drawn cell is not part of its neighbour)"""
+    hs, vs = _segments(page.get_drawings())
+    boxes = [[[s.bbox for s in cell] for cell in row] for row in columns]
+    def rng(bs, a, b):
+        return (min(x[a] for x in bs), max(x[b] for x in bs)) if bs else None
+    rows_y = [rng([b for cell in row for b in cell], 1, 3) for row in boxes]
+    ncol = max((len(r) for r in boxes), default=0)
+    cols_x = [rng([b for row in boxes if c < len(row) for b in row[c]], 0, 2) for c in range(ncol)]
+    def h_between(i, c):            # a drawn line under row i, across column c
+        a, b = rows_y[i], next((rows_y[j] for j in range(i + 1, len(rows_y)) if rows_y[j]), None)
+        if not a or not b or not cols_x[c]:
+            return False
+        xm = (cols_x[c][0] + cols_x[c][1]) / 2
+        return any(a[1] - 1 <= y <= b[0] + 1 and x0 <= xm <= x1 for y, x0, x1 in hs)
+    def v_between(r, j):            # a drawn line right of column j, across row r
+        a, b = cols_x[j], next((cols_x[k] for k in range(j + 1, ncol) if cols_x[k]), None)
+        if not a or not b or not rows_y[r]:
+            return False
+        ym = (rows_y[r][0] + rows_y[r][1]) / 2
+        return any(a[1] - 1 <= x <= b[0] + 1 and y0 <= ym <= y1 for x, y0, y1 in vs)
+    out = []
+    for sp in spans:
+        if sp["kind"] == "header":
+            out.append(sp)            # a header's own layout (sub-headers under it) is read by its rows
+            continue
+        cut = any(h_between(i, sp["c"]) for i in range(sp["r"], sp["r"] + sp["rows"] - 1) if i < len(rows_y)) \
+            or any(v_between(sp["r"], j) for j in range(sp["c"], sp["c"] + sp["cols"] - 1) if j < ncol and sp["r"] < len(rows_y))
+        if not cut:
+            out.append(sp)
+    return out
+
+
+def _mark_icon_cells(page, page_num, tables) -> None:
+    """flag tables whose empty body cells hold images (check, cross and question
+    icons): a matrix of marks the vision readers see, sparse only in the text layer"""
+    if os.environ.get("TOMD_ICON_CELLS") == "0" or not tables:
+        return
+    try:
+        imgs = [tuple(i["bbox"]) for i in page.get_image_info()]
+    except Exception as e:  # noqa: BLE001
+        evidence.reader_error("icon cells", page_num, e)
+        return
+    imgs = [b for b in imgs if 3 <= b[2] - b[0] <= 40 and 3 <= b[3] - b[1] <= 40]
+    if len(imgs) < 3:
+        return
+    for t in tables:
+        if page_num not in t.bboxes or len(t.rows) < 2:
+            continue
+        ncol = max(len(r) for r in t.rows)
+        cols = []
+        for c in range(ncol):
+            bs = [ln.bbox for r in t.rows if c < len(r) for ln in r[c] if ln.text.strip()]
+            cols.append((min(b[0] for b in bs), max(b[2] for b in bs)) if bs else None)
+        empty = with_icon = 0
+        for r in t.rows[1:]:
+            bs = [ln.bbox for cell in r for ln in cell if ln.text.strip()]
+            if not bs:
+                continue
+            y0, y1 = min(b[1] for b in bs) - 4, max(b[3] for b in bs) + 4
+            for c in range(ncol):
+                if c < len(r) and any(ln.text.strip() for ln in r[c]):
+                    continue
+                if not cols[c]:
+                    continue
+                empty += 1
+                x0, x1 = cols[c][0] - 4, cols[c][1] + 4
+                if any(x0 <= (b[0] + b[2]) / 2 <= x1 and y0 <= (b[1] + b[3]) / 2 <= y1 for b in imgs):
+                    with_icon += 1
+        if empty >= 3 and with_icon >= 0.6 * empty:
+            t.flags = list(t.flags) + ["icon-cells"]
+
+
+def _merged_holds_columns(t, chars) -> bool:
+    """a cell the grid draws as merged across columns whose text has a gap at a column
+    boundary: the text of several columns read as one cell (a frame around a table and
+    its notes, a slide overlay), so the grid's lines do not describe the table"""
+    bounds = sorted({round(c[0], 1) for r in t.rows for c in r.cells if c} - {round(t.bbox[0], 1)})
+    for r in t.rows:
+        for c in r.cells:
+            if not c:
+                continue
+            inner = [x for x in bounds if c[0] + 3 < x < c[2] - 3]
+            if not inner:
+                continue
+            ink = sorted((ch for ch in _chars_in(chars, c) if not ch[0].isspace()),
+                         key=lambda ch: (round((ch[1][1] + ch[1][3]) / 6), ch[1][0]))
+            for a, b in zip(ink, ink[1:]):
+                if abs((a[1][1] + a[1][3]) - (b[1][1] + b[1][3])) > 4:
+                    continue
+                if b[1][0] - a[1][2] >= 6 and any(a[1][2] - 3 <= x <= b[1][0] + 3 for x in inner):
+                    return True
+    return False
+
+
+def _tiled_cells(drawings) -> int:
+    """edges shared by two filled boxes side by side: a grid drawn as coloured
+    cells with no lines (slides, macOS exports)"""
+    boxes = [it[1] for d in drawings if d.get("fill") is not None for it in d["items"]
+             if it[0] == "re" and it[1].width > _RULE_MAX_THICK and it[1].height > _RULE_MAX_THICK]
+    boxes = [b for b in boxes if b.height <= _FILL_MAX_HEIGHT * 2][:400]
+    n = 0
+    for i, a in enumerate(boxes):
+        for b in boxes[i + 1:]:
+            if abs(a.x1 - b.x0) <= 1.0 or abs(b.x1 - a.x0) <= 1.0:
+                if min(a.y1, b.y1) - max(a.y0, b.y0) >= 0.8 * min(a.height, b.height):
+                    n += 1
+    return n
+
+
 def _grid_tables(page, page_num, chars, drawings) -> list[TableCandidate]:
     # find_tables is the costliest step of conversion; a grid needs at least
-    # two vertical rules, so pages without them are skipped.
-    if _vertical_rule_count(drawings) < 2:
+    # two vertical rules, or cells drawn as boxes side by side, so pages
+    # without them are skipped.
+    tiled_only = _vertical_rule_count(drawings) < 2
+    if tiled_only and (os.environ.get("TOMD_TILED") == "0" or _tiled_cells(drawings) < 3):
         return []
-    out = _grid_tables_in(page, page_num, chars, None)
-    from .table import table_flags, BAD_TABLE_FLAGS
-    if any(set(table_flags(t)) & BAD_TABLE_FLAGS for t in out):
+    out = _grid_tables_in(page, page_num, chars, None, drawings)
+    if any(_bad_flags(t) for t in out):
         # A junk grid (a section underline joined to a real table): look
         # again inside each area that vertical rules actually span.
-        good = [t for t in out if not set(table_flags(t)) & BAD_TABLE_FLAGS]
+        good = [t for t in out if not _bad_flags(t)]
         for x0, y0, x1, y1 in _vertical_spans(drawings):
             clip = (x0 - 2, y0 - 2, x1 + 2, y1 + 2)
             if any(_overlaps(clip, t.bboxes[page_num]) for t in good):
                 continue
-            good.extend(t for t in _grid_tables_in(page, page_num, chars, clip)
-                        if not set(table_flags(t)) & BAD_TABLE_FLAGS)
-        out = good + [t for t in out if set(table_flags(t)) & BAD_TABLE_FLAGS]
+            good.extend(t for t in _grid_tables_in(page, page_num, chars, clip, drawings)
+                        if not _bad_flags(t))
+        out = good + [t for t in out if _bad_flags(t)]
+    if tiled_only:
+        # cells drawn only as coloured boxes: a grid is read where the boxes close it on
+        # every side (zebra stripes beside a column of boxes do not delimit rows)
+        out = [t for t in out if "closed-grid" in t.flags]
     return out
 
 
@@ -321,7 +588,7 @@ def _with_overflow(cell_chars, chars, right):
     return out
 
 
-def _grid_tables_in(page, page_num, chars, clip) -> list[TableCandidate]:
+def _grid_tables_in(page, page_num, chars, clip, drawings=()) -> list[TableCandidate]:
     out = []
     finder = page.find_tables(strategy="lines", clip=clip) if clip else page.find_tables(strategy="lines")
     for t in finder.tables:
@@ -343,7 +610,8 @@ def _grid_tables_in(page, page_num, chars, clip) -> list[TableCandidate]:
             rows = _split_stacked_cells(visual)
         if len(rows) < 2 or max(len(r) for r in rows) < 2:
             continue
-        out.append(TableCandidate("grid", rows, {page_num: tuple(t.bbox)}))
+        closed = bool(drawings) and _closed_frame(tuple(t.bbox), drawings) and not _merged_holds_columns(t, chars)
+        out.append(TableCandidate("grid", rows, {page_num: tuple(t.bbox)}, flags=["closed-grid"] if closed else []))
     return out
 
 
@@ -915,7 +1183,7 @@ def extract_ruled_tables(page, page_num: int, drawings=None) -> list[TableCandid
         drawings = page.get_drawings()
     if not any(it[0] in ("l", "re") for d in drawings for it in d["items"]):
         return []                       # nothing drawn: no ruled table
-    raw = _rawdict(page)
+    raw = _unrotate(_rawdict(page))
     chars = _page_chars(raw)
     words = _page_words(raw)
     tables = _grid_tables(page, page_num, chars, drawings)
@@ -924,9 +1192,9 @@ def extract_ruled_tables(page, page_num: int, drawings=None) -> list[TableCandid
     # Only plausible grids claim their area: find_tables can also build a
     # junk grid from section underlines and a real table's verticals, which
     # must not hide the real table from the rule-band reader.
-    from .table import table_flags, BAD_TABLE_FLAGS
+    from .table import table_flags
     for t in tables:
-        bad = set(table_flags(t)) & BAD_TABLE_FLAGS
+        bad = _bad_flags(t)
         if bad:
             evidence.current().exclude("grid", page_num, t.bboxes[page_num],
                                        "grid failed checks: " + ", ".join(sorted(bad)), "paths")
@@ -934,7 +1202,7 @@ def extract_ruled_tables(page, page_num: int, drawings=None) -> list[TableCandid
             # candidate, so a table-level mark is left where no kept table covers it
             t.flags = sorted(set(t.flags) | set(table_flags(t)))
             _EXCLUDED_GRIDS.append(t)
-    tables = [t for t in tables if not set(table_flags(t)) & BAD_TABLE_FLAGS]
+    tables = [t for t in tables if not _bad_flags(t)]
     grids = [t.bboxes[page_num] for t in tables]
     # Rules that are part of a grid already found belong to it, not to a
     # rule-band table of the same width further down the page.
@@ -957,6 +1225,7 @@ def extract_ruled_tables(page, page_num: int, drawings=None) -> list[TableCandid
             if not any(_overlaps(t.bboxes[page_num], o.bboxes[page_num]) for o in tables):
                 t.flags.append("continuation-fragment")
                 tables.append(t)
+    _mark_icon_cells(page, page_num, tables)
     if tables:
         _log.debug("Page %d: %d ruled table(s)", page_num, len(tables))
     return tables

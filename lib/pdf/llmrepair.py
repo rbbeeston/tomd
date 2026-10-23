@@ -262,7 +262,7 @@ def repair(sec, page, bbox, words, verify, client=None) -> str:
     try:
         from . import evidence
         evidence.current().feature("llm", sec.page_num, tuple(bbox), "first-reading", "record", first)
-    except Exception:
-        pass
+    except Exception as e:  # noqa: BLE001  (recorded, never silent)
+        evidence.reader_error("llm repair record", sec.page_num, e)
     _note("verified")
     return "verified"

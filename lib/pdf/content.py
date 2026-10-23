@@ -330,7 +330,8 @@ def page_text(page) -> tuple[list[tuple], list[tuple]]:
     by_content = os.environ.get("TOMD_CODE_BY_CONTENT") == "1"
     if by_content:
         from .checks.codereader import looks_like_cpp
-    for w in page.get_text("words"):
+    from .pagecache import _dedup_words
+    for w in _dedup_words(page.get_text("words")):
         mono, horizontal = look(w)
         if by_content and not mono and looks_like_cpp(w[4]):
             mono = True                 # C++ by its content, set in an ordinary font
@@ -471,5 +472,6 @@ def content_candidates(pages, regions, specialists=None, rules_by_page=None) -> 
         cells = [[_cell_lines(c, page_num) for c in r] for r in rows]
         cand = TableCandidate("content", cells, {page_num: bbox})
         cand.trace = trace
+        cand.region = key
         out.append(cand)
     return out

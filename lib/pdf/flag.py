@@ -248,6 +248,89 @@ def gutter_regions(blocks: list[Block]) -> list[Region]:
     return out
 
 
+_ALIGN_TOL = 3.0          # word starts this close share a column
+_ALIGN_COLS = 3           # at least this many aligned columns...
+_ALIGN_ROWS = 3           # ...meeting in this many rows
+
+
+def aligned_regions(blocks: list[Block]) -> list[Region]:
+    """Tables without rules found by their columns, as the vision readers find
+    them: text in three or more columns whose starts line up down consecutive
+    rows (left-aligned cells), with no line running across a column start.
+    A header row just above (centred labels) joins the region. Code listings,
+    contents pages and front matter are left out; what remains is read by the
+    content reader and checked like any other reading."""
+    out: list[Region] = []
+    for page, rows in _rows(blocks).items():
+        rows = [r for r in rows if any(_ALNUM.search(g[2]) for g in r[2])]
+        runs, cur = [], []
+        for r in rows:
+            if cur and r[0] - cur[-1][1] > 1.6 * max(cur[-1][1] - cur[-1][0], 1):
+                runs.append(cur)
+                cur = []
+            cur.append(r)
+        if cur:
+            runs.append(cur)
+        for run in runs:
+            if len(run) < _ALIGN_ROWS:
+                continue
+            xs = sorted(g[0] for _, _, segs in run for g in segs)
+            clusters: list[list[float]] = []
+            for x in xs:
+                if clusters and x - clusters[-1][-1] <= _ALIGN_TOL:
+                    clusters[-1].append(x)
+                else:
+                    clusters.append([x])
+            cols = []
+            for c in clusters:
+                x = sum(c) / len(c)
+                n = sum(1 for _, _, segs in run if any(abs(g[0] - x) <= _ALIGN_TOL for g in segs))
+                if n >= max(_ALIGN_ROWS, 0.4 * len(run)):
+                    cols.append(x)
+            if len(cols) < _ALIGN_COLS:
+                continue
+            def hits(segs):
+                return sum(1 for x in cols if any(abs(g[0] - x) <= _ALIGN_TOL for g in segs))
+            def crosses(segs):
+                return any(g[0] < x - 4 and g[1] > x + 4 for g in segs for x in cols)
+            idx = [i for i, (_, _, segs) in enumerate(run) if hits(segs) >= 2 and not crosses(segs)]
+            if len(idx) < _ALIGN_ROWS:
+                continue
+            # contiguous stretches of table rows (a row crossing a column ends one)
+            parts, part = [], [idx[0]]
+            for i in idx[1:]:
+                if any(crosses(run[j][2]) for j in range(part[-1] + 1, i)):
+                    parts.append(part)
+                    part = [i]
+                else:
+                    part.append(i)
+            parts.append(part)
+            for part in parts:
+                full = [i for i in part if hits(run[i][2]) >= 3]
+                if len(part) < _ALIGN_ROWS or not full:
+                    continue
+                a, b = part[0], part[-1]
+                body = run[a:b + 1]
+                segs_all = [g for _, _, segs in body for g in segs]
+                if sum(1 for g in segs_all if g[3]) >= 0.6 * len(segs_all):
+                    continue                      # aligned code
+                if sum(bool(_LEADER.search(" ".join(g[2] for g in segs))) for _, _, segs in body) >= 0.3 * len(body):
+                    continue                      # contents with dot leaders
+                if _is_not_table(body, page):
+                    continue
+                x0 = min(g[0] for g in segs_all)
+                x1 = max(g[1] for g in segs_all)
+                top = body[0][0]
+                # a header row just above: two or more labels inside the columns' span
+                if a > 0:
+                    t, bt, hs = run[a - 1]
+                    if len(hs) >= 2 and not crosses(hs) and all(x0 - 5 <= g[0] and g[1] <= x1 + 5 for g in hs):
+                        top = t
+                out.append((page, (x0, top, x1, body[-1][1]),
+                            f"{len(cols)} aligned columns run down {len(body)} lines", len(body)))
+    return out
+
+
 def rejected_regions(rejected: list[TableCandidate], tables: list[Section]) -> list[Region]:
     """Areas of rejected drawing/tag tables that no selected table covers."""
     taken = defaultdict(list)
