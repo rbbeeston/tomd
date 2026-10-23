@@ -404,7 +404,9 @@ def _contrasts(cells, sec) -> bool:
         if not body:
             continue
         kinds = [_kind(cell_text(b), all(s.monospace for s in b if s.text.strip())) for b in body]
-        dominant = max(set(kinds), key=kinds.count)
+        # ties broken in a fixed order: iterating a set of strings follows the per-process hash
+        # seed, so the same PDF could convert differently between runs (2026-10-23, p2688r1)
+        dominant = max(sorted(set(kinds)), key=kinds.count)
         head = _kind(" ".join(w[4] for w in ws), False)
         bold_body = all(s.bold for b in body for s in b if s.text.strip())
         total += 1
