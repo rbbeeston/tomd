@@ -70,7 +70,7 @@ def current() -> Record:
 _CODE_ERRORS = (NameError, AttributeError, TypeError, ImportError, AssertionError, SyntaxError)
 
 
-def reader_error(stage: str, page, exc: BaseException) -> None:
+def reader_error(stage: str, page, exc: BaseException, table=None) -> None:
     """Record a reader, check or specialist that raised (stage, page or None for
     the whole paper, exception type and message). Tables the failure touched drop
     to UNCERTAIN ("reader error"); the prompts note and the paper summary list it.
@@ -78,8 +78,12 @@ def reader_error(stage: str, page, exc: BaseException) -> None:
     import logging
     import os
     kind = "code" if isinstance(exc, _CODE_ERRORS) else "data"
+    # table: the one table a per-table check was judging (its failure touches only that table);
+    # the mark travels in the table's own metadata, so it survives the section being copied
     _current.errors.append({"stage": stage, "page": page, "type": type(exc).__name__,
-                            "message": str(exc)[:300], "kind": kind})
+                            "message": str(exc)[:300], "kind": kind, "table": table is not None})
+    if table is not None:
+        table.metadata.setdefault("reader_errors", []).append(stage)
     logging.getLogger("tomd.lib.pdf").warning("Reader error in %s%s: %s: %s", stage,
                                              "" if page is None else f" (page {page + 1})", type(exc).__name__, exc)
     if os.environ.get("TOMD_STRICT") == "1":

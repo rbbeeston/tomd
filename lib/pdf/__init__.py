@@ -704,12 +704,20 @@ def _run_pipeline(path: Path) -> PipelineResult:
     if errs:
         # a reader that raised: every table it touched is at most UNCERTAIN (before the
         # Markdown is written, so the table is marked there too)
-        pages = {e["page"] for e in errs}
+        scoped = os.environ.get("TOMD_ERROR_SCOPE") != "0"
+        # locality (2026-10-23): a failure downgrades only the tables its stage touched. Stages
+        # that cannot touch a table's content stay listed for the paper (warning, prompts,
+        # summary) and downgrade nothing; a per-table check's failure touches only its table
+        if scoped:
+            touching = [e for e in errs if e["stage"] not in _ERROR_NO_TABLE]
+            pages = {e["page"] for e in touching if not e.get("table")}
+        else:
+            pages = {e["page"] for e in errs}
         for sec in sections:
             if sec.kind.value != "table":
                 continue
             spans = {sec.page_num} | {ln.page_num for ln in (sec.lines or [])}
-            if None in pages or spans & pages:
+            if None in pages or spans & pages or (sec.metadata or {}).get("reader_errors"):
                 sec.confidence = Confidence.UNCERTAIN
                 reasons = sec.metadata.setdefault("uncertain_reasons", [])
                 if "reader error" not in reasons:
@@ -858,6 +866,22 @@ def convert_pdf_with_summary(path: Path) -> tuple[str, str | None, dict | None]:
     the Markdown by the command line."""
     r = _run_pipeline(path)
     return r.md, r.prompts, getattr(r, "summary", None)
+
+
+# reader-error stages that cannot touch a table's content: listed for the paper, never a table
+# downgrade (unknown stages still downgrade, by page, or every table when page-less)
+_ERROR_NO_TABLE = frozenset({"generator", "region scan", "figure labels", "wording lines",
+                             "visibility check", "llm check", "llm repair record", "paper summary"})
+
+
+def _overlap(a, b) -> bool:
+    """two boxes share at least 30% of the smaller one's area"""
+    w = min(a[2], b[2]) - max(a[0], b[0])
+    h = min(a[3], b[3]) - max(a[1], b[1])
+    if w <= 0 or h <= 0:
+        return False
+    small = min((a[2] - a[0]) * (a[3] - a[1]), (b[2] - b[0]) * (b[3] - b[1]))
+    return w * h >= 0.3 * max(small, 1e-6)
 
 
 def _build_scan_tables(path, builds, blocks):
