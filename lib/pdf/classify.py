@@ -280,6 +280,32 @@ def _jev_batch(key: str, paper: str, regions: list, first: int) -> tuple[list, s
 
 # ----------------------------------------------------------------- gate
 
+IMAGE_GRID_SHARE = 0.5      # images covering half a table's area: a figure grid, not data
+
+
+def image_share(page, bbox) -> float:
+    """The share of bbox covered by images drawn on the page (union approximated by the sum,
+    capped at 1; overlapping images are rare inside a table)."""
+    x0, y0, x1, y1 = bbox
+    area = max((x1 - x0) * (y1 - y0), 1e-6)
+    covered = 0.0
+    try:
+        pr = page.rect
+        page_area = max(pr.width * pr.height, 1e-6)
+        infos = page.get_image_info()
+    except Exception:  # noqa: BLE001  (no page geometry: no image evidence, nothing demoted)
+        return 0.0
+    for im in infos:
+        bx0, by0, bx1, by1 = im.get("bbox", (0, 0, 0, 0))
+        im_area = max((bx1 - bx0) * (by1 - by0), 1e-6)
+        if im_area >= 0.8 * page_area:
+            continue                  # a page background (slides): behind everything, not in the cells
+        w, h = min(x1, bx1) - max(x0, bx0), min(y1, by1) - max(y0, by0)
+        if w > 0 and h > 0 and w * h >= 0.5 * im_area:
+            covered += w * h          # only images that sit mostly inside the table
+    return min(covered / area, 1.0)
+
+
 def gate_tables(doc, pages, sections: list[Section], paper: str = "") -> dict:
     """Classify every selected table and adjust its confidence (see module doc).
 
@@ -434,6 +460,21 @@ def gate_tables(doc, pages, sections: list[Section], paper: str = "") -> dict:
                 sp = drawn_spans(pages[pg], sec.columns, sp)
             if sp:
                 sec.metadata["spans"] = sp
+    if os.environ.get("TOMD_IMAGE_GRID") != "0":
+        # a grid whose cells are mostly images is a figure laid out in a table: its text is
+        # only the captions, so agreeing readers prove nothing about the content (fresh8
+        # p2375r1: four captioned photos read as a 2x2 table, HIGH). It only ever demotes.
+        for sec, (pg, _, _, _) in zip(tables, regions):
+            if sec.confidence != Confidence.HIGH or pg not in pages:
+                continue
+            share = image_share(pages[pg], sec.metadata["region_bbox"][1])
+            if share >= IMAGE_GRID_SHARE:
+                sec.confidence = Confidence.UNCERTAIN
+                sec.metadata.setdefault("uncertain_reasons", []).append("image grid")
+                sec.metadata["image_grid"] = round(share, 3)
+                sec.metadata["table_note"] = (sec.metadata.get("table_note", "") +
+                                              f" Images cover {share:.0%} of this table's area: the cells "
+                                              "hold pictures, the text is only their captions.").strip()
     if ocr_enabled():
         # a different modality for HIGH tables: what the page shows
         for sec, (pg, _, _, _) in zip(tables, regions):
