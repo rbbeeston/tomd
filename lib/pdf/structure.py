@@ -1,6 +1,7 @@
 """Dual-path comparison, heading intelligence, and document structuring."""
 
 import logging
+import os
 import re
 import unicodedata
 from collections import Counter
@@ -773,26 +774,42 @@ def _detect_code_blocks(sections: list[Section]) -> list[Section]:
         nonlocal fence_lang, pending_label_idx
         if not mono_run:
             return
-        all_lines = []
+        # a possible-table mark stays with the lines it was given (locality): the run is cut
+        # where the mark starts or ends, and a marked part never spans pages
+        groups: list[list[Section]] = []
+        key = None
         for s in mono_run:
-            if _section_is_empty(s):
-                all_lines.append(Line(spans=[], bbox=(0, 0, 0, 0)))
-            else:
-                all_lines.extend(s.lines)
-        code_text = "\n".join(ln.text for ln in all_lines)
-        result.append(Section(
-            kind=SectionKind.CODE,
-            text=code_text,
-            confidence=Confidence.HIGH,
-            lines=all_lines,
-            page_num=mono_run[0].page_num,
-            fence_lang=fence_lang,
-        ))
-        mark = next((s.metadata["possible_table"] for s in mono_run if "possible_table" in s.metadata), None)
-        if mark:
-            result[-1].metadata["possible_table"] = mark     # keep a possible-table mark
+            k = ((s.metadata.get("possible_table"), s.page_num) if "possible_table" in s.metadata else None)
+            if _section_is_empty(s) and groups:
+                groups[-1].append(s)                       # a blank line stays with its block
+                continue
+            if not groups or (k != key and os.environ.get("TOMD_MARK_CODE_SPLIT") != "0"):
+                groups.append([])
+                key = k
+            groups[-1].append(s)
+        for g in groups:
+            all_lines = []
+            for s in g:
+                if _section_is_empty(s):
+                    all_lines.append(Line(spans=[], bbox=(0, 0, 0, 0)))
+                else:
+                    all_lines.extend(s.lines)
+            while all_lines and not all_lines[-1].spans and len(groups) > 1:
+                all_lines.pop()                            # a cut block does not end on blanks
+            code_text = "\n".join(ln.text for ln in all_lines)
+            result.append(Section(
+                kind=SectionKind.CODE,
+                text=code_text,
+                confidence=Confidence.HIGH,
+                lines=all_lines,
+                page_num=g[0].page_num,
+                fence_lang=fence_lang,
+            ))
+            mark = next((s.metadata["possible_table"] for s in g if "possible_table" in s.metadata), None)
+            if mark:
+                result[-1].metadata["possible_table"] = mark     # keep a possible-table mark
         # Remove the language label that preceded this block
-        if pending_label_idx >= 0 and pending_label_idx < len(result) - 1:
+        if pending_label_idx >= 0 and pending_label_idx < len(result) - len(groups):
             del result[pending_label_idx]
         mono_run.clear()
         fence_lang = "cpp"
