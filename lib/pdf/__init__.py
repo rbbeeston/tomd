@@ -382,6 +382,12 @@ def _run_pipeline(path: Path) -> PipelineResult:
             page_height = page.rect.height
 
             page_words.append(page.get_text("words"))
+            from .table import DIAGRAM_BOXES, diagram_boxes
+            if pg_num == 0:
+                DIAGRAM_BOXES.clear()
+            marks = diagram_boxes(page, pg_num)
+            if marks:
+                DIAGRAM_BOXES[pg_num] = marks
             kind = _graphic_text_page(page)
             if kind:
                 graphic_pages.append((pg_num, kind))
@@ -586,7 +592,7 @@ def _run_pipeline(path: Path) -> PipelineResult:
             evidence.reader_error("extent step", None, e)
     table_sections = select_tables(tomd_tables, all_ruled_tables, tagged_tables,
                                    all_mupdf_blocks, all_poll_tables, rejected_tables, code_pairs,
-                                   content_tables)
+                                   content_tables, generator=getattr(result, "generator", "unknown") or "unknown")
     if table_sections:
         _log.info("Selected %d table(s)", len(table_sections))
         try:
@@ -706,6 +712,44 @@ def _run_pipeline(path: Path) -> PipelineResult:
         for sec in sections:
             if sec.kind.value == "table" and sec.columns:
                 sec.metadata["level"] = assign_level(sec)
+    from . import llmcheck
+    if llmcheck.enabled():
+        # a second look at L3 and L4 tables (asked twice, identical answers only). Measured on
+        # 240 tables: a confirmed "no" means the table is wrong 81% of the time, so it names
+        # the rows to check; a confirmed "match" is right only 65-72% of the time, so it raises
+        # nothing (LIKELY stays exact). Never changes a table's text or level.
+        try:
+            import fitz
+            import hashlib
+            llmcheck.reset()
+            client = None
+            with fitz.open(str(path)) as cdoc:
+                h = hashlib.sha256(Path(path).read_bytes()).hexdigest()[:16]
+                for sec in sections:
+                    lv = (sec.metadata.get("level") or {}).get("level")
+                    if sec.kind.value != "table" or lv not in (3, 4) or "region_bbox" not in sec.metadata:
+                        continue
+                    if len({ln.page_num for ln in sec.lines}) > 1:
+                        continue
+                    if client is None:
+                        from .llmrepair import _client
+                        client = _client()
+                        if client is None:
+                            break
+                    pg, bb = sec.metadata["region_bbox"]
+                    rows = [[" ".join(s.text for s in c if s.text != "\n").strip() for c in r] for r in sec.columns]
+                    ans = llmcheck.check(client, cdoc[pg], bb, rows, h)
+                    if ans is None:
+                        continue
+                    sec.metadata["llm_check"] = ans
+                    if ans["consistent"] and not ans["match"]:
+                        which = ", ".join(str(r) for r in ans["wrong_rows"][:12]) or "some"
+                        sec.metadata["table_note"] = (sec.metadata.get("table_note", "") + f" A second look (a vision "
+                                                      f"model, asked twice) finds rows {which} do not match the page.").strip()
+                        sec.metadata["level"]["why"] = list(sec.metadata["level"]["why"]) + [f"second look: rows {which} wrong"]
+            result.llm_check = llmcheck.state()
+        except Exception as e:  # noqa: BLE001  (recorded, never silent)
+            evidence.reader_error("llm check", None, e)
     _emit.set_hyphenating(getattr(result, "hyphenates", True))
     md = emit_markdown(metadata, sections)
     prompts = emit_prompts(sections)
@@ -759,6 +803,11 @@ def _run_pipeline(path: Path) -> PipelineResult:
             evidence.reader_error("paper summary", None, e)
     if errs and isinstance(getattr(result, "summary", None), dict):
         result.summary["reader_errors"] = errs
+    if getattr(result, "llm_check", None) and isinstance(getattr(result, "summary", None), dict):
+        from .llmcheck import CHECK_MODEL, PROMPT_VERSION
+        result.summary.setdefault("witnesses", {})["llm_check"] = {
+            **result.llm_check, "model": CHECK_MODEL, "prompt": PROMPT_VERSION,
+            "seconds": round(result.llm_check.get("seconds", 0.0), 2)}
     result.reader_errors = errs
     gp, ip = getattr(result, "graphic_text_pages", []), getattr(result, "image_pages", [])
     if gp or ip:

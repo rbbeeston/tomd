@@ -34,6 +34,7 @@ def test_budget_stops_repair(monkeypatch):
 
 def test_verified_repair_keeps_first_reading_and_stays_flagged(monkeypatch):
     _fresh(monkeypatch, TOMD_LLM="1", ANTHROPIC_API_KEY="x")
+    monkeypatch.setenv("TOMD_LLM_REPAIR_CHECK", "0")         # the narrow check is tested on its own
     words = [(0, 0, 10, 10, "a"), (20, 0, 30, 10, "b"), (0, 20, 10, 30, "c"), (20, 20, 30, 30, "d")]
     sec = Section(kind=SectionKind.TABLE, text="a b | c d", confidence=Confidence.UNCERTAIN,
                   columns=[[[Span("a b")], [Span("c d")]]])
@@ -45,4 +46,5 @@ def test_verified_repair_keeps_first_reading_and_stays_flagged(monkeypatch):
     assert sec.metadata["llm_repair"]["first_reading"] == "a b | c d"
     assert sec.metadata["llm_repair"]["first_source"] == "grid"
     rec = L.paper_record()
-    assert rec["calls"] == 1 and rec["verified"] == 1 and rec["input_tokens"] == 10 and rec["models"] == ["claude-test"]
+    # asked twice (identical answers only)
+    assert rec["calls"] == 2 and rec["verified"] == 1 and rec["input_tokens"] == 20 and rec["models"] == ["claude-test"]

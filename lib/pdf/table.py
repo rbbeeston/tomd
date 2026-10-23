@@ -29,6 +29,7 @@ at the last same-page row and the orphan appears in an uncertain region.
 
 import logging
 import os
+from pathlib import Path
 import re
 from collections import Counter, defaultdict
 from difflib import SequenceMatcher
@@ -256,6 +257,41 @@ _SOURCE_PRIORITY = {"tags": 0, "poll": 1, "grid": 2, "tags-malformed": 3, "rules
 def _row_top(row) -> float | None:
     ys = [ln.bbox[1] for cell in row for ln in cell if ln.text.strip()]
     return min(ys) if ys else None
+
+
+# Each reader's measured accuracy within each generator family (reader_track.json, built by
+# the PoC's reader_track.py from the development sets): competing readings of a region are
+# ranked by it first - the reader that has been right more often for PDFs from this
+# generator - then by the fixed priority. A family or reader with too few measured readings
+# falls back to the reader's accuracy over all families, then to the priority alone.
+CURRENT_GENERATOR = "unknown"
+_TRACK: dict | None = None
+
+
+def _family(gen: str) -> str:
+    g = gen or "unknown"
+    return "other" if g.startswith("other") or g in ("unknown", "pypdf") else g
+
+
+def _track(c: TableCandidate, generator: str | None = None):
+    global _TRACK
+    # off by default: ranking by the record gained 35 tables but lost 18 in g89 (and 4 papers'
+    # rule readings with specialist precedence kept) - a reader's average per generator is too
+    # coarse to beat its correct readings; REPORT.md, selection. TOMD_TRACK_ORDER=1 turns it on.
+    if os.environ.get("TOMD_TRACK_ORDER") != "1":
+        return None
+    if _TRACK is None:
+        import json
+        p = Path(__file__).with_name("reader_track.json")
+        _TRACK = json.loads(p.read_text()) if p.exists() else {}
+    if not _TRACK:
+        return None
+    n_min = _TRACK.get("min_n", 20)
+    for fam in (_family(generator if generator is not None else CURRENT_GENERATOR), "*"):
+        v = (_TRACK.get("track", {}).get(fam) or {}).get(c.source)
+        if v and v[1] >= n_min:
+            return v[0]
+    return None
 
 
 def _priority(c: TableCandidate) -> int:
@@ -563,6 +599,8 @@ def table_flags(cand: TableCandidate) -> list[str]:
         flags.append("code-comment-column")         # "using x = y; | // | exposition only"
     if len(last) >= 2 and all(c.startswith("//") for c in last):
         flags.append("code-comment-column")         # "Fun fun; | // exposition only"
+    if _diagram_inside(cand):
+        flags.append("diagram")                     # a graph or flowchart: edges and arrowheads
     # (a label may arrive glued to the previous entry's URL: "...pdf[N2550]")
     if first and len(first) >= 0.5 * len(rows) and all(
             _REF_LABEL_RE.search(c) or _REF_LEAD_RE.match(c) for c in first):
@@ -570,7 +608,49 @@ def table_flags(cand: TableCandidate) -> list[str]:
     return flags
 
 
-BAD_TABLE_FLAGS = frozenset({"ragged-columns", "empty-cells", "split-code",
+# areas drawn as diagrams (diagonal lines, arrowheads): set per paper by the pipeline
+# (diagram_boxes); a reading lying in one is a drawing, not a table
+DIAGRAM_BOXES: dict = {}
+
+
+def diagram_boxes(page, page_num: int) -> list:
+    """Areas of a page drawn as a diagram: a graph or flowchart draws edges as diagonal
+    lines and arrowheads; a table uses horizontal and vertical rules only (tables inside
+    figures too). Returned as the drawn shapes' bounding boxes, merged per drawing cluster."""
+    import fitz
+    # off by default (TOMD_DIAGRAMS=1 turns it on): measured on the development sets it fired on
+    # 0 of 1,687 real tables and 14 of 296 false ones, but on the least-tuned set (fresh10) it
+    # rejected a real table's reading (p2345r0, three tables lost) - it does not generalise yet
+    if os.environ.get("TOMD_DIAGRAMS") != "1":
+        return []
+    marks = []
+    for d in page.get_drawings():
+        r = fitz.Rect(d["rect"])
+        ls = [it for it in d["items"] if it[0] == "l"]
+        diag = [it for it in ls if abs(it[1].x - it[2].x) > 1 and abs(it[1].y - it[2].y) > 1
+                and ((it[1].x - it[2].x) ** 2 + (it[1].y - it[2].y) ** 2) ** 0.5 > 6]
+        arrow = (d.get("fill") is not None and r.width < 12 and r.height < 12 and len(ls) >= 2
+                 and any(abs(it[1].x - it[2].x) > 0.5 and abs(it[1].y - it[2].y) > 0.5 for it in ls))
+        if diag or arrow:
+            marks.append((r, len(diag), 1 if arrow else 0))
+    return marks
+
+
+def _diagram_inside(cand: TableCandidate) -> bool:
+    """two or more arrowheads, or twelve or more diagonal lines, drawn inside the reading's
+    area (measured: 0 of 1,687 emitted real tables reach this, 14 of 296 false ones do)"""
+    if len(cand.pages) != 1:
+        return False
+    pg = cand.pages[0]
+    marks = DIAGRAM_BOXES.get(pg)
+    if not marks:
+        return False
+    x0, y0, x1, y1 = cand.bboxes[pg]
+    inside = [(n, a) for r, n, a in marks if r.x0 >= x0 - 2 and r.y0 >= y0 - 2 and r.x1 <= x1 + 2 and r.y1 <= y1 + 2]
+    return sum(a for _, a in inside) >= 2 or sum(n for n, _ in inside) >= 12
+
+
+BAD_TABLE_FLAGS = frozenset({"diagram", "ragged-columns", "empty-cells", "split-code",
                              "constant-first-column", "toc-like", "bullet-list",
                              "code-comment-column", "reference-list",
                              "single-cell-rows", "sparse-two-rows", "numbered-list",
@@ -1075,7 +1155,8 @@ def select_tables(tomd_sections: list[Section],
                   polls: list[TableCandidate] = (),
                   rejected: list[TableCandidate] | None = None,
                   codepairs: list[TableCandidate] = (),
-                  content: list[TableCandidate] = ()) -> list[Section]:
+                  content: list[TableCandidate] = (),
+                  generator: str = "unknown") -> list[Section]:
     """Choose one table per region from the three extractors.
 
     Primary version by source priority (tags, polls, ruling lines, text positions),
@@ -1236,8 +1317,21 @@ def select_tables(tomd_sections: list[Section],
         pg = set(c.pages)
         return sum(1 for o in cands if o is not c and o.source != c.source and set(o.pages) & pg
                    and _overlap(o, c) >= _GROUP_OVERLAP and candidates_agree(c, o))
+    # The specialist readers (tags: the document's own structure; polls; code pairs) keep their
+    # fixed precedence: their record over all tables understates them where they apply (g89:
+    # code pairs and tags lost tables they had right). Among the general readers (grid, rules,
+    # content, text positions, records) the measured record for this generator decides.
+    specialists = {"tags", "poll", "codepair"}
+
+    def track_key(c):
+        if c.source in specialists:
+            return (0, _priority(c))
+        v = _track(c, generator)
+        if v is None:
+            return (0, _priority(c))        # no record in use: the fixed priority alone
+        return (1, -v)
     if os.environ.get("TOMD_EVIDENCE_ORDER") != "0":
-        remaining = sorted(cands, key=lambda c: (_priority(c), cons[id(c)], -support(c)))
+        remaining = sorted(cands, key=lambda c: (track_key(c), _priority(c), cons[id(c)], -support(c)))
     else:
         remaining = sorted(cands, key=_priority)
     out: list[Section] = []

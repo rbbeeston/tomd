@@ -218,16 +218,25 @@ def repair(sec, page, bbox, words, verify, client=None) -> str:
     client = client or _client()
     if client is None:
         return "no-client"
-    answer = ask(client, page, bbox, words)
-    if answer is None:
-        return "no-answer"
-    rows, model, seconds, usage = answer
+    # asked twice: an arrangement is used only when both answers are identical (user,
+    # 2026-10-23); a repair that varies from one asking to the next is not trusted
+    answers = []
     global _SPENT
-    _SPENT += usage.get("input_tokens", 0) + usage.get("output_tokens", 0)
-    _note("calls")
-    _note("input_tokens", usage.get("input_tokens", 0))
-    _note("output_tokens", usage.get("output_tokens", 0))
-    _note("seconds", seconds)
+    for _ in range(1 if os.environ.get("TOMD_LLM_ASK_ONCE") == "1" else 2):
+        a = ask(client, page, bbox, words)
+        if a is None:
+            return "no-answer"
+        rows_i, model, seconds, usage = a
+        _SPENT += usage.get("input_tokens", 0) + usage.get("output_tokens", 0)
+        _note("calls")
+        _note("input_tokens", usage.get("input_tokens", 0))
+        _note("output_tokens", usage.get("output_tokens", 0))
+        _note("seconds", seconds)
+        answers.append(rows_i)
+    if any(a != answers[0] for a in answers[1:]):
+        _note("inconsistent")
+        return "inconsistent"
+    rows = answers[0]
     if model not in _PAPER["models"]:
         _PAPER["models"].append(model)
     columns, why = build_columns(rows, words)
@@ -244,6 +253,29 @@ def repair(sec, page, bbox, words, verify, client=None) -> str:
         sec.metadata["llm_repair"] = {**record, "result": "rejected:" + failed}
         _note("rejected")
         return "rejected:" + failed
+    # a second, independent look (another model, the narrow check, asked twice) decides
+    # between the first reading and the repair: the repair is kept only when the check
+    # confirms it matches the page and does not confirm the first reading. Measured: a
+    # repair the arrangement model gives identically twice can still be wrong (p3337r0,
+    # p3100r2), and the word-use and layout checks pass it.
+    if os.environ.get("TOMD_LLM_REPAIR_CHECK") == "1":     # measured: costs more gains than losses
+        from . import llmcheck
+        import hashlib
+        txt = lambda cols: [[" ".join(s_.text for s_ in c if s_.text != "\n").strip() for c in r] for r in cols]
+        h = hashlib.sha256(("%s|%s" % (page.parent.name, page.number)).encode()).hexdigest()[:16]
+        os.environ.setdefault("TOMD_LLM_CHECK_BUDGET", "100000")
+        try:
+            after = llmcheck.check(client, page, bbox, txt(columns), h)
+            before = llmcheck.check(client, page, bbox, txt(sec.columns), h)
+        except Exception:  # noqa: BLE001  (recorded by llmcheck; no repair)
+            after = before = None
+        ok_after = bool(after and after["consistent"] and after["match"])
+        ok_before = bool(before and before["consistent"] and before["match"])
+        if not ok_after or ok_before:
+            why = "the check confirms the first reading" if ok_before else "the check does not confirm the repair"
+            sec.metadata["llm_repair"] = {**record, "result": "rejected:" + why}
+            _note("rejected")
+            return "rejected:" + why
     # the repair replaces the emitted structure; the first deterministic reading
     # is kept (metadata, evidence record, prompts) and the table stays flagged
     first = sec.text

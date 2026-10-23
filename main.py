@@ -58,9 +58,10 @@ def main():
         help="Seconds with no progress before aborting remaining files (default: 120)")
     parser.add_argument(
         "--corpus", action="store_true",
-        help="Corpus-run profile: LLM repair of flagged tables on (repairs stay flagged and keep "
-             "the first reading), with a per-run token budget; needs Anthropic credentials, "
-             "and runs on without repair when they or the network are missing")
+        help="Corpus-run profile: LLM repair of L3/L4 tables (asked twice; repairs stay flagged and "
+             "keep the first reading) and a second look (a confirmed mismatch names the rows to "
+             "check), with a per-run token budget; needs Anthropic credentials, and runs on "
+             "without them when they or the network are missing")
     parser.add_argument(
         "--llm-budget", type=int, default=None,
         help=f"Tokens (input + output) LLM repair may spend in this run "
@@ -70,8 +71,14 @@ def main():
 
     if args.corpus:
         # the corpus profile turns LLM repair on unless explicitly switched off
+        # LLM repair of L3/L4 tables on (stays flagged, keeps the first reading): measured on
+        # 24 papers +832.8 per-table points at 1x, +761.5 at 2x, +690.1 at 3x (wrong facts
+        # weighted); the 7 tables it broke were all already L3 (REPORT.md, LLM second look)
         os.environ.setdefault("TOMD_LLM", "1")
         os.environ.setdefault("TOMD_LLM_BUDGET", str(CORPUS_LLM_BUDGET))
+        # the second look at L3/L4 tables: a confirmed "no" names the rows to check; it never
+        # changes a table's text or raises its level
+        os.environ.setdefault("TOMD_LLM_CHECK", "1")
     if args.llm_budget is not None:
         os.environ["TOMD_LLM_BUDGET"] = str(args.llm_budget)
 
