@@ -157,10 +157,39 @@ def run_scan(path, record, tables, builds: list | None = None) -> list:
     with fitz.open(str(path)) as doc:
         generator = _generator(doc.metadata or {})
         doc_tagged = doc.xref_get_key(doc.pdf_catalog(), "StructTreeRoot")[0] != "null"
-        for a in areas(record):
+        all_areas = areas(record)
+        own = None
+        if os.environ.get("TOMD_SCAN_OWN_AREA") != "0":
+            # locality (2026-10-23): a table takes the one area that best covers its own box (an
+            # area best for two tables is a union holding a neighbour: its evidence is neither's)
+            own = {}
+            for t in tables:
+                best = None
+                for i, a in enumerate(all_areas):
+                    cov = max((_inter(bb, a["bbox"]) / _area(bb) for pg, bb in _table_boxes(t) if pg == a["page"]),
+                              default=0.0)
+                    # both ways: the area covers the table, and the table fills a fair share of the
+                    # area (as the earlier rule asked); a much larger area holding more than this
+                    # table stays table-less, so the scan can still build what else is in it
+                    fill = max((_inter(bb, a["bbox"]) / _area(a["bbox"]) for pg, bb in _table_boxes(t) if pg == a["page"]),
+                               default=0.0)
+                    if cov >= 0.3 and fill >= 0.3 and (best is None or (cov, -_area(a["bbox"])) > best[0]):
+                        best = ((cov, -_area(a["bbox"])), i)
+                if best is not None:
+                    own[id(t)] = best[1]
+            shared = Counter(own.values())
+            own = {k: v for k, v in own.items() if shared[v] == 1}
+        for ai, a in enumerate(all_areas):
             page = doc[a["page"]]
-            mine = [t for t in tables if any(pg == a["page"] and _inter(bb, a["bbox"]) >= 0.3 * _area(a["bbox"])
-                                             for pg, bb in _table_boxes(t))]
+            if own is not None:
+                mine = [t for t in tables if own.get(id(t)) == ai]
+                near = [t for t in tables if any(
+                    pg == a["page"] and _inter(bb, a["bbox"]) >= 0.3 * _area(a["bbox"]) for pg, bb in _table_boxes(t))]
+                if near and not mine:
+                    continue          # an area over a table that is not its own: not a table-less area either
+            else:
+                mine = [t for t in tables if any(pg == a["page"] and _inter(bb, a["bbox"]) >= 0.3 * _area(a["bbox"])
+                                                 for pg, bb in _table_boxes(t))]
             # an emitted table gets every check (its data-vs-formatting score and doubt need them)
             decided = None if mine else (lambda f: likelihood(_at_mean(f, MODEL), MODEL)[0] < EARLY_NONE)
             x = area_features(page, a, generator, doc_tagged, getattr(record, "doc_measure", None), decided)
