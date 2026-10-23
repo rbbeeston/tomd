@@ -465,11 +465,21 @@ def table_use(rows) -> str:
             and sum(1 for r in texts if r and _SECTION_LEAD.match(r[0]) and _STABLE_NAME.search(r[-1] or ""))
             >= 0.7 * len(texts)):
         return "contents"
+    # a heading of the standard's wording read as a row: "7.2 Properties of expressions",
+    # its stable name "[expr.prop]" set at the right margin
+    if (os.environ.get("TOMD_STABLE_CONTENTS") != "0" and len(texts) <= 2 and ncol <= 3
+            and all(r and _SECTION_LEAD.match(r[0]) and _STABLE_NAME.search(r[-1] or "")
+                    and all(not c for c in r[1:-1]) for r in texts)):
+        return "heading"
     return "table"
 
 
 def _render_use(sec: Section, use: str) -> str:
     texts = [[" ".join(s.text for s in c if s.text != "\n").strip() for c in r] for r in sec.columns]
+    if use == "heading":
+        out = ["<!-- tomd:use heading (a numbered heading and its stable name, not a table) -->"]
+        out += [_escape_angle(f"**{r[0]}** {r[-1]}".rstrip()) for r in texts if any(r)]
+        return "\n\n".join(out)
     if use == "label-value":
         out = ["<!-- tomd:use label-value (rendered as labelled text, not a table) -->"]
         out += [_escape_angle(f"**{r[0]}** {' '.join(c for c in r[1:] if c)}".rstrip()) for r in texts if any(r)]

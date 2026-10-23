@@ -427,11 +427,20 @@ def _region_rules(rules, words):
 def _cell_lines(cell, page_num) -> list[Line]:
     out = []
     for ln in cell:
+        # one span per run of words in the same face: a code identifier set in several
+        # words renders as one code span, not one per word
         spans = []
         for i, w in enumerate(ln):
+            mono = w[5] if len(w) > 5 else False
+            if spans and spans[-1].monospace == mono:
+                last = spans[-1]
+                spans[-1] = Span(text=last.text + " " + w[4], monospace=mono,
+                                 bbox=(min(last.bbox[0], w[0]), min(last.bbox[1], w[1]),
+                                       max(last.bbox[2], w[2]), max(last.bbox[3], w[3])))
+                continue
             if i:
-                spans.append(Span(text=" ", monospace=w[5] if len(w) > 5 else False))
-            spans.append(Span(text=w[4], bbox=tuple(w[:4]), monospace=w[5] if len(w) > 5 else False))
+                spans.append(Span(text=" ", monospace=False))
+            spans.append(Span(text=w[4], bbox=tuple(w[:4]), monospace=mono))
         out.append(Line(spans=spans, page_num=page_num,
                         bbox=(min(w[0] for w in ln), min(w[1] for w in ln),
                               max(w[2] for w in ln), max(w[3] for w in ln))))

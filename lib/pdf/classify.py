@@ -409,6 +409,11 @@ def gate_tables(doc, pages, sections: list[Section], paper: str = "") -> dict:
         for sec, (pg, _, _, _) in zip(tables, regions):
             if sec.confidence == Confidence.HIGH or sec.metadata.get("table_source") == "poll":
                 continue
+            # only where a second look is justified: structure uncertain (L3) or content at
+            # risk (L4); a clean single-source table (L2) was broken by repair as often as fixed
+            from .levels import assign as _level
+            if os.environ.get("TOMD_LLM_ALL_FLAGGED") != "1" and _level(sec)["level"] < 3:
+                continue
             _, bbox = sec.metadata["region_bbox"]
             if client is None:
                 from .llmrepair import _client

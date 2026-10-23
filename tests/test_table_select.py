@@ -117,7 +117,14 @@ class TestSelectTables:
         sources = [s for s, _ in out[0].metadata["table_versions"]]
         assert sources == ["rules", "tomd"]
 
-    def test_tags_win_over_ruling_lines(self):
+    def test_tags_win_over_ruling_lines(self, monkeypatch):
+        other = [["Name", "Value"], ["alpha", "1"], ["gamma", "3"]]
+        out = select_tables([], [_cand("grid", other)], [_cand("tags", _GOOD)], [])
+        assert out[0].metadata["table_source"] == "tags"
+
+    def test_measured_reader_record_orders_general_readers_when_on(self, monkeypatch):
+        # opt-in (TOMD_TRACK_ORDER=1); tags keep their precedence as a specialist reader
+        monkeypatch.setenv("TOMD_TRACK_ORDER", "1")
         other = [["Name", "Value"], ["alpha", "1"], ["gamma", "3"]]
         out = select_tables([], [_cand("grid", other)], [_cand("tags", _GOOD)], [])
         assert out[0].metadata["table_source"] == "tags"
@@ -651,6 +658,7 @@ class TestLLMRepair:
         return sec, L.repair(sec, None, (0, 0, 300, 200), self.WORDS, verify, self._client(rows))
 
     def test_verified_structure_is_kept(self, monkeypatch):
+        monkeypatch.setenv("TOMD_LLM_REPAIR_CHECK", "0")     # the narrow check is tested on its own
         sec, result = self._run([[[0], [1]], [[2], [3]]], monkeypatch)
         assert result == "verified" and sec.metadata["llm_repair"]["model"] == "claude-opus-5-5"
         assert [["".join(s.text for s in c) for c in r] for r in sec.columns] == [["Name", "Value"], ["alpha", "1"]]
