@@ -19,6 +19,7 @@ import logging
 import os
 import re
 from collections import defaultdict
+from dataclasses import replace
 
 from . import evidence
 from .types import Block, Section, SectionKind, TableCandidate
@@ -379,14 +380,41 @@ def dropped_uncovered(rejected: list[TableCandidate], tables: list[Section]) -> 
     return out
 
 
+def _line_in(ln, page, bbox) -> bool:
+    x0, y0, x1, y1 = bbox
+    return (ln.page_num == page and x0 - 2 <= (ln.bbox[0] + ln.bbox[2]) / 2 <= x1 + 2
+            and y0 - 2 <= (ln.bbox[1] + ln.bbox[3]) / 2 <= y1 + 2)
+
+
+def _split_at_region(sec: Section, page, bbox) -> list[Section]:
+    """Locality for marks: a section's lines on other pages never inherit a region's mark, so
+    a section crossing a page break is cut there. On the region's own page the section is not
+    cut (cutting a paragraph where a region ends breaks a sentence in two); any line inside the
+    region marks it (TOMD_MARK_LINES=majority asks for most of its lines instead)."""
+    pages = [ln.page_num for ln in sec.lines]
+    if len(set(pages)) <= 1:
+        return [sec]
+    sep = "\n" if "\n" in sec.text else " "
+    parts, start = [], 0
+    for i in range(1, len(pages) + 1):
+        if i == len(pages) or pages[i] != pages[start]:
+            lines = sec.lines[start:i]
+            parts.append(replace(sec, lines=list(lines), text=sep.join(ln.text for ln in lines),
+                                 page_num=lines[0].page_num, metadata=dict(sec.metadata)))
+            start = i
+    return parts
+
+
+def _mostly_in(sec: Section, page, bbox) -> bool:
+    on = [ln for ln in sec.lines if ln.page_num == page]
+    return bool(on) and 2 * sum(1 for ln in on if _line_in(ln, page, bbox)) > len(on)
+
+
 def flag_possible_tables(sections: list[Section], regions: list[Region]) -> int:
-    """Mark sections with a line inside a region; returns how many."""
+    """Mark sections inside a region; returns how many. Locality: a section is cut at page
+    breaks, so its lines on other pages never inherit a mark (variant 5b)."""
     def inside(sec, page, bbox):
-        x0, y0, x1, y1 = bbox
-        return any(ln.page_num == page
-                   and x0 - 2 <= (ln.bbox[0] + ln.bbox[2]) / 2 <= x1 + 2
-                   and y0 - 2 <= (ln.bbox[1] + ln.bbox[3]) / 2 <= y1 + 2
-                   for ln in sec.lines)
+        return any(_line_in(ln, page, bbox) for ln in sec.lines)
 
     n = 0
     rec = evidence.current()
@@ -402,8 +430,18 @@ def flag_possible_tables(sections: list[Section], regions: list[Region]) -> int:
             rec.exclude("mark", page, bbox, "crosses a heading or an extracted table", "words")
             continue                     # crosses a heading or an extracted table
         for sec in hits:
-            if "possible_table" not in sec.metadata:
-                sec.metadata["possible_table"] = reason
+            i = next(j for j, x in enumerate(sections) if x is sec)
+            parts = _split_at_region(sec, page, bbox) if os.environ.get("TOMD_MARK_LINES") != "0" else [sec]
+            sections[i:i + 1] = parts
+            for part in parts:
+                if "possible_table" in part.metadata or not inside(part, page, bbox):
+                    continue
+                # default (variant 5b, gated): cut at page breaks only, any line inside marks its
+                # section; TOMD_MARK_LINES=majority also requires most of its lines on the page inside
+                if os.environ.get("TOMD_MARK_LINES") == "majority" and not _mostly_in(part, page, bbox):
+                    rec.exclude("mark", page, bbox, "a section mostly outside the region keeps no mark", "words")
+                    continue
+                part.metadata["possible_table"] = reason
                 n += 1
     if n:
         _log.info("Marked %d section(s) as possible tables", n)
