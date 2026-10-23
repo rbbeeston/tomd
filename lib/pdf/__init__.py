@@ -27,6 +27,7 @@ from .tagged import extract_tagged_tables
 from .poll import extract_poll_tables
 from .wg21 import extract_metadata_from_blocks
 from .emit import emit_markdown, emit_prompts
+from . import visibility
 from .types import Block, Confidence, Section, SectionKind, is_readable
 from ..toc import find_toc_indices
 
@@ -285,8 +286,25 @@ def _upright_page(doc, pg_num: int, keep_alive: list):
     # (slide decks hide the rows of a build under a white box): removed from the
     # in-memory document before any reader sees it, as the vision readers see it
     from .pagecache import remove_covered_text
+    hidden = visibility.check_page(page)        # classified before any removal changes the page
     if remove_covered_text([page]):
         page = doc[pg_num]
+    # text the page does not show (invisible, transparent, clipped, tiny, under an
+    # image, the colour of its background): removed the same way, and listed
+    done = getattr(doc, "_tomd_visibility_done", None)
+    if done is None:
+        done = set()
+        try:
+            doc._tomd_visibility_done = done
+        except AttributeError:
+            pass
+    if pg_num not in done:
+        done.add(pg_num)
+        try:
+            if visibility.remove_hidden_text(page, hidden):
+                page = doc[pg_num]
+        except Exception as e:  # noqa: BLE001  (a page that cannot be redacted keeps its text)
+            evidence.reader_error("hidden-text removal", pg_num, e)
     if not page.rotation:
         return page
     import fitz
@@ -353,8 +371,12 @@ def _run_pipeline(path: Path) -> PipelineResult:
         # (slide decks hide the rows of a build under a white box): removed from
         # the in-memory copy before any reader sees it, as the vision readers see it
         covered = getattr(doc, "_tomd_covered", 0)
-        if covered:
+        hidden_regions = visibility.regions_of(doc)
+        result.visibility = visibility.summary(hidden_regions)
+        result.hidden_regions = hidden_regions
+        if covered and not any(r["why"] == "under-box" for r in hidden_regions):
             result.discards.append(("hidden", f"text under a box drawn over it removed on {covered} page(s)", ""))
+        result.discards.extend(visibility.discards(hidden_regions))
         for pg_num in range(result.page_count):
             page = pages[pg_num]
             page_height = page.rect.height
@@ -455,6 +477,29 @@ def _run_pipeline(path: Path) -> PipelineResult:
                               "confidence": {"value": 0.0, "capped": True, "reason": "no text layer"},
                               "unfamiliarity": {"score": 1.0, "reasons": ["no text layer"]},
                               "generator": getattr(result, "generator", "unknown")}
+        else:
+            # no graphic pages either: the text layer is there but is not text (n2926,
+            # n2923: every character in the private-use area). Never an empty file.
+            ink = "".join(mupdf_text.split())
+            odd = sum(1 for c in ink if not (c.isalnum() or c in ".,;:!?-()[]{}\"'"))
+            share = odd / max(len(ink), 1)
+            note = (f"{len(ink)} characters on {result.page_count} page(s), {share:.0%} of them not letters, "
+                    "digits or punctuation" if ink else f"no characters on {result.page_count} page(s)")
+            result.md = (f"<!-- tomd:not-converted pages=1-{result.page_count} why=unreadable-text-layer -->\n"
+                         f"> **tomd warning:** this PDF's text layer is not readable text ({note}): a broken "
+                         "font encoding, or encrypted or scrambled text. Nothing was converted. Read the "
+                         "paper from the PDF.\n")
+            result.prompts = ("# tomd - Conversion Issues\n\n- Not converted: the text layer is not readable "
+                              f"text ({note}). Nothing in this paper was checked. Confidence: none.\n")
+            result.discards.append(("document", "unreadable text layer", note))
+            result.summary = {"tables": {"total": 0, "trusted": 0, "flagged": 0, "likely": 0},
+                              "marks": 0, "not_converted": {"why": "unreadable-text-layer",
+                                                            "pages": list(range(1, result.page_count + 1))},
+                              "confidence": {"value": 0.0, "capped": True, "reason": "unreadable text layer"},
+                              "unfamiliarity": {"score": 1.0, "reasons": ["unreadable text layer"]},
+                              "generator": getattr(result, "generator", "unknown")}
+        if isinstance(result.summary, dict) and getattr(result, "visibility", None):
+            result.summary["visibility"] = result.visibility
         return result
 
     repeating = detect_repeating(all_edge_items, result.page_count)
@@ -714,6 +759,9 @@ def _run_pipeline(path: Path) -> PipelineResult:
             if gp:      # text certainly not converted: the lowest confidence
                 result.summary["confidence"] = {"value": 0.0, "capped": True, "reason": "text drawn as graphics on "
                                                 f"{len(gp)} page(s): not converted"}
+    # text the PDF holds but the page does not show: listed after everything, so the
+    # line numbers the markers above point at do not move
+    md += visibility.markdown(getattr(result, "hidden_regions", []))
     result.md = md
     result.prompts = prompts
     result.sections = sections
