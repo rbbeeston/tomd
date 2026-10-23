@@ -323,7 +323,7 @@ def gate_tables(doc, pages, sections: list[Section], paper: str = "") -> dict:
                 _full_width(sec, pages[pg], bbox)
             except Exception as e:      # a layout refinement only; never fail on it, never silently
                 from . import evidence
-                evidence.reader_error("full-width rows", pg, e)
+                evidence.reader_error("full-width rows", pg, e, table=sec)
         if os.environ.get("TOMD_FIT") != "0" and not sec.metadata.get("page_bboxes"):
             # the fit witness: words against the drawn cells (fit.py) - recorded
             from .fit import fit as _fit
@@ -345,7 +345,7 @@ def gate_tables(doc, pages, sections: list[Section], paper: str = "") -> dict:
                     sec.metadata["likely"] = {"reason": "fit", "cells": f.get("cells")}
             except Exception as e:
                 from . import evidence
-                evidence.reader_error("fit", pg, e)
+                evidence.reader_error("fit", pg, e, table=sec)
         if os.environ.get("TOMD_RELATIONS") != "0":
             # stage 1: every contradiction between the table and the page, by dimension
             from .content import page_hrules
@@ -360,7 +360,7 @@ def gate_tables(doc, pages, sections: list[Section], paper: str = "") -> dict:
                     _repair_stray_words(sec, words, rules, rel)
             except Exception as e:      # the record is diagnosis only; never fail on it, never silently
                 from . import evidence
-                evidence.reader_error("relations", pg, e)
+                evidence.reader_error("relations", pg, e, table=sec)
             # content plausibility (checks/plausible.py) - diagnosis only: measured, a
             # violation is right about a wrong table 34% of the time (12% recall)
             from .checks.plausible import plausibility
