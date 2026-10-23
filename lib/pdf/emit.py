@@ -274,7 +274,41 @@ def set_hyphenating(value: bool) -> None:
     _HYPHENATES[0] = value
 
 
+# the words of the table being rendered (locality: a cell's hyphen is decided by its own
+# table first, then a fixed word list, the paper's running text only breaking ties)
+_TABLE_LEX: Counter = Counter()
+HYPHEN_STATS: Counter = Counter()      # which rule decided each hyphen (measurement)
+
+
+def _identifier_like(prefix: str, suffix: str) -> bool:
+    joined = prefix + suffix
+    return (any(ch.isdigit() or ch == "_" for ch in joined)
+            or any(ch.isupper() for ch in prefix[1:]) or any(ch.isupper() for ch in suffix))
+
+
 def _join_hyphenated(line: str, nxt: str, prefix: str) -> str:
+    if os.environ.get("TOMD_HYPHEN_DICT") != "0" and _TABLE_LEX is not None:
+        from .worddict import available, is_word
+        suffix = re.match(r"[A-Za-z]*", nxt).group(0)
+        if suffix and available() and "-" not in prefix and not _identifier_like(prefix, suffix):
+            joined, hyphened = (prefix + suffix).lower(), f"{prefix}-{suffix}".lower()
+            if _TABLE_LEX[joined] or _TABLE_LEX[hyphened]:
+                HYPHEN_STATS["table text"] += 1
+                return (line if _TABLE_LEX[hyphened] >= _TABLE_LEX[joined] else line[:-1]) + nxt
+            jw, pw, sw = is_word(joined), is_word(prefix), is_word(suffix)
+            if jw:
+                HYPHEN_STATS["dictionary: one word"] += 1
+                return line[:-1] + nxt               # "re-" + "gion": the word list has "region"
+            if pw and sw:
+                HYPHEN_STATS["dictionary: compound"] += 1
+                return line + nxt                    # "ill-" + "formed": two words, no "illformed"
+            HYPHEN_STATS["undecided: earlier rules"] += 1
+        elif suffix and available():
+            HYPHEN_STATS["identifier-like: earlier rules"] += 1
+    return _join_hyphenated_paper(line, nxt, prefix)
+
+
+def _join_hyphenated_paper(line: str, nxt: str, prefix: str) -> str:
     """Join a cell line ending in "word-" with the next line.
 
     The paper's own text decides first: if it writes "automatically" and
@@ -525,8 +559,14 @@ def _render_table_body(sec: Section) -> str:
     num_cols = max(len(row) for row in rows)
     spans = sec.metadata.get("spans") or []
     header_rows = 1 + max((s["r"] + 1 for s in spans if s["kind"] == "header"), default=0)
-    grid = [[_render_cell_spans(cell, suppress_bold=r < header_rows) for cell in row]
-            + [""] * (num_cols - len(row)) for r, row in enumerate(rows)]
+    _TABLE_LEX.clear()
+    _TABLE_LEX.update(w.lower() for row in rows for cell in row for sp in cell
+                      for w in _LEX_WORD.findall(sp.text or ""))
+    try:
+        grid = [[_render_cell_spans(cell, suppress_bold=r < header_rows) for cell in row]
+                + [""] * (num_cols - len(row)) for r, row in enumerate(rows)]
+    finally:
+        _TABLE_LEX.clear()
     if spans:
         # lossless model -> plain Markdown: combined headers, labels filled
         # down, shared values kept once; the spans go in a comment after it
