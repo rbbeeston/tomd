@@ -421,6 +421,14 @@ def _run_pipeline(path: Path) -> PipelineResult:
         from .docmeasure import hyphenates
         result.hyphenates = hyphenates(page_words)
         result.evidence.doc_measure = result.doc_measure
+        # document priors: the document's own typography and source, named as priors in the
+        # record (they shape likelihoods; they are never an independent witness for a table)
+        result.evidence.feature("document", -1, (0, 0, 0, 0), "prose measure", "document prior",
+                                {k: v for k, v in (result.doc_measure or {}).items()
+                                 if isinstance(v, (int, float, str, bool))} if isinstance(result.doc_measure, dict)
+                                else str(result.doc_measure)[:200])
+        result.evidence.feature("document", -1, (0, 0, 0, 0), "tagged", "document prior",
+                                doc.xref_get_key(doc.pdf_catalog(), "StructTreeRoot")[0] != "null")
         try:
             tagged_tables = extract_tagged_tables(doc)
         except Exception as e:

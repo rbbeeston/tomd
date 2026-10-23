@@ -23,7 +23,15 @@ from collections import Counter
 
 # information type of each feature family (stage 0: same-type features do not
 # stack like independent witnesses)
+# document priors (2026-10-23): what the whole document is (tagged at all, which generator made
+# it, how its prose is set) describes the document, not this area; they shape the likelihood
+# but never count as an independent witness for an area (TOMD_DOC_PRIOR=0: the earlier count)
+DOC_PRIOR = "document prior"
+
+
 def info_of(name: str) -> str:
+    if name.startswith(("doc_tagged", "gen_", "f_justified_doc")) and os.environ.get("TOMD_DOC_PRIOR") != "0":
+        return DOC_PRIOR
     if name.startswith(("cue_paths", "excl_paths", "hrules", "vrules", "row_fills", "enclosing_fill")):
         return "paths"
     if name.startswith(("cue_tree", "excl_tree", "doc_tagged", "src_tags")):
@@ -197,12 +205,14 @@ def run_scan(path, record, tables, builds: list | None = None) -> list:
                 x = _at_mean(x, MODEL)
                 record.feature("scan", a["page"], a["bbox"], "early-stop", "record", 1.0)
             p, top = likelihood(x, MODEL)
-            info = len({info_of(n) for n, c in top if c > 0} | {_SOURCE_INFO.get(s_, "words") for s_ in a["cues"]})
+            info = len(({info_of(n) for n, c in top if c > 0} - {DOC_PRIOR})
+                       | {_SOURCE_INFO.get(s_, "words") for s_ in a["cues"]})
             bnd = band(p, info)
             record.feature("scan", a["page"], a["bbox"], "likelihood", "model", round(p, 3))
             why = ", ".join(f"{n}{'+' if c > 0 else '-'}" for n, c in top[:4])
             for t in mine:
-                t.metadata["scan"] = {"p": round(p, 3), "band": bnd, "top": why}
+                t.metadata["scan"] = {"p": round(p, 3), "band": bnd, "top": why,
+                                      "area": [round(v, 1) for v in a["bbox"]], "cues": sorted(a["scans"])}
                 # second output: tabular data or formatting (rendering unchanged; a comment marks it)
                 from .checks.data_or_format import likelihood_data
                 rows = [[" ".join(sp.text for sp in c if sp.text != "\n").strip() for c in r] for r in t.columns]
@@ -237,6 +247,9 @@ def run_scan(path, record, tables, builds: list | None = None) -> list:
 
 
 # --------------------------------------------------------------- Jev tier
+# Locality (2026-10-23): the tier batches up to TOMD_JEV_BUDGET areas into one prompt, so one
+# area's answer can see other areas' text. It stays off; before it is ever switched on it must
+# ask about one table per prompt (per-table evidence only).
 # Off by default (TOMD_JEV=1 turns it on, with JEV_API_KEY or the keychain
 # entry; the key is never printed or logged). Only areas the scan left
 # undecided go, batched per paper (classify.jev_table_or_not), at most
