@@ -410,6 +410,20 @@ def _aligned_neighbour_row(cand: TableCandidate, blocks: list[Block]) -> bool:
     return False
 
 
+
+
+def _split_code_cell(c: str) -> bool:
+    """a cell that reads as a code line cut at a cell boundary. (Ellipses, comparison
+    values, TeX's hooked-arrow mark, intervals, operator-only cells, ref-qualifiers and prose
+    with an unmatched bracket are values, not split code: 63 key tables -> 12 rejected. But
+    releasing those readings let worse readings win on reader priority in g86/g87 - a
+    selection weakness to fix first - so the check is unchanged; REPORT.md, round 1.)"""
+    if _QUALIFIER_CELL.match(c):
+        return False
+    return bool(_TRAIL_OP_RE.search(c) or _LEAD_CONT_RE.search(c)
+                or any(c.count(o) != c.count(k) for o, k in ("()", "[]", "{}")))
+
+
 def _order_contradiction(cand: TableCandidate) -> str:
     """A cell whose lines are read in an order the page contradicts: a line read after
     another shares its baseline band (each centre inside the other's height) but starts
@@ -510,8 +524,7 @@ def table_flags(cand: TableCandidate) -> list[str]:
     cells = [c for r in rows for c in r] + [""] * sum(ncol - len(r) for r in rows)
     if sum(1 for c in cells if not c) / max(1, len(cells)) > 0.4:
         flags.append("empty-cells")
-    split = sum(1 for c in cells if c and not _QUALIFIER_CELL.match(c) and (_TRAIL_OP_RE.search(c) or _LEAD_CONT_RE.search(c)
-                                            or any(c.count(o) != c.count(k) for o, k in ("()", "[]", "{}"))))
+    split = sum(1 for c in cells if c and _split_code_cell(c))
     if split >= 2 or (cells and split / len(cells) >= 0.1):
         flags.append("split-code")
     # A (nearly) constant row-key column is a margin label beside code.
@@ -604,9 +617,11 @@ def _is_bad(cand: TableCandidate) -> bool:
     if "icon-cells" in cand.flags:
         bad -= _SPARSE_FLAGS | {"single-cell-rows"}   # its empty cells hold icons (check, cross)
     if "closed-grid" in cand.flags:
-        from .ruled import CLOSED_GRID_EXEMPT, closed_exempt
+        from .ruled import CLOSED_GRID_EXEMPT, closed_exempt, sparse_mapping
         if closed_exempt(cand):
             bad -= CLOSED_GRID_EXEMPT
+            if sparse_mapping(cand):
+                bad.discard("single-cell-rows")
     if cand.source == "poll":
         bad -= {"empty-cells", "sparse-two-rows", "single-cell-rows", "ragged-columns"}   # a suggested poll's blank vote row
     if cand.source == "codepair" or (cand.source == "content" and getattr(cand, "trace", {}).get("code")):
@@ -1141,6 +1156,10 @@ def select_tables(tomd_sections: list[Section],
                 kb = k.bboxes[pg]
                 if not (abs(kb[0] - bb[0]) <= 8 and abs(kb[2] - bb[2]) <= 8 and min(kb[3], bb[3]) > max(kb[1], bb[1])):
                     continue
+                # refining adds rows inside the drawn bands: a reading reaching above the first
+                # rule or below the last (a frame's caption, a code line) is another extent
+                if os.environ.get("TOMD_REFINE_INSIDE") != "0" and (kb[1] < bb[1] - 3 or kb[3] > bb[3] + 3):
+                    continue
                 more = 1 if os.environ.get("TOMD_REFINE_ONE") != "0" else 2
                 if k.shape[1] != c.shape[1] or k.shape[0] < c.shape[0] + more or _is_bad(k):
                     continue
@@ -1207,7 +1226,20 @@ def select_tables(tomd_sections: list[Section],
     # Greedy selection: take the best remaining candidate, settle everything
     # that overlaps it, repeat. (Grouping by overlap first would chain
     # separate tables together through one large box that overlaps them all.)
-    remaining = sorted(cands, key=_priority)
+    # Between readings of the same priority, evidence decides, never the order readers ran
+    # in: a reading that keeps every word of its area (conservation) before one that loses
+    # or repeats text, then the one more other readings agree with. (Covering more pages is
+    # not evidence: a bad join across a page break would win by it.)
+    cons = {id(c): bool(conservation_error(c, blocks)) for c in cands}
+
+    def support(c):
+        pg = set(c.pages)
+        return sum(1 for o in cands if o is not c and o.source != c.source and set(o.pages) & pg
+                   and _overlap(o, c) >= _GROUP_OVERLAP and candidates_agree(c, o))
+    if os.environ.get("TOMD_EVIDENCE_ORDER") != "0":
+        remaining = sorted(cands, key=lambda c: (_priority(c), cons[id(c)], -support(c)))
+    else:
+        remaining = sorted(cands, key=_priority)
     out: list[Section] = []
     while True:
         # a records reading of code is an alternative only, never the emitted reading

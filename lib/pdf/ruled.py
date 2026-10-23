@@ -308,8 +308,14 @@ def _chars_to_lines(chars: list[tuple], page_num: int) -> list[Line]:
     return lines
 
 
-def _chars_in(chars, rect) -> list[tuple]:
+def _chars_in(chars, rect, start=None) -> list[tuple]:
+    """characters whose centre lies in rect; with `start` (character -> x of its word's
+    first character), placed by where the word starts instead of by their own x"""
     x0, y0, x1, y1 = rect
+    if start:
+        return [c for c in chars
+                if x0 <= start.get((c[0], c[1]), (c[1][0] + c[1][2]) / 2) <= x1
+                and y0 <= (c[1][1] + c[1][3]) / 2 <= y1]
     return [c for c in chars
             if x0 <= (c[1][0] + c[1][2]) / 2 <= x1 and y0 <= (c[1][1] + c[1][3]) / 2 <= y1]
 
@@ -425,11 +431,24 @@ def closed_exempt(t) -> bool:
     return all(any(f[c] for f in filled) for c in range(ncol))
 
 
+def sparse_mapping(t) -> bool:
+    """a closed grid of two or more drawn columns whose rows mostly fill only their first
+    cell with a short label (a mapping where most entries have no counterpart): a table,
+    not a framed paragraph under a lead-in line (whose single cells are prose)"""
+    if not closed_exempt(t) or os.environ.get("TOMD_SPARSE_MAPPING") == "0":
+        return False
+    rows = t.text_rows()
+    singles = [next(c for c in r if c.strip()) for r in rows if sum(1 for c in r if c.strip()) == 1]
+    return bool(singles) and max(len(c.split()) for c in singles) <= 6
+
+
 def _bad_flags(t) -> set:
     from .table import table_flags, BAD_TABLE_FLAGS
     bad = set(table_flags(t)) & BAD_TABLE_FLAGS
     if closed_exempt(t):
         bad -= CLOSED_GRID_EXEMPT
+        if sparse_mapping(t):
+            bad.discard("single-cell-rows")
     return bad
 
 
@@ -530,6 +549,57 @@ def _merged_holds_columns(t, chars) -> bool:
     return False
 
 
+def _without_decorations(drawings, chars):
+    """The page's drawings without text decorations (None when there are none): an underline or strike-through
+    (inserted and deleted wording) hugs a run of characters - at their baseline or
+    their middle - and spans only those characters, where a cell border runs between
+    rows and meets the column rules at its ends. Read as borders, decorations add
+    phantom rows and columns (p2988r12's wording tables)."""
+    if os.environ.get("TOMD_DECORATIONS") == "0" or not chars:
+        return None
+    ink = [c for c in chars if not c[0].isspace()]
+    vx = [(it[1].x, min(it[1].y, it[2].y), max(it[1].y, it[2].y)) for d in drawings for it in d["items"]
+          if it[0] == "l" and abs(it[1].x - it[2].x) < 1.0 and abs(it[1].y - it[2].y) >= 3]
+    vx += [((it[1].x0 + it[1].x1) / 2, it[1].y0, it[1].y1) for d in drawings for it in d["items"]
+           if it[0] == "re" and it[1].width <= _RULE_MAX_THICK and it[1].height >= 3]
+
+    def decoration(y, x0, x1) -> bool:
+        if x1 - x0 < 3:
+            return False
+        if any(abs(x - x0) <= 1.5 or abs(x - x1) <= 1.5 for x, a, b in vx if a - 1.5 <= y <= b + 1.5):
+            return False                  # meets a column rule: a border
+        hit = []
+        for c in ink:
+            cx = (c[1][0] + c[1][2]) / 2
+            if not (x0 - 1 <= cx <= x1 + 1):
+                continue
+            top, bot = c[1][1], c[1][3]
+            h = max(bot - top, 1.0)
+            if top + 0.2 * h <= y <= bot - 0.2 * h or bot - 0.3 * h <= y <= bot + 0.35 * h:
+                hit.append(c)
+        if len(hit) < 2:
+            return False
+        covered = sum(c[1][2] - c[1][0] for c in hit)
+        return covered >= 0.6 * (x1 - x0)
+
+    out, dropped = [], 0
+    for d in drawings:
+        items = []
+        for it in d["items"]:
+            if it[0] == "l" and abs(it[1].y - it[2].y) < 1.0:
+                if decoration((it[1].y + it[2].y) / 2, min(it[1].x, it[2].x), max(it[1].x, it[2].x)):
+                    dropped += 1
+                    continue
+            elif it[0] == "re" and it[1].height <= 1.5 and it[1].width > it[1].height:
+                if decoration((it[1].y0 + it[1].y1) / 2, it[1].x0, it[1].x1):
+                    dropped += 1
+                    continue
+            items.append(it)
+        if items:
+            out.append({**d, "items": items})
+    return out if dropped else None
+
+
 def _tiled_cells(drawings) -> int:
     """edges shared by two filled boxes side by side: a grid drawn as coloured
     cells with no lines (slides, macOS exports)"""
@@ -590,14 +660,26 @@ def _with_overflow(cell_chars, chars, right):
 
 def _grid_tables_in(page, page_num, chars, clip, drawings=()) -> list[TableCandidate]:
     out = []
-    finder = page.find_tables(strategy="lines", clip=clip) if clip else page.find_tables(strategy="lines")
+    # (None: no decorations on the page, find_tables reads the page's own drawings)
+    paths = _without_decorations(list(drawings), chars) if drawings else None
+    kw = {"paths": paths} if paths is not None else {}
+    finder = page.find_tables(strategy="lines", clip=clip, **kw) if clip else page.find_tables(strategy="lines", **kw)
+    # each character placed by where its word starts: a word overrunning its cell's
+    # right edge (struck wording, a long identifier) stays whole in its own cell
+    start = {}
+    if os.environ.get("TOMD_WHOLE_WORDS") != "0":
+        for w in _page_words(_unrotate(_rawdict(page))):
+            fc = w[5][0][1]
+            sx = (fc[0] + fc[2]) / 2
+            for ch in w[5]:
+                start[(ch[0], ch[1])] = sx
     for t in finder.tables:
         rows = []
         tx1 = t.bbox[2]
         for r in t.rows:
             row = []
             for cell in r.cells:
-                cc = _chars_in(chars, cell) if cell else []
+                cc = _chars_in(chars, cell, start) if cell else []
                 if cell and abs(cell[2] - tx1) < 1.0:
                     cc = _with_overflow(cc, chars, tx1)
                 row.append(_chars_to_lines(cc, page_num) if cell else [])

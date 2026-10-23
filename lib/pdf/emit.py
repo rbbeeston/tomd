@@ -438,6 +438,10 @@ _LABEL_CELL = re.compile(r"^[A-Za-z][\w ./()-]{0,40}:$")
 _PAGE_CELL = re.compile(r"^\d{1,4}$")
 
 
+_SECTION_LEAD = re.compile(r"^\s*(\d+(\.\d+)*\.?|[A-Z](\.\d+)*\.?|n\.m(\.\d+)*|\?\?(\.\?+)*)\s+\S")
+_STABLE_NAME = re.compile(r"^\s*\[[a-z][\w.:-]*\]\s*$")
+
+
 def table_use(rows) -> str:
     """What a grid is used for, by the user's decisions (2026-10-19):
     "label-value" - repeated per-item "label: value" entries (not a table);
@@ -453,6 +457,13 @@ def table_use(rows) -> str:
     last = [r[-1] for r in texts if r and r[-1]]
     nums = [int(t) for t in last if _PAGE_CELL.match(t)]
     if ncol <= 3 and len(nums) >= 3 and len(nums) >= 0.7 * len(texts) and nums == sorted(nums):
+        return "contents"
+    # the standard's own contents style: a section number and title, then its stable name
+    # ("13.10 Function template specializations | [temp.fct.spec]"), with no page numbers
+    import os
+    if (os.environ.get("TOMD_STABLE_CONTENTS") != "0" and ncol <= 3 and len(texts) >= 3
+            and sum(1 for r in texts if r and _SECTION_LEAD.match(r[0]) and _STABLE_NAME.search(r[-1] or ""))
+            >= 0.7 * len(texts)):
         return "contents"
     return "table"
 
@@ -581,6 +592,12 @@ def emit_markdown(metadata: dict, sections: list[Section]) -> str:
             # drawn cells evenly - probably right; cite the page, verify exact values
             parts.append("<!-- tomd:likely reason=fit (the words fit the drawn cells evenly: probably "
                          "right, not proven; cite the page and verify exact values before quoting) -->")
+            line_num += 2
+        lv = sec.metadata.get("level") if sec.kind == SectionKind.TABLE else None
+        if lv and lv.get("level", 0) >= 2:
+            # the graded level of a flagged table: how it may be wrong (levels.py)
+            from .levels import comment as level_comment
+            parts.append(level_comment(lv))
             line_num += 2
         label = sec.metadata.get("figure_label") if sec.kind == SectionKind.TABLE and sec.columns else None
         if label:
