@@ -681,6 +681,26 @@ def _has_column_gap(ws) -> bool:
     return False
 
 
+def _sparse_under_header(row_words) -> bool:
+    """A header row with column gaps over short entries that start at its columns (a
+    "Person | Affiliation | Strengths" table whose only row is "TBD"): a sparse table, not
+    prose. Learned from the vision readers, which keep such small framed tables."""
+    if len(row_words) < 2 or not row_words[0] or not _has_column_gap(row_words[0]):
+        return False
+    hdr = sorted(row_words[0], key=lambda w: w[0])
+    starts = [hdr[0][0]] + [b[0] for a, b in zip(hdr, hdr[1:]) if b[0] - a[2] >= (a[3] - a[1])]
+    if len(starts) < 2:
+        return False
+    for ws in row_words[1:]:
+        if not ws or len(ws) > 4:
+            return False
+        for _, _, lw in _text_lines(ws):
+            first = min(lw, key=lambda w: w[0])
+            if not any(abs(first[0] - s) <= _COL_START_TOL for s in starts):
+                return False
+    return True
+
+
 def _bands_to_table(page_num, in_x, bands, x0, x1, header_above,
                     min_rows: int = 2, per_line: bool = False) -> TableCandidate | None:
     def excluded(rule):
@@ -691,8 +711,11 @@ def _bands_to_table(page_num, in_x, bands, x0, x1, header_above,
         return excluded("too few rule bands")
     row_words = [[w for w in in_x if a <= (w[1] + w[3]) / 2 <= b] for a, b in bands]
     # Prose between rules (quotations, notes) has no column gaps at all.
+    sparse = False
     if sum(1 for ws in row_words if _has_column_gap(ws)) < min_rows:
-        return excluded("no column gaps between rules (prose)")
+        if not _sparse_under_header(row_words):
+            return excluded("no column gaps between rules (prose)")
+        sparse = True
     seps = _column_starts(row_words)
     if len(seps) < 2:
         return excluded("one column start")
@@ -724,7 +747,8 @@ def _bands_to_table(page_num, in_x, bands, x0, x1, header_above,
         rows = _join_wrapped_lines(rows)
     if len(rows) < min_rows or max(len(r) for r in rows) < 2:
         return excluded("too few rows or columns after cleaning")
-    return TableCandidate("rules", rows, {page_num: (x0, top, x1, bands[-1][1])})
+    return TableCandidate("rules", rows, {page_num: (x0, top, x1, bands[-1][1])},
+                          flags=["sparse-under-header"] if sparse else [])
 
 
 _CODE_BODY = 0.8          # this share of monospace body text: a before/after code pair...

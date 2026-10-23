@@ -570,6 +570,8 @@ def _is_bad(cand: TableCandidate) -> bool:
     if bad & _SPARSE_FLAGS and (mark_matrix(cand)
                                 or "rotated_header" in getattr(cand, "trace", {}).get("specialists", {})):
         bad -= _SPARSE_FLAGS          # sparse by design: marks, or a grid its rotated header labels define
+    if "sparse-under-header" in cand.flags:
+        bad -= _SPARSE_FLAGS | {"sparse-two-rows"}   # a framed header over short entries (a "TBD" row)
     if cand.source == "tags":
         bad -= _TAG_EXEMPT_FLAGS
     if cand.source == "poll":
@@ -933,7 +935,8 @@ def join_split_words(cands: list[TableCandidate], blocks: list[Block]) -> None:
     that runs to the cell's right edge ending mid-token, followed by a line that
     continues the token, is joined without a space - when the joined token occurs
     elsewhere in the document and one of the pieces never occurs on its own there, or
-    when the break splits one identifier (underscores on both sides) or one long number
+    when the break splits one identifier (underscores in both pieces, the second piece not
+    a name used on its own elsewhere) or one long number
     or paper name (a run of 5+ characters ending in a digit, broken before a remainder
     of at most two digits: "P0876R1" / "1", "20210" / "6") and a piece never occurs on
     its own. A name followed by a number ("SC 22") and a year followed by a version
@@ -959,7 +962,11 @@ def join_split_words(cands: list[TableCandidate], blocks: list[Block]) -> None:
                     # one identifier (an underscore in both pieces) or one long number cut short
                     if pa.isalpha() and pb.isdigit():
                         continue                      # a name and a number ("SC 22"): not one token
-                    ident = ("_" in pa and "_" in pb) or (len(pa) >= 5 and pa[-1].isdigit() and pb.isdigit() and len(pb) <= 2)
+                    # one identifier split at the cell's edge ("__cpp_lib_experime" + "ntal_foo"); not
+                    # when the second piece is a whole name used elsewhere ("pthread_setname_np1" over
+                    # "pthread_setname_np" are two stacked entries)
+                    ident = ("_" in pa and "_" in pb and vocab[pb] <= 1) or \
+                            (len(pa) >= 5 and pa[-1].isdigit() and pb.isdigit() and len(pb) <= 2)
                     if (vocab[pa + pb] >= 1 and (vocab[pa] <= 1 or vocab[pb] <= 1)) or (ident and (vocab[pa] <= 1 or vocab[pb] <= 1)):
                         b.joins_prev = True
 
@@ -1043,6 +1050,8 @@ def select_tables(tomd_sections: list[Section],
         cands = [part for c in cands for part in split_at_headers(c)]
     if os.environ.get("TOMD_WORD_JOIN") != "0":
         join_split_words(cands, blocks)
+    from . import stacked
+    cands = stacked.apply(cands)
     rec = evidence.current()
     for c in cands:
         c.flags = c.flags + table_flags(c)
