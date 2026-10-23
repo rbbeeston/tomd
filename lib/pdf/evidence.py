@@ -37,6 +37,8 @@ class Record:
     # every candidate reading: (source, page, bbox, rows of cell text)
     readings: list[tuple] = field(default_factory=list)
     doc_measure: object = None      # level 0 (docmeasure.DocMeasure)
+    # readers, checks and specialists that raised: never swallowed silently
+    errors: list[dict] = field(default_factory=list)
 
     def nominate(self, scan: str, page: int, bbox: Box, cue: str, info: str, value=None) -> None:
         self.entries.append(Entry("nominated", scan, page, tuple(bbox), cue, info, value))
@@ -62,3 +64,23 @@ def reset() -> Record:
 
 def current() -> Record:
     return _current
+
+
+# exceptions that mean the code is wrong, not the PDF: the gate fails on any of them
+_CODE_ERRORS = (NameError, AttributeError, TypeError, ImportError, AssertionError, SyntaxError)
+
+
+def reader_error(stage: str, page, exc: BaseException) -> None:
+    """Record a reader, check or specialist that raised (stage, page or None for
+    the whole paper, exception type and message). Tables the failure touched drop
+    to UNCERTAIN ("reader error"); the prompts note and the paper summary list it.
+    TOMD_STRICT=1 re-raises instead (tests)."""
+    import logging
+    import os
+    kind = "code" if isinstance(exc, _CODE_ERRORS) else "data"
+    _current.errors.append({"stage": stage, "page": page, "type": type(exc).__name__,
+                            "message": str(exc)[:300], "kind": kind})
+    logging.getLogger("tomd.lib.pdf").warning("Reader error in %s%s: %s: %s", stage,
+                                             "" if page is None else f" (page {page + 1})", type(exc).__name__, exc)
+    if os.environ.get("TOMD_STRICT") == "1":
+        raise exc

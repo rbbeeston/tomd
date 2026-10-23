@@ -15,7 +15,7 @@ from .wording import classify_wording, collect_line_drawings
 from .spans import normalize_spans
 from .structure import compare_extractions, structure_sections
 from .table import detect_tables, select_tables, remove_table_regions
-from .flag import (text_regions, gutter_regions, rejected_regions, dropped_uncovered, flag_possible_tables,
+from .flag import (text_regions, gutter_regions, aligned_regions, rejected_regions, dropped_uncovered, flag_possible_tables,
                    outside_view_regions)
 from .classify import gate_tables
 from .codepair import find_code_pairs
@@ -27,7 +27,7 @@ from .tagged import extract_tagged_tables
 from .poll import extract_poll_tables
 from .wg21 import extract_metadata_from_blocks
 from .emit import emit_markdown, emit_prompts
-from .types import Block, Section, SectionKind, is_readable
+from .types import Block, Confidence, Section, SectionKind, is_readable
 from ..toc import find_toc_indices
 
 __all__ = ["convert_pdf", "PipelineResult"]
@@ -223,6 +223,53 @@ def _horizontal_share(page) -> float:
     return sum(1 for ln in lines if abs(ln["dir"][0] - 1.0) < 0.01) / max(len(lines), 1)
 
 
+_GRAPHIC_TEXT_CHARS = 40     # a page with fewer extractable characters than this...
+_GRAPHIC_GLYPHS = 200        # ...and this many glyph-sized filled shapes: text drawn as outlines
+_GRAPHIC_IMAGE = 0.8         # ...or an image over this share of the page: a scan or a picture
+
+
+def _graphic_text_page(page) -> str:
+    """"outlines": the page's text is drawn as glyph outlines (no text layer) - certain;
+    "image": the page is one image with no text layer (a scan or a picture; any text in
+    it is not in the file). "" otherwise. Neither is converted; both are reported."""
+    if os.environ.get("TOMD_GRAPHIC_TEXT") == "0":
+        return ""
+    if len("".join(page.get_text().split())) >= _GRAPHIC_TEXT_CHARS:
+        return ""
+    try:
+        glyphs = sum(1 for d in page.get_drawings() if d.get("fill") is not None
+                     and 2 <= d["rect"].height <= 20 and d["rect"].width <= 25)
+    except Exception as e:  # noqa: BLE001
+        evidence.reader_error("graphic-text check", page.number, e)
+        glyphs = 0
+    if glyphs >= _GRAPHIC_GLYPHS:
+        return "outlines"
+    area = max(page.rect.width * page.rect.height, 1.0)
+    try:
+        img = max((abs((b["bbox"][2] - b["bbox"][0]) * (b["bbox"][3] - b["bbox"][1])) for b in page.get_image_info()),
+                  default=0.0)
+    except Exception as e:  # noqa: BLE001
+        evidence.reader_error("graphic-text check", page.number, e)
+        img = 0.0
+    return "image" if img >= _GRAPHIC_IMAGE * area else ""
+
+
+def _graphic_text_warning(outlines: list[int], images: list[int], total: int) -> str:
+    def where(ps):
+        return ", ".join(str(p + 1) for p in ps[:40]) + (" ..." if len(ps) > 40 else "")
+    out = ""
+    if outlines:
+        out += (f"<!-- tomd:warning:graphic-text pages={where(outlines)} -->\n"
+                f"> **tomd warning:** {len(outlines)} of {total} page(s) show text drawn as graphics, with no "
+                f"text layer (pages {where(outlines)}). That text, and any tables on those pages, was not "
+                "converted. Read those pages from the PDF.\n")
+    if images:
+        out += (f"<!-- tomd:warning:image-pages pages={where(images)} -->\n"
+                f"> **tomd warning:** {len(images)} of {total} page(s) are images with no text layer (pages "
+                f"{where(images)}): a scan or a picture. Any text or tables in them were not converted.\n")
+    return out
+
+
 def _upright_page(doc, pg_num: int, keep_alive: list):
     """The page as a reader sees it.
 
@@ -234,6 +281,12 @@ def _upright_page(doc, pg_num: int, keep_alive: list):
     scratch documents until extraction is done.
     """
     page = doc[pg_num]
+    # text an opaque box drawn after it covers is not on the page as shown
+    # (slide decks hide the rows of a build under a white box): removed from the
+    # in-memory document before any reader sees it, as the vision readers see it
+    from .pagecache import remove_covered_text
+    if remove_covered_text([page]):
+        page = doc[pg_num]
     if not page.rotation:
         return page
     import fitz
@@ -266,7 +319,8 @@ def _run_pipeline(path: Path) -> PipelineResult:
         try:
             from .classify import generator as _gen
             result.generator = _gen(doc.metadata or {})
-        except Exception:
+        except Exception as e:  # noqa: BLE001  (recorded, never silent)
+            evidence.reader_error("generator", None, e)
             result.generator = "unknown"
         if result.page_count == 0:
             return result
@@ -291,14 +345,24 @@ def _run_pipeline(path: Path) -> PipelineResult:
         all_poll_tables = []
 
         keep_alive: list = []
+        graphic_pages: list = []        # pages whose text is drawn as graphics (no text layer)
         page_rules: dict = {}           # drawn horizontal rules per page, read once
         page_words: list = []
         pages = [_upright_page(doc, i, keep_alive) for i in range(result.page_count)]
+        # text an opaque box drawn after it covers is not on the page as shown
+        # (slide decks hide the rows of a build under a white box): removed from
+        # the in-memory copy before any reader sees it, as the vision readers see it
+        covered = getattr(doc, "_tomd_covered", 0)
+        if covered:
+            result.discards.append(("hidden", f"text under a box drawn over it removed on {covered} page(s)", ""))
         for pg_num in range(result.page_count):
             page = pages[pg_num]
             page_height = page.rect.height
 
             page_words.append(page.get_text("words"))
+            kind = _graphic_text_page(page)
+            if kind:
+                graphic_pages.append((pg_num, kind))
             mupdf_blocks = extract_mupdf(page, pg_num)
             spatial_blocks = extract_spatial(page, pg_num)
 
@@ -321,8 +385,8 @@ def _run_pipeline(path: Path) -> PipelineResult:
                 page_rules[pg_num] = page_hrules(page, drawings)
                 all_ruled_tables.extend(extract_ruled_tables(page, pg_num, drawings))
                 all_poll_tables.extend(extract_poll_tables(page, pg_num, page_words[-1] if page_words else None))
-            except Exception as e:  # never let a table source break conversion
-                _log.warning("Table extraction failed on page %d: %s", pg_num, e)
+            except Exception as e:  # never let a table source break conversion; never silently
+                evidence.reader_error("page table readers", pg_num, e)
 
         # level 0: what ordinary prose looks like in this document
         result.doc_measure = doc_measure(page_words)
@@ -332,7 +396,7 @@ def _run_pipeline(path: Path) -> PipelineResult:
         try:
             tagged_tables = extract_tagged_tables(doc)
         except Exception as e:
-            _log.warning("Tagged table extraction failed: %s", e)
+            evidence.reader_error("tagged reader", None, e)
             tagged_tables = []
 
         font_counts: Counter[str] = Counter()
@@ -366,9 +430,31 @@ def _run_pipeline(path: Path) -> PipelineResult:
         all_spatial_blocks = strip_hidden_blocks(all_spatial_blocks, all_hidden)
 
     mupdf_text = "\n".join(b.text for b in all_mupdf_blocks)
+    outlines = [p for p, k in graphic_pages if k == "outlines"]
+    images = [p for p, k in graphic_pages if k == "image"]
+    result.graphic_text_pages, result.image_pages = outlines, images
+    for what, ps, why in (("graphic text", outlines, "show text drawn as graphics, with no text layer"),
+                          ("image pages", images, "are images with no text layer (a scan or a picture)")):
+        if ps:
+            _log.warning("%d page(s) %s: %s", len(ps), why, ", ".join(str(p + 1) for p in ps[:20]))
+            result.discards.append((what, f"{len(ps)} page(s) {why}: not converted",
+                                    "pages " + ", ".join(str(p + 1) for p in ps[:20])))
     if not is_readable(mupdf_text):
         _log.warning("Extracted text is not readable (encrypted/scanned PDF?)")
         result.readable = False
+        if graphic_pages:
+            # never an empty, silent result: the paper says loudly what was not converted
+            result.md = _graphic_text_warning(outlines, images, result.page_count)
+            result.prompts = ("# tomd - Conversion Issues\n\n- Not converted: "
+                              + "; ".join(f"pages {', '.join(str(p + 1) for p in ps)} ({w})" for ps, w in
+                                          ((outlines, "text drawn as graphics"), (images, "images, no text layer")) if ps)
+                              + ". Nothing on them was checked. Confidence: none.\n")
+            result.summary = {"tables": {"total": 0, "trusted": 0, "flagged": 0, "likely": 0},
+                              "marks": 0, "graphic_text_pages": [p + 1 for p in outlines],
+                              "image_pages": [p + 1 for p in images],
+                              "confidence": {"value": 0.0, "capped": True, "reason": "no text layer"},
+                              "unfamiliarity": {"score": 1.0, "reasons": ["no text layer"]},
+                              "generator": getattr(result, "generator", "unknown")}
         return result
 
     repeating = detect_repeating(all_edge_items, result.page_count)
@@ -408,17 +494,32 @@ def _run_pipeline(path: Path) -> PipelineResult:
             regions += [(s.page_num, (min(ln.bbox[0] for ln in s.lines), min(ln.bbox[1] for ln in s.lines),
                                       max(ln.bbox[2] for ln in s.lines), max(ln.bbox[3] for ln in s.lines)))
                         for s in tomd_tables if s.lines and len({ln.page_num for ln in s.lines}) == 1]
+            # regions no reader proposed, found by their whitespace gutters (flag.py):
+            # a table without rules (LaTeX tabular, a revision history) is read, not
+            # only marked - as the vision readers commit to what they see
+            gutter_keys = set()
+            if os.environ.get("TOMD_ALIGNED_TABLES") != "0":
+                def _ov(a, b):
+                    ix = max(0.0, min(a[2], b[2]) - max(a[0], b[0])) * max(0.0, min(a[3], b[3]) - max(a[1], b[1]))
+                    return ix / max(1e-6, min((a[2] - a[0]) * (a[3] - a[1]), (b[2] - b[0]) * (b[3] - b[1])))
+                for pg, bb, _why, _n in aligned_regions(all_mupdf_blocks):
+                    if not any(p == pg and _ov(bb, b) > 0.3 for p, b in regions):
+                        regions.append((pg, bb))
+                        gutter_keys.add((pg, tuple(round(v) for v in bb)))   # flagged "aligned-region"
             import fitz
             with fitz.open(str(path)) as cdoc:
                 keep: list = []
                 cpages = {pg: _upright_page(cdoc, pg, keep) for pg in {pg for pg, _ in regions}}
                 content_tables = content_candidates(cpages, regions, rules_by_page=page_rules)
+                for c in content_tables:
+                    if len(c.pages) == 1 and getattr(c, "region", None) in gutter_keys:
+                        c.flags = list(c.flags) + ["aligned-region"]
                 if os.environ.get("TOMD_RECORDS") != "0":
                     # the record-pattern reading of the same regions (records.py): an alternative only
                     from .records import records_candidates
                     content_tables += records_candidates(cpages, regions)
-        except Exception as e:  # never let the builder break conversion
-            _log.warning("Content builder failed: %s", e)
+        except Exception as e:  # never let the builder break conversion; never silently
+            evidence.reader_error("content reader", None, e)
     if os.environ.get("TOMD_EXTENT") != "0":
         # the extent step (extent.py): stop reasons, and rows just outside a reading
         try:
@@ -430,8 +531,8 @@ def _run_pipeline(path: Path) -> PipelineResult:
                 keep_e: list = []
                 epages = {pg: _upright_page(edoc, pg, keep_e) for c in ecands for pg in c.pages}
                 extend(ecands, epages)
-        except Exception as e:  # never let the extent step break conversion
-            _log.warning("Extent step failed: %s", e)
+        except Exception as e:  # never let the extent step break conversion; never silently
+            evidence.reader_error("extent step", None, e)
     table_sections = select_tables(tomd_tables, all_ruled_tables, tagged_tables,
                                    all_mupdf_blocks, all_poll_tables, rejected_tables, code_pairs,
                                    content_tables)
@@ -446,8 +547,8 @@ def _run_pipeline(path: Path) -> PipelineResult:
                                      if "region_bbox" in s.metadata}
                           | {p for s in table_sections for p in (s.metadata.get("page_bboxes") or {})}}
                 gate_tables(gdoc, gpages, table_sections, paper=Path(path).stem)
-        except Exception as e:  # the gate only adjusts confidence; never fail on it
-            _log.warning("Table classification failed: %s", e)
+        except Exception as e:  # the gate only adjusts confidence; never fail on it, never silently
+            evidence.reader_error("table classification", None, e)
         all_mupdf_blocks = remove_table_regions(all_mupdf_blocks, table_sections)
         all_spatial_blocks = remove_table_regions(all_spatial_blocks, table_sections)
     # Table-like areas left in the text, marked uncertain once sections exist.
@@ -471,16 +572,16 @@ def _run_pipeline(path: Path) -> PipelineResult:
                     table_sections += built
                     all_mupdf_blocks = remove_table_regions(all_mupdf_blocks, built)
                     all_spatial_blocks = remove_table_regions(all_spatial_blocks, built)
-        except Exception as e:  # the scan only adds marks and doubts; never fail on it
-            _log.warning("Region scan failed: %s", e)
+        except Exception as e:  # the scan only adds marks and doubts; never fail on it, never silently
+            evidence.reader_error("region scan", None, e)
     if os.environ.get("TOMD_FIGURES") != "0" and table_sections:
         # small tables drawn inside a figure: labelled with the figure (figures.py)
         try:
             from .figures import label_figure_tables
             with fitz.open(str(path)) as fdoc:
                 label_figure_tables(fdoc, table_sections)
-        except Exception as e:  # a label only; never fail on it
-            _log.warning("Figure labels failed: %s", e)
+        except Exception as e:  # a label only; never fail on it, never silently
+            evidence.reader_error("figure labels", None, e)
     possible_tables = (scan_regions + rejected_regions(rejected_tables, table_sections)
                        + text_regions(all_mupdf_blocks) + gutter_regions(all_mupdf_blocks))
 
@@ -559,6 +660,24 @@ def _run_pipeline(path: Path) -> PipelineResult:
         lines += [f"- {what}: {why}" + (f" (e.g. \"{detail}\")" if detail else "")
                   for what, why, detail in result.discards]
         prompts = (prompts or "# tomd - Conversion Issues\n") + "\n".join(lines) + "\n"
+    errs = list(getattr(result.evidence, "errors", []) or [])
+    if errs:
+        # a reader that raised: every table it touched is at most UNCERTAIN, and the
+        # prompts note lists the failure (never a silent loss of a reader)
+        pages = {e["page"] for e in errs}
+        for sec in sections:
+            if sec.kind.value != "table":
+                continue
+            spans = {sec.page_num} | {ln.page_num for ln in (sec.lines or [])}
+            if None in pages or spans & pages:
+                sec.confidence = Confidence.UNCERTAIN
+                reasons = sec.metadata.setdefault("uncertain_reasons", [])
+                if "reader error" not in reasons:
+                    reasons.append("reader error")
+        prompts = (prompts or "# tomd - Conversion Issues\n") + "\n## Reader errors\n\n" + "\n".join(
+            f"- {e['stage']}" + ("" if e["page"] is None else f" (page {e['page'] + 1})")
+            + f": {e['type']}: {e['message']}" for e in errs) + (
+            "\n\nTables on the affected pages (all tables, for a paper-wide step) are flagged.\n")
     if os.environ.get("TOMD_SUMMARY") != "0":
         # the paper-level summary: what was done with the tables, how sure, how unfamiliar
         try:
@@ -577,8 +696,24 @@ def _run_pipeline(path: Path) -> PipelineResult:
                         lambda m: "tomd:uncertain:L%d-L%d" % tuple(int(x) + (added if int(x) >= at else 0)
                                                                for x in m.groups()), md)
             prompts = (prompts or "# tomd - Conversion Issues\n") + prompts_section(result.summary)
-        except Exception as e:      # the summary describes the conversion; never fail it
-            _log.warning("Paper summary failed: %s", e)
+        except Exception as e:      # the summary describes the conversion; never fail it, never silently
+            evidence.reader_error("paper summary", None, e)
+    if errs and isinstance(getattr(result, "summary", None), dict):
+        result.summary["reader_errors"] = errs
+    result.reader_errors = errs
+    gp, ip = getattr(result, "graphic_text_pages", []), getattr(result, "image_pages", [])
+    if gp or ip:
+        warn = _graphic_text_warning(gp, ip, result.page_count) + "\n"
+        md = warn + md
+        added = warn.count("\n")
+        md = re.sub(r"tomd:uncertain:L(\d+)-L(\d+)", lambda m: "tomd:uncertain:L%d-L%d" % (
+            int(m.group(1)) + added, int(m.group(2)) + added), md)
+        if isinstance(getattr(result, "summary", None), dict):
+            result.summary["graphic_text_pages"] = [p + 1 for p in gp]
+            result.summary["image_pages"] = [p + 1 for p in ip]
+            if gp:      # text certainly not converted: the lowest confidence
+                result.summary["confidence"] = {"value": 0.0, "capped": True, "reason": "text drawn as graphics on "
+                                                f"{len(gp)} page(s): not converted"}
     result.md = md
     result.prompts = prompts
     result.sections = sections

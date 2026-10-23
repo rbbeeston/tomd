@@ -18,6 +18,7 @@ values given `empty` and `combine` callbacks, so the Markdown renderer
 (cells of spans) and the scorer (cells of text) share it.
 """
 
+import os
 import re
 
 SEP = " / "
@@ -164,6 +165,14 @@ def detect_spans(columns) -> list[dict]:
                 # centred across the group, clearly below the first row's middle
                 if row_mid and abs(mid - (top + bot) / 2) <= _TOL * 2 and mid > row_mid[0] + _TOL:
                     kind = "data" if _NUMERIC.match(_text(grid[r][c])) else "label"
+                    # a label is a row key: the first column (or one whose columns to the
+                    # left are labels too); a value spanning rows in a later column, or a
+                    # header cell beside two header rows, is kept once (the vision readers
+                    # and the keys both keep it once)
+                    if kind == "label" and os.environ.get("TOMD_LABEL_KEYCOL") != "0" and (
+                            r == 0 or (c > 0 and not all(any(x["c"] == j and x["r"] <= r < x["r"] + x["rows"]
+                                                                and x["rows"] >= 2 for x in spans) for j in range(c)))):
+                        kind = "data"
                     spans.append({"r": r, "c": c, "rows": k, "cols": 1, "kind": kind})
             r += k
     return spans

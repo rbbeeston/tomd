@@ -18,6 +18,7 @@ Untagged PDFs (LaTeX/pdfTeX, ReportLab, most tools) simply yield nothing.
 """
 
 import logging
+import os
 
 import fitz
 
@@ -67,8 +68,13 @@ def _join_rows(lines: list[Line]) -> list[Line]:
     rows: list[list[Line]] = []
     for ln in sorted(lines, key=lambda l: (l.page_num, (l.bbox[1] + l.bbox[3]) / 2, l.bbox[0])):
         yc = (ln.bbox[1] + ln.bbox[3]) / 2
-        if rows and rows[-1][0].page_num == ln.page_num and abs(
-                (rows[-1][0].bbox[1] + rows[-1][0].bbox[3]) / 2 - yc) < 3.0:
+        r0 = rows[-1][0] if rows else None
+        # same baseline: centres within 3pt, or (a glyph set larger than its line, such
+        # as an arrow at twice the size) each centre inside the other's extent
+        tall = (r0 is not None and os.environ.get("TOMD_TALL_GLYPH") != "0"
+                and r0.bbox[1] <= yc <= r0.bbox[3] and ln.bbox[1] <= (r0.bbox[1] + r0.bbox[3]) / 2 <= ln.bbox[3]
+                and min(len(ln.text.strip()), len(r0.text.strip())) <= 3)
+        if rows and r0.page_num == ln.page_num and (abs((r0.bbox[1] + r0.bbox[3]) / 2 - yc) < 3.0 or tall):
             rows[-1].append(ln)
         else:
             rows.append([ln])
@@ -80,7 +86,13 @@ def _join_rows(lines: list[Line]) -> list[Line]:
             if prev is not None and spans:
                 gap = ln.bbox[0] - prev.bbox[2]
                 size = ln.spans[0].font_size or 10.0
-                if (gap > 0.1 * size and not spans[-1].text.endswith(" ")
+                # a symbol set larger than its line (joined above) carries side bearings
+                # to its size: no space unless the gap is word-sized for that size
+                big = max(size, max((sp.font_size or 0.0) for sp in prev.spans) if prev.spans else 0.0)
+                symbol = min(len(prev.text.strip()), len(ln.text.strip())) <= 3 and big > 1.3 * size
+                if symbol and os.environ.get("TOMD_TALL_GLYPH") != "0" and gap <= 0.33 * big:
+                    pass
+                elif (gap > 0.1 * size and not spans[-1].text.endswith(" ")
                         and not ln.spans[0].text.startswith(" ")):
                     spans[-1].text += " "
             spans.extend(ln.spans)
@@ -184,8 +196,9 @@ def extract_tagged_tables(doc) -> list[TableCandidate]:
     for page in doc:
         try:
             _page_tables(page, page.number, acc)
-        except Exception as e:  # malformed structure trees are common
-            _log.debug("Page %d: structure tree unreadable (%s)", page.number, e)
+        except Exception as e:  # malformed structure trees are common; recorded, never silent
+            from . import evidence
+            evidence.reader_error("tagged structure tree", page.number, e)
     out = []
     for _, tr_map in sorted(acc.items()):
         rows = [cells for _, cells in sorted(tr_map.items()) if cells]
