@@ -1066,6 +1066,9 @@ def _cell_spans(cell: list[Line]) -> list[Span]:
 _WORDTOK = re.compile(r"\w+")
 
 
+NUM_JOIN_REFUSED = [0]       # how often the number rule refused a join (measurement)
+
+
 def join_split_words(cands: list[TableCandidate], blocks: list[Block]) -> None:
     """A word split by a narrow cell is still one word (user, 2026-10-21): a cell line
     that runs to the cell's right edge ending mid-token, followed by a line that
@@ -1098,12 +1101,19 @@ def join_split_words(cands: list[TableCandidate], blocks: list[Block]) -> None:
                     # one identifier (an underscore in both pieces) or one long number cut short
                     if pa.isalpha() and pb.isdigit():
                         continue                      # a name and a number ("SC 22"): not one token
+                    numbers = pa.isdigit() and pb.isdigit() and not (len(pa) >= 5 and len(pb) <= 2)
                     # one identifier split at the cell's edge ("__cpp_lib_experime" + "ntal_foo"); not
                     # when the second piece is a whole name used elsewhere ("pthread_setname_np1" over
                     # "pthread_setname_np" are two stacked entries)
                     ident = ("_" in pa and "_" in pb and vocab[pb] <= 1) or \
                             (len(pa) >= 5 and pa[-1].isdigit() and pb.isdigit() and len(pb) <= 2)
                     if (vocab[pa + pb] >= 1 and (vocab[pa] <= 1 or vocab[pb] <= 1)) or (ident and (vocab[pa] <= 1 or vocab[pb] <= 1)):
+                        if numbers and os.environ.get("TOMD_NUM_JOIN") != "0":
+                            # two numbers on two lines are two values ("20" / "21" in stacked rows),
+                            # not one ("2021" elsewhere in the paper); a long number cut short still
+                            # joins. Counted only where the join would otherwise have been made.
+                            NUM_JOIN_REFUSED[0] += 1
+                            continue
                         b.joins_prev = True
 
 
