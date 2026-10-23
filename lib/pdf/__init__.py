@@ -649,6 +649,8 @@ def _run_pipeline(path: Path) -> PipelineResult:
             evidence.reader_error("figure labels", None, e)
     possible_tables = (scan_regions + rejected_regions(rejected_tables, table_sections)
                        + text_regions(all_mupdf_blocks) + gutter_regions(all_mupdf_blocks))
+    if os.environ.get("TOMD_DROP_MARKS") != "0":
+        possible_tables += dropped_nomination_regions(result.evidence, table_sections)
 
     sections = compare_extractions(all_mupdf_blocks, all_spatial_blocks)
 
@@ -866,6 +868,44 @@ def convert_pdf_with_summary(path: Path) -> tuple[str, str | None, dict | None]:
     the Markdown by the command line."""
     r = _run_pipeline(path)
     return r.md, r.prompts, getattr(r, "summary", None)
+
+
+# rules that drop a nomination and leave no mark (detection coverage, 2026-10-23): measured on the
+# tuning sets they drop mostly non-tables in volume (prose between rules 9.2% tables over 5,691
+# areas; too few rule bands 7.1% over 2,196; monospace prose with nothing left uncovered), or
+# never a table (list, reference, comment-column and furniture drops)
+_DROP_NO_MARK = ("no column gaps between rules", "too few rule bands", "monospace prose", "page furniture")
+_DROP_NO_MARK_FLAGS = {"bullet-list", "numbered-list", "code-comment-column", "reference-list", "constant-first-column"}
+
+
+def dropped_nomination_regions(record, tables) -> list:
+    """Every area a reader or scan nominated and a rule then excluded, where no kept table
+    covers it, as a possible-table region - a drop never leaves the text silent - except the
+    rules above. (page, bbox, reason, rows) like every mark region."""
+    taken = [(pg, bb) for t in tables
+             for pg, bb in ((t.metadata.get("page_bboxes") or {}).items() or
+                            ([t.metadata["region_bbox"]] if t.metadata.get("region_bbox") else []))]
+    out, seen = [], set()
+    for e in record.entries:
+        if e.kind != "excluded" or e.scan in ("mark", "mark-build"):
+            continue
+        rule = e.rule or ""
+        if any(k in rule for k in _DROP_NO_MARK):
+            continue
+        if "dropped:" in rule or "failed checks:" in rule:
+            flags = {f.strip() for f in rule.split(":", 1)[1].split(",") if f.strip()}
+            if flags and flags <= _DROP_NO_MARK_FLAGS:
+                continue
+        x0, y0, x1, y1 = e.bbox
+        if (x1 - x0) * (y1 - y0) < 50:
+            continue
+        key = (e.page, tuple(round(v / 10) for v in e.bbox))
+        if key in seen or any(pg == e.page and _overlap(tuple(e.bbox), tuple(bb)) for pg, bb in taken):
+            continue
+        seen.add(key)
+        out.append((e.page, tuple(e.bbox), f"the {e.scan} reader nominated this area and a rule dropped it "
+                    f"({rule[:80]})", max(2, int((y1 - y0) / 12))))
+    return out
 
 
 # reader-error stages that cannot touch a table's content: listed for the paper, never a table

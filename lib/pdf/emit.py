@@ -619,7 +619,32 @@ def emit_markdown(metadata: dict, sections: list[Section]) -> str:
 
     line_num = fm.count("\n") + 3 if fm else 1
 
-    for sec in sections:
+    skip = 0
+    for idx, sec in enumerate(sections):
+        if skip:
+            skip -= 1
+            continue
+        mark = sec.metadata.get("possible_table") if sec.metadata else None
+        if (mark and "rule dropped it" in mark and sec.kind not in (SectionKind.UNCERTAIN, SectionKind.TABLE)
+                and os.environ.get("TOMD_MARK_ONE_PER_AREA") != "0"):
+            # one dropped area, one warning (2026-10-23): the area's consecutive sections share
+            # one uncertainty marker, whose line range shows where the area starts and ends
+            group = [sec]
+            for nxt in sections[idx + 1:]:
+                if (nxt.kind in (SectionKind.UNCERTAIN, SectionKind.TABLE, SectionKind.HEADING)
+                        or (nxt.metadata or {}).get("possible_table") != mark):
+                    break
+                group.append(nxt)
+            rendered = "\n\n".join(r for r in (_render_section_md(g) for g in group) if r.strip())
+            skip = len(group) - 1
+            if not rendered.strip():
+                continue
+            text_lines = rendered.count("\n") + 1
+            text_start = line_num + 2
+            parts.append(f"<!-- tomd:uncertain:L{text_start}-L{text_start + text_lines - 1} -->")
+            parts.append(rendered)
+            line_num += text_lines + 3
+            continue
         if sec.kind == SectionKind.UNCERTAIN:
             text = sec.text.rstrip()
             text_lines = text.count("\n") + 1
