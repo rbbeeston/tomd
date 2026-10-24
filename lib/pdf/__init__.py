@@ -639,6 +639,16 @@ def _run_pipeline(path: Path) -> PipelineResult:
                     all_spatial_blocks = remove_table_regions(all_spatial_blocks, built)
         except Exception as e:  # the scan only adds marks and doubts; never fail on it, never silently
             evidence.reader_error("region scan", None, e)
+    if os.environ.get("TOMD_RULE_BANDS") != "0" and table_sections:
+        # rows bounded by drawn rules: a record cut into rows is joined (rowbands.py)
+        try:
+            from .rowbands import merge_rule_bands
+            for ts in table_sections:
+                pgs = {ln.page_num for ln in ts.lines or []}
+                if len(pgs) == 1:
+                    merge_rule_bands(ts, page_rules.get(next(iter(pgs)), []))
+        except Exception as e:  # a join only; never fail on it, never silently
+            evidence.reader_error("rule-band rows", None, e)
     if os.environ.get("TOMD_FIGURES") != "0" and table_sections:
         # small tables drawn inside a figure: labelled with the figure (figures.py)
         try:
