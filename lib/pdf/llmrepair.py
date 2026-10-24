@@ -210,6 +210,25 @@ def build_columns(rows, words):
     return columns, ""
 
 
+def code_guard(first, repaired) -> str:
+    """A repair may not add a column of bare line numbers to code (2026-10-24). Returns the failed
+    check or "". Measured on fresh10's cached answers: it turns the two breaks LLM repair caused
+    in side-by-side code (p2318r1, one row per code line plus a line-number column) into no
+    change. A wider rule, rejecting any repair that cuts a multi-line code cell into rows, also
+    undid two of the seven fixes (p2329r0-t2, p1985r3-t2), whose first readings had packed
+    several rows into one code cell; it is not used."""
+    def ints(cols, j):
+        vals = [" ".join(s.text for s in r[j] if s.text != "\n").strip() for r in cols if j < len(r)]
+        vals = [v for v in vals if v]
+        return len(vals) >= 3 and all(v.isdigit() for v in vals)
+    ncol_f = max((len(r) for r in first), default=0)
+    ncol_r = max((len(r) for r in repaired), default=0)
+    if ncol_r > ncol_f and any(ints(repaired, j) for j in range(ncol_r)) \
+            and not any(ints(first, j) for j in range(ncol_f)):
+        return "line-numbers-added"
+    return ""
+
+
 def repair(sec, page, bbox, words, verify, client=None) -> str:
     """Try to repair one flagged table in place. Returns what happened."""
     if len(words) > _MAX_WORDS or not words:
@@ -249,6 +268,8 @@ def repair(sec, page, bbox, words, verify, client=None) -> str:
     new = copy.copy(sec)
     new.columns = columns
     failed = verify(new, words)
+    if not failed and os.environ.get("TOMD_LLM_CODE_GUARD") != "0":
+        failed = code_guard(sec.columns or [], columns)
     if failed:
         sec.metadata["llm_repair"] = {**record, "result": "rejected:" + failed}
         _note("rejected")
