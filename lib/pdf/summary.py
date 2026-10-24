@@ -117,6 +117,9 @@ def build(result, sections, evidence, generator: str) -> dict:
                    "types": dict(sorted({x: layouts.count(x) for x in set(layouts)}.items())),
                    "with_violations": sum(1 for t in tables if sum(((t.metadata or {}).get("relations") or {})
                                                                     .get("by_dimension", {}).values()))},
+        "continuations": [{"page": t.page_num + 1, "from_page": t.metadata["continues_from"]["page"],
+                           "reasons": t.metadata["continues_from"]["reasons"]}
+                          for t in tables if (t.metadata or {}).get("continues_from")],
         "marks": len(marks), "marked_pages": sorted({m.page_num + 1 for m in marks}),
         "removed": [{"what": w, "why": y} for w, y, _ in (result.discards or [])],
         "scan": {"areas": len(scan_ps), "undecided": undecided,

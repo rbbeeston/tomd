@@ -649,6 +649,15 @@ def _run_pipeline(path: Path) -> PipelineResult:
                     merge_rule_bands(ts, page_rules.get(next(iter(pgs)), []))
         except Exception as e:  # a join only; never fail on it, never silently
             evidence.reader_error("rule-band rows", None, e)
+    if os.environ.get("TOMD_CONTINUES") != "0" and table_sections:
+        # a note on pieces that may continue the previous page's table; never a join (continuation.py)
+        try:
+            import fitz
+            from .continuation import annotate
+            with fitz.open(str(path)) as kdoc:
+                annotate(kdoc, table_sections)
+        except Exception as e:  # a note only; never fail on it, never silently
+            evidence.reader_error("continuation notes", None, e)
     if os.environ.get("TOMD_FIGURES") != "0" and table_sections:
         # small tables drawn inside a figure: labelled with the figure (figures.py)
         try:
@@ -920,7 +929,7 @@ def dropped_nomination_regions(record, tables) -> list:
 
 # reader-error stages that cannot touch a table's content: listed for the paper, never a table
 # downgrade (unknown stages still downgrade, by page, or every table when page-less)
-_ERROR_NO_TABLE = frozenset({"generator", "region scan", "figure labels", "wording lines",
+_ERROR_NO_TABLE = frozenset({"generator", "region scan", "figure labels", "wording lines", "continuation notes",
                              "visibility check", "llm check", "llm repair record", "paper summary"})
 
 
