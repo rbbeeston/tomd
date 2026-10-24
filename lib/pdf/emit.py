@@ -660,6 +660,12 @@ def emit_markdown(metadata: dict, sections: list[Section]) -> str:
         rendered = _render_section_md(sec)
         if not rendered.strip():
             continue
+        cont = sec.metadata.get("continues_from") if sec.kind == SectionKind.TABLE else None
+        if cont:
+            # may continue the previous page's table (continuation.py): a note, never a join
+            parts.append(f"<!-- tomd:continues page={cont['page']} (may continue the table on page "
+                         f"{cont['page']}: {'; '.join(cont['reasons'])}; not merged) -->")
+            line_num += 2
         if sec.kind == SectionKind.TABLE and sec.metadata.get("header_below"):
             # the header row sits under its columns on the page; Markdown puts it on top
             parts.append("<!-- tomd:header-below (on the page this header row appears below the columns it labels) -->")
