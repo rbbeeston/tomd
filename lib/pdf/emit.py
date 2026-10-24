@@ -625,10 +625,12 @@ def emit_markdown(metadata: dict, sections: list[Section]) -> str:
             skip -= 1
             continue
         mark = sec.metadata.get("possible_table") if sec.metadata else None
-        if (mark and "rule dropped it" in mark and sec.kind not in (SectionKind.UNCERTAIN, SectionKind.TABLE)
-                and os.environ.get("TOMD_MARK_ONE_PER_AREA") != "0"):
-            # one dropped area, one warning (2026-10-23): the area's consecutive sections share
-            # one uncertainty marker, whose line range shows where the area starts and ends
+        if (mark and sec.kind not in (SectionKind.UNCERTAIN, SectionKind.TABLE)
+                and (("rule dropped it" in mark and os.environ.get("TOMD_MARK_ONE_PER_AREA") != "0")
+                     or os.environ.get("TOMD_MARK_GROUP_ALL") != "0")):
+            # one area, one warning (2026-10-23; every mark reason since 2026-10-24): the area's
+            # consecutive sections with the same mark share one uncertainty marker, whose line
+            # range shows where the area starts and ends
             group = [sec]
             for nxt in sections[idx + 1:]:
                 if (nxt.kind in (SectionKind.UNCERTAIN, SectionKind.TABLE, SectionKind.HEADING)
