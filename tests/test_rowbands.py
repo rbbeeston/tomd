@@ -33,3 +33,10 @@ def test_rule_between_rows_keeps_them_apart():
 def test_no_grid_no_change():
     s = _sec([(["Key", "A", "B"], 10), (["US 2", "start", "y"], 50), (["", "more", ""], 65)])
     assert merge_rule_bands(s, [(5, 0, 300), (120, 0, 300)]) == 0
+
+
+def test_full_row_with_blank_key_is_its_own_record():
+    # grouped grid: the group name only on the first row; the next row is full, not a continuation
+    s = _sec([(["Key", "A", "B"], 10), (["US 1", "first", "x"], 30), (["Group", "start", "y"], 50),
+              (["", "next", "z"], 65), (["US 3", "z", "w"], 95)])
+    assert merge_rule_bands(s, GRID) == 0

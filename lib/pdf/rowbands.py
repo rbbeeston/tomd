@@ -20,6 +20,11 @@ from .types import Span
 
 MIN_RULES = 4
 MIN_SEGMENT = 15.0      # pt: shorter strokes are not row separators
+# a row filling this share of its other (non-key) columns is a record of its own, never a
+# continuation (user, 2026-10-24): in a grouped grid the first column is blank on every row of a
+# group after the first, and those rows are full. 0.67 is the strictest value that keeps every
+# tuning-set gain (0.5 keeps 7 of 14).
+MAX_FILL = 0.67
 
 
 def _text(cell) -> str:
@@ -65,7 +70,8 @@ def merge_rule_bands(sec, rules) -> int:
     for r in rows:
         sp = [s.bbox for c in r for s in c if s.text.strip()]
         e = (min(b[1] for b in sp), max(b[3] for b in sp)) if sp else None
-        if (out and e and ext[-1] and len(r) == len(out[-1]) and not _text(r[0])
+        fill = sum(1 for c in r[1:] if _text(c)) / max(len(r) - 1, 1)
+        if (out and e and ext[-1] and len(r) == len(out[-1]) and not _text(r[0]) and fill < MAX_FILL
                 and e[0] >= ext[-1][1] - 1 and not any(ext[-1][0] + 1 < y < e[1] - 1 for y in segs)):
             out[-1] = [a + ([Span(text="\n")] if _text(a) and _text(b) else []) + b
                        for a, b in zip(out[-1], r)]
