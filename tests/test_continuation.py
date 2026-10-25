@@ -39,3 +39,10 @@ def test_piece_ending_mid_page_is_not_noted():
     a = _table(0, [(300, "A", "x"), (330, "B", "y")])
     b = _table(1, [(60, "C", "z"), (90, "D", "w")])
     assert annotate(doc, [a, b]) == 0
+
+
+def test_no_note_without_numbering():
+    doc = _doc([(60, "Intro"), (700, "A x"), (760, "B y")], [(60, "C z"), (90, "D w")])
+    a = _table(0, [(700, "A", "x"), (760, "B", "y")])
+    b = _table(1, [(60, "C", "z"), (90, "D", "w")])
+    assert annotate(doc, [a, b]) == 0
