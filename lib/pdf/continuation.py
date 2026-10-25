@@ -5,15 +5,17 @@ piece starts at the top of that page's content area, the next piece is noted as 
 continuing the previous one. The note names the evidence seen: reaches the bottom, starts at the
 top, and, when present, the same header row and the first column's numbering continuing.
 
-It never joins pieces, changes cells or changes levels. Measured on the tuning sets (REPORT.md,
-fragmentation): these two signals hold at 86 of 102 true page breaks and at 74 of 375 breaks
-between different tables, so the note says "may", and the pieces stay separate.
+Since 2026-10-24 the note is written only when the first column's numbering also continues across
+the break (US 019 → US 020): with the page-edge signals alone it was right 55 of 150 times on the
+tuning sets (TOMD_CONTINUES_ALL=1 restores that). It never joins pieces, changes cells or changes
+levels, so the note says "may", and the pieces stay separate.
 
 The content area of a page excludes page furniture: lines whose text (digits ignored) repeats
 within 3 pt of the same position on an adjacent page.
 """
 from __future__ import annotations
 
+import os
 import re
 
 NEAR = 0.06        # within 6% of the page height of the content edge
@@ -100,6 +102,10 @@ def annotate(doc, tables) -> int:
         na, nb = _number(last_key), _number(first_key)
         if na is not None and nb is not None and 0 < nb - na <= 3:
             reasons.append(f"numbering continues ({last_key} → {first_key})")
+        elif os.environ.get("TOMD_CONTINUES_ALL") != "1":
+            # noted only when the first column's numbering continues (user, 2026-10-24): the
+            # page-edge signals alone were right 55 of 150 times on the tuning sets
+            continue
         b.metadata["continues_from"] = {"page": last_a + 1, "reasons": reasons}
         n += 1
     return n
