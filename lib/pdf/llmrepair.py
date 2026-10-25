@@ -229,11 +229,23 @@ def code_guard(first, repaired) -> str:
     return ""
 
 
+def _paper_budget() -> int | None:
+    v = os.environ.get("TOMD_LLM_PAPER_BUDGET")
+    return int(v) if v and v.isdigit() else None
+
+
 def repair(sec, page, bbox, words, verify, client=None) -> str:
     """Try to repair one flagged table in place. Returns what happened."""
     if len(words) > _MAX_WORDS or not words:
         _note("skipped")
         return "skipped-size"
+    pb = _paper_budget()
+    if pb is not None and _PAPER.get("input_tokens", 0) + _PAPER.get("output_tokens", 0) >= pb:
+        # the paper's repair budget is spent: the table stays as read, and flagged; the paper
+        # summary counts these (unrepaired_by_paper_budget)
+        _note("unrepaired_by_paper_budget")
+        sec.metadata["llm_repair"] = {"result": "not asked: paper budget spent"}
+        return "paper-budget"
     client = client or _client()
     if client is None:
         return "no-client"
