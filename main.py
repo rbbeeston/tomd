@@ -24,6 +24,11 @@ _PDF_EXTENSIONS = frozenset({".pdf"})
 
 # fresh7 (70 papers): about 4,400 tokens per paper; 5M tokens covers about 1,100 papers
 CORPUS_LLM_BUDGET = 5_000_000
+# per paper (2026-10-24): about $1 of repair at the assumed list prices $15 / $75 per million input /
+# output tokens (rate (b); not confirmed against billing), converted with the tuning sets' measured
+# repair mix (3,328,038 in, 264,036 out = $69.72 for 3.59M tokens, $19.41 per million). Measured on
+# the tuning sets it would have left none of the 30 fixed or 23 broken tables unrepaired.
+CORPUS_LLM_PAPER_BUDGET = 51_500
 
 
 def main():
@@ -76,6 +81,7 @@ def main():
         # weighted); the 7 tables it broke were all already L3 (REPORT.md, LLM second look)
         os.environ.setdefault("TOMD_LLM", "1")
         os.environ.setdefault("TOMD_LLM_BUDGET", str(CORPUS_LLM_BUDGET))
+        os.environ.setdefault("TOMD_LLM_PAPER_BUDGET", str(CORPUS_LLM_PAPER_BUDGET))
         # the second look at L3/L4 tables: a confirmed "no" names the rows to check; it never
         # changes a table's text or raises its level
         os.environ.setdefault("TOMD_LLM_CHECK", "1")
