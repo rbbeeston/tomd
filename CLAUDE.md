@@ -98,7 +98,8 @@ The output Markdown must be clean and readable:
 
 ## LLM Integration (v2)
 
-Auto-resolution via `--llm` flag is deferred to v2. For v1, the tool produces a companion `.prompts.md` file that the user feeds to any LLM manually. The prompts file is plain Markdown - usable by any LLM, any interface.
+The `--corpus` profile turns on optional LLM help for flagged tables: a repair of the table's structure from the page image and word list, and a second look that names rows to check. Both are structure-only, keep the first reading and leave the table flagged.
+Spend is capped by a per-run token budget (`TOMD_LLM_BUDGET`) and a per-paper one (`TOMD_LLM_PAPER_BUDGET`, about $1 by default). In ordinary use the LLM is off, and the companion `.prompts.md` file (plain Markdown, usable with any LLM) is the way to involve one.
 
 ## File Map
 

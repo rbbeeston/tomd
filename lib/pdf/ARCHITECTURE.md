@@ -141,55 +141,9 @@ Enums:
 - Monospace spans are exempt (code boundaries are intentional)
 - Uses `dataclasses.replace` for immutable span updates
 
-### Layer 4: Table Detection (three independent sources + selection)
+### Layer 4: Table Detection
 
-Tables follow the same rule as text: independent extractions are compared and agreement sets the confidence. Every table is proposed by up to three sources that share no logic, then one version per region is selected.
-
-**T14. Text-position tables**
-- `table.py:detect_tables`
-- Signal 1 (block structure): blocks with 2+ lines where x-starts have gaps > 50 units are columnar. Consecutive matching-column blocks (within 10-unit tolerance) form a table run (min 2 rows). Works across page boundaries: blocks from consecutive pages with matching columns form one table.
-- Signal 2 (geometric column profile): pre-pass over all blocks collects x positions that co-occur with other x positions in the same y-band across 2+ y-bands. Y-bands are scoped per page.
-- Orphan absorption: single-line blocks whose x0 matches a confirmed column are absorbed when the following block is a full table row (same page only), and merged into that row's first cell.
-- Finds unruled tables (title-page label/value blocks) that the other sources cannot; weakest source for wrapped cells.
-
-**T15. Ruling-line tables**
-- `ruled.py:extract_ruled_tables` (per page, in the extraction loop)
-- Grid tables: `page.find_tables(strategy="lines")` for tables ruled in both directions.
-- Rule-band tables (booktabs, ReportLab): horizontal rules and the edges of shaded row boxes that share an x-extent form a group; rows are the bands between them (booktabs top/mid/bottom rules: one row per text line). A band holding a single line that starts left of the padded cell text is a caption and splits the group into two tables. The revtex style (header above a doubled rule, rule above each row) is recognised.
-- Columns: x ranges no word covers (accepted when wide, or when 3+ distinct word pairs straddle them) plus x positions where a word starts after a gap in 60% of rows (survives text overrunning into the next column).
-- Cell text is rebuilt from the page's own character runs, so every character belongs to one word even where columns overprint (text that jumps back in x starts a new word), and the PDF's spaces are kept. Fonts, bold, italic and monospace survive.
-- Words split where text jumps back in x (overprint) and where a code font meets a body font with no space (an identifier running into the next column).
-- A table continued from the previous page whose continuation has only two rules near the top of the page is read as a fragment and kept only if it stitches onto the table ending the previous page. Rules belonging to a grid already found are not reused for rule-band tables.
-- Characters are ordered by their centre (ligature glyphs such as "ff" can start right of the next character's left edge); a space character is kept only where it sits in a gap between two characters of its line; spaces are inferred from gaps only when a cell has no space characters of its own.
-- When find_tables builds a junk grid (a section underline joined to a real table), it is re-run inside each area its vertical rules span; only grids that pass the rule checks claim their area. Trailing margin-started prose is trimmed off a band, and a band of more than six prose lines is running text.
-- Superscript reference marks (strictly smaller, bottom raised by more than 2pt and top by more than 1pt against a neighbouring word, at most 8 characters) are attached to the line they belong to, so `P3481R5 [10]` keeps its order, and they never define columns or caption lines.
-- Caption bands are not rows: a band is a caption when every line starts left of the padded cell text, or when it holds at most three lines of prose that either start off the cell-text edge or leave the band mostly empty. A caption between rules of the same width splits them into separate tables.
-- Header-row gaps define a column when every row whose text crosses that x starts a word exactly there (an overrunning identifier with the next column drawn over it); a centred column does not qualify.
-- Shaded boxes up to 90pt tall count as row bounds (multi-line headers); taller boxes are panels. Four rules read as one-rule-per-row when they start with a padded shaded header box (highlight strips around a single line are not padded).
-- A band of prose whose first line starts at the margin (legends, notes under a table) is never a row; a rule-band candidate needs at least two rows with a column-sized gap (or overprinted text), so quotations and notes between rules are not tables.
-
-**T16. Tagged-PDF tables**
-- `tagged.py:extract_tagged_tables`
-- Reads Table/TR/TH/TD from the structure tree via `get_text("dict", flags=TEXT_COLLECT_STRUCTURE)`. Tables continued across pages share a structure index and are joined; split rows likewise. Runs on the same baseline are joined into one line. Short rows (empty cells are absent from the per-page data) are re-aligned by x.
-- If MuPDF reports structure-tree errors, every tagged table gets `tags-malformed` and ranks below grid tables.
-
-**T16c. WG21 poll tables**
-- `poll.py:extract_poll_tables` (per page)
-- A text line made of exactly `SF F N A SA` is a poll header; up to three rows of counts directly below, each number under a header column, are its rows. Drawn any way (ruled, unruled, inside a coloured box, tab-aligned, zero-width-space separated). A suggested poll without counts is a header-only table; a header followed by text on its line is inline prose and ignored.
-
-**T16a. Selection and confidence**
-- `table.py:select_tables`
-- Ruled candidates continued on the next page are stitched (`stitch_pages`: same columns and x-extent, no text after the first part or before the second; a repeated header row is dropped).
-- Rule checks (`table_flags`): ragged columns (judged on dense columns only - a column filled in under half the rows is a legitimate annotation column; rows with extra filled cells outside full grids, an empty key cell, or a lone cell in a 3+ column table), mostly sparse columns, empty cells, cells that look like split code, constant first column, TOC (ascending page numbers), bullet list (cells starting with a bullet), numbered section lines ("9.1 | feature test macro", or any table whose first cell is a section number), ASCII-art diagrams, code-comment column (including a lone `//` column), reference list (labels leading or trailing, apostrophes allowed), single-cell rows, sparse two-row tables. Tags are exempt from the ragged/empty checks.
-- Candidates are grouped by position. The primary is the first candidate without a bad flag in the order tags, poll, grid, malformed tags, rule-band, text positions.
-- Confidence: HIGH when another source agrees cell for cell, when tomd's text-position reading is a correct subset of a fully ruled (grid or rule-band) table (same columns, every row matching in order), or when no other source saw the table; UNCERTAIN when another source's reading disagrees. Only readings that pass the rule checks and lie mostly within the primary's rows count (a box drawn around a poll is not a reading of it). Uncertain tables keep those versions for the prompts file.
-- A table whose text contains characters a damaged text layer produces (U+1D00-1DBF: math italics written without their last hex digit by some generators) is UNCERTAIN with a note for the prompt; the right symbols are not recoverable from the text.
-- A text-position table that fails the checks and has no better version is dropped and its blocks flow back into normal processing (e.g. code synopses with a highlighted keyword column become code).
-- `remove_table_regions` removes the chosen tables' lines from both the MuPDF and spatial paths, except lines whose words the table did not capture: text is never lost to a table.
-
-**T16b. Table section insertion**
-- `__init__.py:_run_pipeline`
-- Tables inserted into the section list by page number and y-position ordering
+The table pipeline (independent readers and their evidence, selection, verification and repair, the region scan, trust levels L0-L5, marks and notes, the optional LLM tier, and the output contracts) is described in [doc/design-tomd.md](../../doc/design-tomd.md), which replaces the description that stood here.
 
 ### Layer 5: Wording Detection (3 techniques)
 
