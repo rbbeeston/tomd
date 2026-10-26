@@ -141,23 +141,9 @@ Enums:
 - Monospace spans are exempt (code boundaries are intentional)
 - Uses `dataclasses.replace` for immutable span updates
 
-### Layer 4: Table Detection (3 techniques)
+### Layer 4: Table Detection
 
-**T14. Table detection (two-signal)**
-- `table.py:detect_tables`
-- Signal 1 (block structure): blocks with 2+ lines where x-starts have gaps > 50 units are columnar. Consecutive matching-column blocks (within 10-unit tolerance) form a table run (min 2 rows). Works across page boundaries: blocks from consecutive pages with matching columns form one table.
-- Signal 2 (geometric column profile): pre-pass over all blocks collects x positions that co-occur with other x positions in the same y-band across 2+ y-bands. Y-bands are scoped per page. Body text (alone in its y-band) never qualifies; only genuine table column x positions are selected.
-- Orphan absorption: single-line blocks whose x0 matches a confirmed column are "orphans" (wrapped cell first lines split off by MuPDF). Absorbed when the following block is a full table row (one-block lookahead confirms continuation). Three guards prevent false positives: (1) only single-line blocks qualify; (2) orphan must be on the same page as the last confirmed table row; (3) the confirming lookahead block must also be on the same page as the orphan. Orphan partial rows are merged into the following row's first cell so multi-line cells render as a single cell string.
-- Known gap: a wrapped cell whose continuation line is the first block on the next page will not be absorbed (cross-page orphan). The table will end at the last same-page row and the orphan will appear in the output as an uncertain region.
-- Extracted as TABLE sections with HIGH confidence
-
-**T15. Spatial table exclusion**
-- `table.py:exclude_table_regions`
-- Removes spatial blocks whose y-center falls within detected table y-ranges (5-unit margin)
-
-**T16. Table section insertion**
-- `__init__.py:convert_pdf`
-- Tables inserted into the section list by page number and y-position ordering
+The table pipeline (independent readers and their evidence, selection, verification and repair, the region scan, trust levels L0-L5, marks and notes, the optional LLM tier, and the output contracts) is described in [doc/design-tomd.md](../../doc/design-tomd.md), which replaces the description that stood here.
 
 ### Layer 5: Wording Detection (3 techniques)
 
