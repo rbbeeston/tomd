@@ -9,13 +9,13 @@ nav a:hover{background:var(--line)}nav .m{font-weight:600;margin-top:6px}nav .i{
 main{margin-left:300px;padding:16px 24px;max-width:1100px}h1{font-size:20px;margin:0 0 4px}h2{font-size:15px;margin:22px 0 6px;border-top:1px solid var(--line);padding-top:12px}
 h2 a.src{font-weight:400;font-size:12px;color:var(--mut);margin-left:8px}.sum{color:var(--mut);margin:0 0 10px}
 pre{font:12.5px/1.5 ui-monospace,SFMono-Regular,Menlo,monospace;white-space:pre-wrap;margin:0}
-.k{color:var(--kw)}.n{color:var(--nm);font-weight:600}.c{color:var(--mut)}.d{color:var(--cm)}
+.k{color:var(--kw)}.n{color:var(--nm);font-weight:600}.c{color:var(--mut)}.d{color:var(--cm)}.u{font-style:italic}
 a.t{color:inherit;text-decoration:underline dotted}a.ln{color:var(--mut);font-size:11px;text-decoration:none;margin-left:6px}
 @media(max-width:800px){nav{position:static;width:auto;border:0}main{margin-left:0}}
 </style></head><body>
 <nav><b>tomd API surface</b><a class="m" href="#init-py">__init__.py</a><a class="m" href="#lib-init-py">lib/__init__.py</a><a class="i" href="#lib.__init__.ascii_escape">ascii_escape</a><a class="i" href="#lib.__init__.format_front_matter">format_front_matter</a><a class="i" href="#lib.__init__.parse_author_lines">parse_author_lines</a><a class="i" href="#lib.__init__.strip_format_chars">strip_format_chars</a><a class="m" href="#lib-html-init-py">lib/html/__init__.py</a><a class="i" href="#lib.html.__init__.convert_html">convert_html</a><a class="m" href="#lib-html-extract-py">lib/html/extract.py</a><a class="i" href="#lib.html.extract.detect_generator">detect_generator</a><a class="i" href="#lib.html.extract.extract_metadata">extract_metadata</a><a class="i" href="#lib.html.extract.parse_html">parse_html</a><a class="i" href="#lib.html.extract.strip_boilerplate">strip_boilerplate</a><a class="m" href="#lib-html-render-py">lib/html/render.py</a><a class="i" href="#lib.html.render.render_body">render_body</a><a class="m" href="#lib-pdf-init-py">lib/pdf/__init__.py</a><a class="i" href="#lib.pdf.__init__.PipelineResult">class PipelineResult</a><a class="i" href="#lib.pdf.__init__.convert_pdf">convert_pdf</a><a class="i" href="#lib.pdf.__init__.convert_pdf_with_summary">convert_pdf_with_summary</a><a class="i" href="#lib.pdf.__init__.dropped_nomination_regions">dropped_nomination_regions</a><a class="m" href="#lib-pdf-checks-init-py">lib/pdf/checks/__init__.py</a><a class="i" href="#lib.pdf.checks.__init__.AreaContext">class AreaContext</a><a class="i" href="#lib.pdf.checks.__init__.Check">class Check</a><a class="i" href="#lib.pdf.checks.__init__.disabled">disabled</a><a class="i" href="#lib.pdf.checks.__init__.full_mode">full_mode</a><a class="i" href="#lib.pdf.checks.__init__.registry">registry</a><a class="i" href="#lib.pdf.checks.__init__.run_region_checks">run_region_checks</a><a class="m" href="#lib-pdf-checks-layout-py">lib/pdf/checks/_layout.py</a><a class="i" href="#lib.pdf.checks._layout.layout_features">layout_features</a><a class="m" href="#lib-pdf-checks-caption-py">lib/pdf/checks/caption.py</a><a class="i" href="#lib.pdf.checks.caption.has_caption">has_caption</a><a class="i" href="#lib.pdf.checks.caption.run">run</a><a class="m" href="#lib-pdf-checks-codereader-py">lib/pdf/checks/codereader.py</a><a class="i" href="#lib.pdf.checks.codereader.CodeStream">class CodeStream</a><a class="i" href="#lib.pdf.checks.codereader.looks_like_cpp">looks_like_cpp</a><a class="i" href="#lib.pdf.checks.codereader.read_lines">read_lines</a><a class="m" href="#lib-pdf-checks-coherence-py">lib/pdf/checks/coherence.py</a><a class="i" href="#lib.pdf.checks.coherence.column_coherence">column_coherence</a><a class="i" href="#lib.pdf.checks.coherence.content_features">content_features</a><a class="i" href="#lib.pdf.checks.coherence.fragment_share">fragment_share</a><a class="i" href="#lib.pdf.checks.coherence.header_contrast">header_contrast</a><a class="i" href="#lib.pdf.checks.coherence.merged_share">merged_share</a><a class="i" href="#lib.pdf.checks.coherence.run">run</a><a class="i" href="#lib.pdf.checks.coherence.shape">shape</a><a class="i" href="#lib.pdf.checks.coherence.table_coherence">table_coherence</a><a class="m" href="#lib-pdf-checks-data-or-format-py">lib/pdf/checks/data_or_format.py</a><a class="i" href="#lib.pdf.checks.data_or_format.features">features</a><a class="i" href="#lib.pdf.checks.data_or_format.likelihood_data">likelihood_data</a><a class="i" href="#lib.pdf.checks.data_or_format.run">run</a><a class="m" href="#lib-pdf-checks-drawn-lines-py">lib/pdf/checks/drawn_lines.py</a><a class="i" href="#lib.pdf.checks.drawn_lines.run">run</a><a class="m" href="#lib-pdf-checks-footprint-py">lib/pdf/checks/footprint.py</a><a class="i" href="#lib.pdf.checks.footprint.run">run</a><a class="m" href="#lib-pdf-checks-nominations-py">lib/pdf/checks/nominations.py</a><a class="i" href="#lib.pdf.checks.nominations.run">run</a><a class="m" href="#lib-pdf-checks-plausible-py">lib/pdf/checks/plausible.py</a><a class="i" href="#lib.pdf.checks.plausible.column_type">column_type</a><a class="i" href="#lib.pdf.checks.plausible.duplication">duplication</a><a class="i" href="#lib.pdf.checks.plausible.plausibility">plausibility</a><a class="i" href="#lib.pdf.checks.plausible.poll_counts">poll_counts</a><a class="i" href="#lib.pdf.checks.plausible.sequence_order">sequence_order</a><a class="m" href="#lib-pdf-checks-same-code-py">lib/pdf/checks/same_code.py</a><a class="i" href="#lib.pdf.checks.same_code.run">run</a><a class="m" href="#lib-pdf-checks-text-alignment-py">lib/pdf/checks/text_alignment.py</a><a class="i" href="#lib.pdf.checks.text_alignment.run">run</a><a class="m" href="#lib-pdf-checks-wordgap-py">lib/pdf/checks/wordgap.py</a><a class="i" href="#lib.pdf.checks.wordgap.run">run</a><a class="m" href="#lib-pdf-classify-py">lib/pdf/classify.py</a><a class="i" href="#lib.pdf.classify.gate_tables">gate_tables</a><a class="i" href="#lib.pdf.classify.generator">generator</a><a class="i" href="#lib.pdf.classify.image_share">image_share</a><a class="i" href="#lib.pdf.classify.jev_enabled">jev_enabled</a><a class="i" href="#lib.pdf.classify.jev_table_or_not">jev_table_or_not</a><a class="i" href="#lib.pdf.classify.predict">predict</a><a class="i" href="#lib.pdf.classify.region_features">region_features</a><a class="i" href="#lib.pdf.classify.text_rows">text_rows</a><a class="m" href="#lib-pdf-classify-trees-py">lib/pdf/classify_trees.py</a><a class="m" href="#lib-pdf-cleanup-py">lib/pdf/cleanup.py</a><a class="i" href="#lib.pdf.cleanup.cleanup_text">cleanup_text</a><a class="i" href="#lib.pdf.cleanup.detect_repeating">detect_repeating</a><a class="i" href="#lib.pdf.cleanup.find_hidden_regions">find_hidden_regions</a><a class="i" href="#lib.pdf.cleanup.get_edge_items">get_edge_items</a><a class="i" href="#lib.pdf.cleanup.normalize_whitespace">normalize_whitespace</a><a class="i" href="#lib.pdf.cleanup.strip_hidden_blocks">strip_hidden_blocks</a><a class="i" href="#lib.pdf.cleanup.strip_repeating">strip_repeating</a><a class="m" href="#lib-pdf-codepair-py">lib/pdf/codepair.py</a><a class="i" href="#lib.pdf.codepair.find_code_pairs">find_code_pairs</a><a class="i" href="#lib.pdf.codepair.same_code">same_code</a><a class="m" href="#lib-pdf-content-py">lib/pdf/content.py</a><a class="i" href="#lib.pdf.content.build">build</a><a class="i" href="#lib.pdf.content.build_text">build_text</a><a class="i" href="#lib.pdf.content.content_candidates">content_candidates</a><a class="i" href="#lib.pdf.content.gutters">gutters</a><a class="i" href="#lib.pdf.content.page_hrules">page_hrules</a><a class="i" href="#lib.pdf.content.page_text">page_text</a><a class="i" href="#lib.pdf.content.page_words">page_words</a><a class="i" href="#lib.pdf.content.pieces_of">pieces_of</a><a class="i" href="#lib.pdf.content.visual_lines">visual_lines</a><a class="m" href="#lib-pdf-continuation-py">lib/pdf/continuation.py</a><a class="i" href="#lib.pdf.continuation.annotate">annotate</a><a class="m" href="#lib-pdf-dimensions-py">lib/pdf/dimensions.py</a><a class="i" href="#lib.pdf.dimensions.dimensions">dimensions</a><a class="i" href="#lib.pdf.dimensions.weak_note">weak_note</a><a class="m" href="#lib-pdf-docmeasure-py">lib/pdf/docmeasure.py</a><a class="i" href="#lib.pdf.docmeasure.DocMeasure">class DocMeasure</a><a class="i" href="#lib.pdf.docmeasure.area_word_features">area_word_features</a><a class="i" href="#lib.pdf.docmeasure.gap_stats">gap_stats</a><a class="i" href="#lib.pdf.docmeasure.hyphenates">hyphenates</a><a class="i" href="#lib.pdf.docmeasure.measure">measure</a><a class="i" href="#lib.pdf.docmeasure.visual_lines">visual_lines</a><a class="m" href="#lib-pdf-dvf-model-py">lib/pdf/dvf_model.py</a><a class="m" href="#lib-pdf-emit-py">lib/pdf/emit.py</a><a class="i" href="#lib.pdf.emit.emit_markdown">emit_markdown</a><a class="i" href="#lib.pdf.emit.emit_prompts">emit_prompts</a><a class="i" href="#lib.pdf.emit.is_likely">is_likely</a><a class="i" href="#lib.pdf.emit.set_hyphenating">set_hyphenating</a><a class="i" href="#lib.pdf.emit.table_use">table_use</a><a class="m" href="#lib-pdf-evidence-py">lib/pdf/evidence.py</a><a class="i" href="#lib.pdf.evidence.Entry">class Entry</a><a class="i" href="#lib.pdf.evidence.Record">class Record</a><a class="i" href="#lib.pdf.evidence.current">current</a><a class="i" href="#lib.pdf.evidence.reader_error">reader_error</a><a class="i" href="#lib.pdf.evidence.reset">reset</a><a class="m" href="#lib-pdf-extent-py">lib/pdf/extent.py</a><a class="i" href="#lib.pdf.extent.extend">extend</a><a class="m" href="#lib-pdf-extract-py">lib/pdf/extract.py</a><a class="i" href="#lib.pdf.extract.attach_links">attach_links</a><a class="i" href="#lib.pdf.extract.collect_links">collect_links</a><a class="i" href="#lib.pdf.extract.extract_mupdf">extract_mupdf</a><a class="i" href="#lib.pdf.extract.extract_spatial">extract_spatial</a><a class="m" href="#lib-pdf-figures-py">lib/pdf/figures.py</a><a class="i" href="#lib.pdf.figures.figure_label">figure_label</a><a class="i" href="#lib.pdf.figures.label_figure_tables">label_figure_tables</a><a class="m" href="#lib-pdf-fit-py">lib/pdf/fit.py</a><a class="i" href="#lib.pdf.fit.fit">fit</a><a class="i" href="#lib.pdf.fit.fit_rows">fit_rows</a><a class="i" href="#lib.pdf.fit.grid_of">grid_of</a><a class="m" href="#lib-pdf-flag-py">lib/pdf/flag.py</a><a class="i" href="#lib.pdf.flag.aligned_regions">aligned_regions</a><a class="i" href="#lib.pdf.flag.dropped_uncovered">dropped_uncovered</a><a class="i" href="#lib.pdf.flag.flag_possible_tables">flag_possible_tables</a><a class="i" href="#lib.pdf.flag.gutter_regions">gutter_regions</a><a class="i" href="#lib.pdf.flag.outside_view_regions">outside_view_regions</a><a class="i" href="#lib.pdf.flag.rejected_regions">rejected_regions</a><a class="i" href="#lib.pdf.flag.text_regions">text_regions</a><a class="m" href="#lib-pdf-fullwidth-py">lib/pdf/fullwidth.py</a><a class="i" href="#lib.pdf.fullwidth.apply">apply</a><a class="i" href="#lib.pdf.fullwidth.full_width_rows">full_width_rows</a><a class="m" href="#lib-pdf-levels-py">lib/pdf/levels.py</a><a class="i" href="#lib.pdf.levels.assign">assign</a><a class="i" href="#lib.pdf.levels.cell_markers">cell_markers</a><a class="i" href="#lib.pdf.levels.comment">comment</a><a class="m" href="#lib-pdf-llmcheck-py">lib/pdf/llmcheck.py</a><a class="i" href="#lib.pdf.llmcheck.check">check</a><a class="i" href="#lib.pdf.llmcheck.enabled">enabled</a><a class="i" href="#lib.pdf.llmcheck.reset">reset</a><a class="i" href="#lib.pdf.llmcheck.state">state</a><a class="m" href="#lib-pdf-llmrepair-py">lib/pdf/llmrepair.py</a><a class="i" href="#lib.pdf.llmrepair.ask">ask</a><a class="i" href="#lib.pdf.llmrepair.build_columns">build_columns</a><a class="i" href="#lib.pdf.llmrepair.code_guard">code_guard</a><a class="i" href="#lib.pdf.llmrepair.llm_enabled">llm_enabled</a><a class="i" href="#lib.pdf.llmrepair.paper_record">paper_record</a><a class="i" href="#lib.pdf.llmrepair.repair">repair</a><a class="i" href="#lib.pdf.llmrepair.reset_paper">reset_paper</a><a class="m" href="#lib-pdf-mono-py">lib/pdf/mono.py</a><a class="i" href="#lib.pdf.mono.classify_monospace">classify_monospace</a><a class="i" href="#lib.pdf.mono.propagate_monospace">propagate_monospace</a><a class="m" href="#lib-pdf-ocrcheck-py">lib/pdf/ocrcheck.py</a><a class="i" href="#lib.pdf.ocrcheck.check_table">check_table</a><a class="i" href="#lib.pdf.ocrcheck.mismatched_tokens">mismatched_tokens</a><a class="i" href="#lib.pdf.ocrcheck.ocr_enabled">ocr_enabled</a><a class="m" href="#lib-pdf-pagecache-py">lib/pdf/pagecache.py</a><a class="i" href="#lib.pdf.pagecache.clear">clear</a><a class="i" href="#lib.pdf.pagecache.hidden_chars">hidden_chars</a><a class="i" href="#lib.pdf.pagecache.rawdict">rawdict</a><a class="i" href="#lib.pdf.pagecache.remove_covered_text">remove_covered_text</a><a class="i" href="#lib.pdf.pagecache.words_in">words_in</a><a class="m" href="#lib-pdf-paper-model-py">lib/pdf/paper_model.py</a><a class="m" href="#lib-pdf-poll-py">lib/pdf/poll.py</a><a class="i" href="#lib.pdf.poll.extract_poll_tables">extract_poll_tables</a><a class="i" href="#lib.pdf.poll.vote_header">vote_header</a><a class="m" href="#lib-pdf-qa-py">lib/pdf/qa.py</a><a class="i" href="#lib.pdf.qa.QAMetrics">class QAMetrics</a><a class="i" href="#lib.pdf.qa.compute_metrics">compute_metrics</a><a class="i" href="#lib.pdf.qa.run_qa_report">run_qa_report</a><a class="m" href="#lib-pdf-records-py">lib/pdf/records.py</a><a class="i" href="#lib.pdf.records.line_kind">line_kind</a><a class="i" href="#lib.pdf.records.periodic_runs">periodic_runs</a><a class="i" href="#lib.pdf.records.read_region">read_region</a><a class="i" href="#lib.pdf.records.records_candidates">records_candidates</a><a class="m" href="#lib-pdf-relations-py">lib/pdf/relations.py</a><a class="i" href="#lib.pdf.relations.RelationRecord">class RelationRecord</a><a class="i" href="#lib.pdf.relations.Violation">class Violation</a><a class="i" href="#lib.pdf.relations.check">check</a><a class="i" href="#lib.pdf.relations.record_for">record_for</a><a class="m" href="#lib-pdf-repair-py">lib/pdf/repair.py</a><a class="i" href="#lib.pdf.repair.place_stray_words">place_stray_words</a><a class="m" href="#lib-pdf-rowbands-py">lib/pdf/rowbands.py</a><a class="i" href="#lib.pdf.rowbands.merge_rule_bands">merge_rule_bands</a><a class="m" href="#lib-pdf-ruled-py">lib/pdf/ruled.py</a><a class="i" href="#lib.pdf.ruled.closed_exempt">closed_exempt</a><a class="i" href="#lib.pdf.ruled.drawn_spans">drawn_spans</a><a class="i" href="#lib.pdf.ruled.extract_ruled_tables">extract_ruled_tables</a><a class="i" href="#lib.pdf.ruled.sparse_mapping">sparse_mapping</a><a class="i" href="#lib.pdf.ruled.take_excluded_grids">take_excluded_grids</a><a class="m" href="#lib-pdf-scan-py">lib/pdf/scan.py</a><a class="i" href="#lib.pdf.scan.area_features">area_features</a><a class="i" href="#lib.pdf.scan.areas">areas</a><a class="i" href="#lib.pdf.scan.band">band</a><a class="i" href="#lib.pdf.scan.info_of">info_of</a><a class="i" href="#lib.pdf.scan.likelihood">likelihood</a><a class="i" href="#lib.pdf.scan.run_scan">run_scan</a><a class="m" href="#lib-pdf-scan-model-py">lib/pdf/scan_model.py</a><a class="m" href="#lib-pdf-spans-py">lib/pdf/spans.py</a><a class="i" href="#lib.pdf.spans.normalize_spans">normalize_spans</a><a class="m" href="#lib-pdf-stacked-py">lib/pdf/stacked.py</a><a class="i" href="#lib.pdf.stacked.apply">apply</a><a class="i" href="#lib.pdf.stacked.split_stacked">split_stacked</a><a class="m" href="#lib-pdf-structure-py">lib/pdf/structure.py</a><a class="i" href="#lib.pdf.structure.compare_extractions">compare_extractions</a><a class="i" href="#lib.pdf.structure.heading_confidence">heading_confidence</a><a class="i" href="#lib.pdf.structure.structure_sections">structure_sections</a><a class="m" href="#lib-pdf-summary-py">lib/pdf/summary.py</a><a class="i" href="#lib.pdf.summary.build">build</a><a class="i" href="#lib.pdf.summary.confidence">confidence</a><a class="i" href="#lib.pdf.summary.features">features</a><a class="i" href="#lib.pdf.summary.header_comment">header_comment</a><a class="i" href="#lib.pdf.summary.prompts_section">prompts_section</a><a class="i" href="#lib.pdf.summary.unfamiliarity">unfamiliarity</a><a class="m" href="#lib-pdf-table-py">lib/pdf/table.py</a><a class="i" href="#lib.pdf.table.candidate_from_section">candidate_from_section</a><a class="i" href="#lib.pdf.table.candidates_agree">candidates_agree</a><a class="i" href="#lib.pdf.table.class_check">class_check</a><a class="i" href="#lib.pdf.table.conservation_error">conservation_error</a><a class="i" href="#lib.pdf.table.cross_reader_continuation">cross_reader_continuation</a><a class="i" href="#lib.pdf.table.detect_tables">detect_tables</a><a class="i" href="#lib.pdf.table.diagram_boxes">diagram_boxes</a><a class="i" href="#lib.pdf.table.join_split_words">join_split_words</a><a class="i" href="#lib.pdf.table.mark_matrix">mark_matrix</a><a class="i" href="#lib.pdf.table.page_furniture">page_furniture</a><a class="i" href="#lib.pdf.table.partial_reading">partial_reading</a><a class="i" href="#lib.pdf.table.remove_table_regions">remove_table_regions</a><a class="i" href="#lib.pdf.table.select_tables">select_tables</a><a class="i" href="#lib.pdf.table.split_at_headers">split_at_headers</a><a class="i" href="#lib.pdf.table.stitch_pages">stitch_pages</a><a class="i" href="#lib.pdf.table.table_flags">table_flags</a><a class="i" href="#lib.pdf.table.witness">witness</a><a class="m" href="#lib-pdf-tablemodel-py">lib/pdf/tablemodel.py</a><a class="i" href="#lib.pdf.tablemodel.detect_spans">detect_spans</a><a class="i" href="#lib.pdf.tablemodel.flatten">flatten</a><a class="i" href="#lib.pdf.tablemodel.flatten_text">flatten_text</a><a class="i" href="#lib.pdf.tablemodel.marker">marker</a><a class="m" href="#lib-pdf-tagged-py">lib/pdf/tagged.py</a><a class="i" href="#lib.pdf.tagged.extract_tagged_tables">extract_tagged_tables</a><a class="m" href="#lib-pdf-types-py">lib/pdf/types.py</a><a class="i" href="#lib.pdf.types.Block">class Block</a><a class="i" href="#lib.pdf.types.Confidence">class Confidence</a><a class="i" href="#lib.pdf.types.Line">class Line</a><a class="i" href="#lib.pdf.types.PageEdgeItem">class PageEdgeItem</a><a class="i" href="#lib.pdf.types.Section">class Section</a><a class="i" href="#lib.pdf.types.SectionKind">class SectionKind</a><a class="i" href="#lib.pdf.types.Span">class Span</a><a class="i" href="#lib.pdf.types.TableCandidate">class TableCandidate</a><a class="i" href="#lib.pdf.types.compute_bbox">compute_bbox</a><a class="i" href="#lib.pdf.types.is_readable">is_readable</a><a class="m" href="#lib-pdf-validate-py">lib/pdf/validate.py</a><a class="i" href="#lib.pdf.validate.add_header_above">add_header_above</a><a class="i" href="#lib.pdf.validate.cell_text">cell_text</a><a class="i" href="#lib.pdf.validate.escalate">escalate</a><a class="i" href="#lib.pdf.validate.resegment_rows">resegment_rows</a><a class="i" href="#lib.pdf.validate.split_hidden_column">split_hidden_column</a><a class="i" href="#lib.pdf.validate.split_stacked_rows">split_stacked_rows</a><a class="i" href="#lib.pdf.validate.switch_reader">switch_reader</a><a class="i" href="#lib.pdf.validate.verify_layout">verify_layout</a><a class="i" href="#lib.pdf.validate.verify_pieces">verify_pieces</a><a class="m" href="#lib-pdf-visibility-py">lib/pdf/visibility.py</a><a class="i" href="#lib.pdf.visibility.check_page">check_page</a><a class="i" href="#lib.pdf.visibility.classify">classify</a><a class="i" href="#lib.pdf.visibility.discards">discards</a><a class="i" href="#lib.pdf.visibility.markdown">markdown</a><a class="i" href="#lib.pdf.visibility.regions_of">regions_of</a><a class="i" href="#lib.pdf.visibility.remove_hidden_text">remove_hidden_text</a><a class="i" href="#lib.pdf.visibility.summary">summary</a><a class="m" href="#lib-pdf-wg21-py">lib/pdf/wg21.py</a><a class="i" href="#lib.pdf.wg21.extract_metadata_from_blocks">extract_metadata_from_blocks</a><a class="m" href="#lib-pdf-worddict-py">lib/pdf/worddict.py</a><a class="i" href="#lib.pdf.worddict.available">available</a><a class="i" href="#lib.pdf.worddict.is_word">is_word</a><a class="i" href="#lib.pdf.worddict.words">words</a><a class="m" href="#lib-pdf-wording-py">lib/pdf/wording.py</a><a class="i" href="#lib.pdf.wording.classify_wording">classify_wording</a><a class="i" href="#lib.pdf.wording.collect_line_drawings">collect_line_drawings</a><a class="i" href="#lib.pdf.wording.is_green_ins">is_green_ins</a><a class="i" href="#lib.pdf.wording.is_red_del">is_red_del</a><a class="m" href="#lib-similarity-py">lib/similarity.py</a><a class="i" href="#lib.similarity.similar">similar</a><a class="m" href="#lib-toc-py">lib/toc.py</a><a class="i" href="#lib.toc.find_toc_indices">find_toc_indices</a><a class="m" href="#main-py">main.py</a><a class="i" href="#main.main">main</a></nav>
-<main><h1>tomd API surface</h1><p class="sum">68 modules, 18 classes, 215 functions, 17 methods, 119 fields. Declarations, docstrings and comments only; no function bodies.</p>
-<h2 id="init-py">__init__.py<a class="src" href="../../__init__.py">source</a></h2><pre><span class="d">&quot;&quot;&quot;tomd - PDF and HTML to Markdown converter for WG21 papers.&quot;&quot;&quot;</span></pre><h2 id="lib-init-py">lib/__init__.py<a class="src" href="../../lib/__init__.py">source</a></h2><pre><span class="d">&quot;&quot;&quot;Shared text utilities and constants for PDF and HTML converters.&quot;&quot;&quot;</span>
+<main><h1>tomd API surface</h1><p class="sum">68 modules, 18 classes, 215 functions, 17 methods, 119 fields. Typed: 314 of 585 functions and methods (53%). Declarations, docstrings and comments only; no function bodies.</p>
+<h2 id="init-py">__init__.py<a class="src" href="../../__init__.py">source</a></h2><pre><span class="d">&quot;&quot;&quot;tomd - PDF and HTML to Markdown converter for WG21 papers.&quot;&quot;&quot;</span></pre><h2 id="lib-init-py">lib/__init__.py<a class="src" href="../../lib/__init__.py">source</a></h2><p class="sum">Typed: 4 of 6 functions and methods (66%).</p><pre><span class="d">&quot;&quot;&quot;Shared text utilities and constants for PDF and HTML converters.&quot;&quot;&quot;</span>
 
 <span class="k">def </span><span class="n" id="lib.__init__.ascii_escape">ascii_escape</span>(text: str) -&gt; str:<a class="ln" href="../../lib/__init__.py#L27">__init__.py:27</a>
 <span class="d">    &quot;&quot;&quot;Encode non-ASCII characters as HTML character references.</span>
@@ -45,6 +45,7 @@ a.t{color:inherit;text-decoration:underline dotted}a.ln{color:var(--mut);font-si
 <span class="d">    str.strip). `skip_line` returns True for lines that are not author</span>
 <span class="d">    content, such as metadata labels (default: never skip).</span>
 <span class="d">    &quot;&quot;&quot;</span>
+    <span class="c u"># untyped: lines, clean_line, skip_line, return</span>
     <span class="c"># called by: </span>extract._extract_wg21_metadata, extract._parse_mpark_authors, wg21._parse_authors<span class="c"></span>
 
 <span class="k">def </span><span class="n" id="lib.__init__.strip_format_chars">strip_format_chars</span>(text: str) -&gt; str:<a class="ln" href="../../lib/__init__.py#L51">__init__.py:51</a>
@@ -78,7 +79,7 @@ a.t{color:inherit;text-decoration:underline dotted}a.ln{color:var(--mut);font-si
 <span class="c"># (e.g. &quot;2.1.3 &quot; or &quot;1. &quot;) from heading text.</span>
 <span class="n" id="lib.__init__.SECTION_NUM_PREFIX_RE">SECTION_NUM_PREFIX_RE</span> = re.compile(f&#x27;^{SECTION_NUM_PATTERN}\\.?\\s+&#x27;)<a class="ln" href="../../lib/__init__.py#L171">__init__.py:171</a>
 
-<span class="c"># + 2 private module-level names</span></pre><h2 id="lib-html-init-py">lib/html/__init__.py<a class="src" href="../../lib/html/__init__.py">source</a></h2><pre><span class="d">&quot;&quot;&quot;HTML to Markdown converter for WG21 papers.&quot;&quot;&quot;</span>
+<span class="c"># + 2 private module-level names</span></pre><h2 id="lib-html-init-py">lib/html/__init__.py<a class="src" href="../../lib/html/__init__.py">source</a></h2><p class="sum">Typed: 1 of 1 functions and methods (100%).</p><pre><span class="d">&quot;&quot;&quot;HTML to Markdown converter for WG21 papers.&quot;&quot;&quot;</span>
 
 <span class="k">def </span><span class="n" id="lib.html.__init__.convert_html">convert_html</span>(path: Path | os.PathLike[str]) -&gt; tuple[str, str | None]:<a class="ln" href="../../lib/html/__init__.py#L14">__init__.py:14</a>
 <span class="d">    &quot;&quot;&quot;Convert an HTML file to Markdown.</span>
@@ -89,7 +90,7 @@ a.t{color:inherit;text-decoration:underline dotted}a.ln{color:var(--mut);font-si
 <span class="d">    cannot be converted cleanly.</span>
 <span class="d">    &quot;&quot;&quot;</span>
     <span class="c"># calls: </span><a class="t" href="#lib.html.extract.parse_html">extract.parse_html</a>, <a class="t" href="#lib.html.extract.detect_generator">extract.detect_generator</a>, <a class="t" href="#lib.html.extract.extract_metadata">extract.extract_metadata</a>, <a class="t" href="#lib.html.extract.strip_boilerplate">extract.strip_boilerplate</a>, <a class="t" href="#lib.html.render.render_body">render.render_body</a>, <a class="t" href="#lib.__init__.format_front_matter">lib.format_front_matter</a><span class="c"></span>
-    <span class="c"># called by: </span>qa._qa_one, <a class="t" href="#main.main">main.main</a><span class="c"></span></pre><h2 id="lib-html-extract-py">lib/html/extract.py<a class="src" href="../../lib/html/extract.py">source</a></h2><pre><span class="d">&quot;&quot;&quot;HTML parsing, generator detection, metadata extraction, and boilerplate stripping.&quot;&quot;&quot;</span>
+    <span class="c"># called by: </span>qa._qa_one, <a class="t" href="#main.main">main.main</a><span class="c"></span></pre><h2 id="lib-html-extract-py">lib/html/extract.py<a class="src" href="../../lib/html/extract.py">source</a></h2><p class="sum">Typed: 13 of 13 functions and methods (100%).</p><pre><span class="d">&quot;&quot;&quot;HTML parsing, generator detection, metadata extraction, and boilerplate stripping.&quot;&quot;&quot;</span>
 
 <span class="k">def </span><span class="n" id="lib.html.extract.detect_generator">detect_generator</span>(soup: BeautifulSoup) -&gt; str:<a class="ln" href="../../lib/html/extract.py#L21">extract.py:21</a>
 <span class="d">    &quot;&quot;&quot;Identify which tool generated this HTML paper.</span>
@@ -122,7 +123,7 @@ a.t{color:inherit;text-decoration:underline dotted}a.ln{color:var(--mut);font-si
 <span class="d">    &quot;&quot;&quot;</span>
     <span class="c"># called by: </span><a class="t" href="#lib.html.__init__.convert_html">html.convert_html</a><span class="c"></span>
 
-<span class="c"># + 9 private module-level names</span></pre><h2 id="lib-html-render-py">lib/html/render.py<a class="src" href="../../lib/html/render.py">source</a></h2><pre><span class="d">&quot;&quot;&quot;DOM-to-Markdown rendering for WG21 HTML papers.&quot;&quot;&quot;</span>
+<span class="c"># + 9 private module-level names</span></pre><h2 id="lib-html-render-py">lib/html/render.py<a class="src" href="../../lib/html/render.py">source</a></h2><p class="sum">Typed: 16 of 17 functions and methods (94%).</p><pre><span class="d">&quot;&quot;&quot;DOM-to-Markdown rendering for WG21 HTML papers.&quot;&quot;&quot;</span>
 
 <span class="k">def </span><span class="n" id="lib.html.render.render_body">render_body</span>(soup: BeautifulSoup, generator: str) -&gt; str:<a class="ln" href="../../lib/html/render.py#L17">render.py:17</a>
 <span class="d">    &quot;&quot;&quot;Render the HTML body to Markdown.</span>
@@ -133,7 +134,7 @@ a.t{color:inherit;text-decoration:underline dotted}a.ln{color:var(--mut);font-si
     <span class="c"># calls: </span>_render_children<span class="c"></span>
     <span class="c"># called by: </span><a class="t" href="#lib.html.__init__.convert_html">html.convert_html</a><span class="c"></span>
 
-<span class="c"># + 16 private module-level names</span></pre><h2 id="lib-pdf-init-py">lib/pdf/__init__.py<a class="src" href="../../lib/pdf/__init__.py">source</a></h2><pre><span class="d">&quot;&quot;&quot;PDF to Markdown converter - pipeline entry point.&quot;&quot;&quot;</span>
+<span class="c"># + 16 private module-level names</span></pre><h2 id="lib-pdf-init-py">lib/pdf/__init__.py<a class="src" href="../../lib/pdf/__init__.py">source</a></h2><p class="sum">Typed: 4 of 17 functions and methods (23%).</p><pre><span class="d">&quot;&quot;&quot;PDF to Markdown converter - pipeline entry point.&quot;&quot;&quot;</span>
 
 <span class="k">@dataclass</span>
 <span class="k">class </span><span class="n" id="lib.pdf.__init__.PipelineResult">PipelineResult</span>:<a class="ln" href="../../lib/pdf/__init__.py#L143">__init__.py:143</a>
@@ -172,10 +173,11 @@ a.t{color:inherit;text-decoration:underline dotted}a.ln{color:var(--mut);font-si
 <span class="d">    covers it, as a possible-table region - a drop never leaves the text silent - except the</span>
 <span class="d">    rules above. (page, bbox, reason, rows) like every mark region.</span>
 <span class="d">    &quot;&quot;&quot;</span>
+    <span class="c u"># untyped: record, tables</span>
     <span class="c"># calls: </span>_overlap<span class="c"></span>
     <span class="c"># called by: </span>_run_pipeline<span class="c"></span>
 
-<span class="c"># + 14 private module-level names</span></pre><h2 id="lib-pdf-checks-init-py">lib/pdf/checks/__init__.py<a class="src" href="../../lib/pdf/checks/__init__.py">source</a></h2><pre><span class="d">&quot;&quot;&quot;The scan&#x27;s checks: one file each, loaded in a fixed order.</span>
+<span class="c"># + 14 private module-level names</span></pre><h2 id="lib-pdf-checks-init-py">lib/pdf/checks/__init__.py<a class="src" href="../../lib/pdf/checks/__init__.py">source</a></h2><p class="sum">Typed: 5 of 5 functions and methods (100%).</p><pre><span class="d">&quot;&quot;&quot;The scan&#x27;s checks: one file each, loaded in a fixed order.</span>
 <span class="d"></span>
 <span class="d">Every check declares its name, the level(s) it serves, the kind of</span>
 <span class="d">information it reads (stage 0: same-type checks are not independent</span>
@@ -216,6 +218,7 @@ a.t{color:inherit;text-decoration:underline dotted}a.ln{color:var(--mut);font-si
 
 <span class="k">def </span><span class="n" id="lib.pdf.checks.__init__.disabled">disabled</span>() -&gt; set[str]:<a class="ln" href="../../lib/pdf/checks/__init__.py#L51">__init__.py:51</a>
     <span class="c"># called by: </span><a class="t" href="#lib.pdf.checks.__init__.registry">registry</a><span class="c"></span>
+    ...
 
 <span class="k">def </span><span class="n" id="lib.pdf.checks.__init__.full_mode">full_mode</span>() -&gt; bool:<a class="ln" href="../../lib/pdf/checks/__init__.py#L63">__init__.py:63</a>
 <span class="d">    &quot;&quot;&quot;Every check on every area (training data, the ledger): TOMD_SCAN_FULL=1.&quot;&quot;&quot;</span>
@@ -224,6 +227,7 @@ a.t{color:inherit;text-decoration:underline dotted}a.ln{color:var(--mut);font-si
 <span class="k">def </span><span class="n" id="lib.pdf.checks.__init__.registry">registry</span>() -&gt; list[<a class="t" href="#lib.pdf.checks.__init__.Check">Check</a>]:<a class="ln" href="../../lib/pdf/checks/__init__.py#L55">__init__.py:55</a>
     <span class="c"># calls: </span><a class="t" href="#lib.pdf.checks.__init__.disabled">disabled</a><span class="c"></span>
     <span class="c"># called by: </span><a class="t" href="#lib.pdf.checks.__init__.run_region_checks">run_region_checks</a><span class="c"></span>
+    ...
 
 <span class="k">def </span><span class="n" id="lib.pdf.checks.__init__.run_region_checks">run_region_checks</span>(ctx: <a class="t" href="#lib.pdf.checks.__init__.AreaContext">AreaContext</a>, decided: Callable[[dict], bool] | None = None) -&gt; dict:<a class="ln" href="../../lib/pdf/checks/__init__.py#L88">__init__.py:88</a>
 <span class="d">    &quot;&quot;&quot;Tier 1 first; the last-resort tier only while decided(features) is False</span>
@@ -243,21 +247,26 @@ a.t{color:inherit;text-decoration:underline dotted}a.ln{color:var(--mut);font-si
 
 <span class="n" id="lib.pdf.checks.__init__.LEVELS">LEVELS</span> = ...<a class="ln" href="../../lib/pdf/checks/__init__.py#L25">__init__.py:25</a>
 
-<span class="c"># + 1 private module-level name</span></pre><h2 id="lib-pdf-checks-layout-py">lib/pdf/checks/_layout.py<a class="src" href="../../lib/pdf/checks/_layout.py">source</a></h2><pre><span class="d">&quot;&quot;&quot;Shared computation for the two layout checks (computed once per area).&quot;&quot;&quot;</span>
+<span class="c"># + 1 private module-level name</span></pre><h2 id="lib-pdf-checks-layout-py">lib/pdf/checks/_layout.py<a class="src" href="../../lib/pdf/checks/_layout.py">source</a></h2><p class="sum">Typed: 0 of 1 functions and methods (0%).</p><pre><span class="d">&quot;&quot;&quot;Shared computation for the two layout checks (computed once per area).&quot;&quot;&quot;</span>
 
 <span class="k">def </span><span class="n" id="lib.pdf.checks._layout.layout_features">layout_features</span>(ctx) -&gt; dict:<a class="ln" href="../../lib/pdf/checks/_layout.py#L4">_layout.py:4</a>
+    <span class="c u"># untyped: ctx</span>
     <span class="c"># calls: </span><a class="t" href="#lib.pdf.classify.region_features">classify.region_features</a><span class="c"></span>
     <span class="c"># called by: </span><a class="t" href="#lib.pdf.checks.drawn_lines.run">drawn_lines.run</a>, <a class="t" href="#lib.pdf.checks.text_alignment.run">text_alignment.run</a><span class="c"></span>
+    ...
 
-<span class="n" id="lib.pdf.checks._layout.DRAWN">DRAWN</span> = (&#x27;hrules&#x27;, &#x27;vrules&#x27;, &#x27;row_fills&#x27;, &#x27;enclosing_fill&#x27;)<a class="ln" href="../../lib/pdf/checks/_layout.py#L14">_layout.py:14</a></pre><h2 id="lib-pdf-checks-caption-py">lib/pdf/checks/caption.py<a class="src" href="../../lib/pdf/checks/caption.py">source</a></h2><pre><span class="d">&quot;&quot;&quot;Document: a &quot;Table N&quot; caption just above or below the area.&quot;&quot;&quot;</span>
+<span class="n" id="lib.pdf.checks._layout.DRAWN">DRAWN</span> = (&#x27;hrules&#x27;, &#x27;vrules&#x27;, &#x27;row_fills&#x27;, &#x27;enclosing_fill&#x27;)<a class="ln" href="../../lib/pdf/checks/_layout.py#L14">_layout.py:14</a></pre><h2 id="lib-pdf-checks-caption-py">lib/pdf/checks/caption.py<a class="src" href="../../lib/pdf/checks/caption.py">source</a></h2><p class="sum">Typed: 1 of 2 functions and methods (50%).</p><pre><span class="d">&quot;&quot;&quot;Document: a &quot;Table N&quot; caption just above or below the area.&quot;&quot;&quot;</span>
 
 <span class="k">def </span><span class="n" id="lib.pdf.checks.caption.has_caption">has_caption</span>(text_above: str, text_below: str) -&gt; bool:<a class="ln" href="../../lib/pdf/checks/caption.py#L9">caption.py:9</a>
     <span class="c"># called by: </span><a class="t" href="#lib.pdf.checks.caption.run">run</a><span class="c"></span>
+    ...
 
 <span class="k">def </span><span class="n" id="lib.pdf.checks.caption.run">run</span>(ctx) -&gt; dict:<a class="ln" href="../../lib/pdf/checks/caption.py#L13">caption.py:13</a>
+    <span class="c u"># untyped: ctx</span>
     <span class="c"># calls: </span><a class="t" href="#lib.pdf.checks.caption.has_caption">has_caption</a><span class="c"></span>
+    ...
 
-<span class="n" id="lib.pdf.checks.caption.CHECK">CHECK</span> = ...<a class="ln" href="../../lib/pdf/checks/caption.py#L21">caption.py:21</a></pre><h2 id="lib-pdf-checks-codereader-py">lib/pdf/checks/codereader.py<a class="src" href="../../lib/pdf/checks/codereader.py">source</a></h2><pre><span class="d">&quot;&quot;&quot;A lightweight reader for C++-like code lines (user, 2026-10-21): not a parser.</span>
+<span class="n" id="lib.pdf.checks.caption.CHECK">CHECK</span> = ...<a class="ln" href="../../lib/pdf/checks/caption.py#L21">caption.py:21</a></pre><h2 id="lib-pdf-checks-codereader-py">lib/pdf/checks/codereader.py<a class="src" href="../../lib/pdf/checks/codereader.py">source</a></h2><p class="sum">Typed: 5 of 5 functions and methods (100%).</p><pre><span class="d">&quot;&quot;&quot;A lightweight reader for C++-like code lines (user, 2026-10-21): not a parser.</span>
 <span class="d"></span>
 <span class="d">Fed one line at a time per text stream (a column of code), it says for each line:</span>
 <span class="d"></span>
@@ -292,6 +301,7 @@ a.t{color:inherit;text-decoration:underline dotted}a.ln{color:var(--mut);font-si
     <span class="k">def </span><span class="n" id="lib.pdf.checks.codereader.CodeStream.__init__">__init__</span>(self): ...<a class="ln" href="../../lib/pdf/checks/codereader.py#L81">codereader.py:81</a>
     <span class="k">def </span><span class="n" id="lib.pdf.checks.codereader.CodeStream.feed">feed</span>(self, line: str) -&gt; dict:<a class="ln" href="../../lib/pdf/checks/codereader.py#L87">codereader.py:87</a>
         <span class="c"># calls: </span>_strip<span class="c"></span>
+        ...
 
 <span class="k">def </span><span class="n" id="lib.pdf.checks.codereader.looks_like_cpp">looks_like_cpp</span>(text: str) -&gt; bool:<a class="ln" href="../../lib/pdf/checks/codereader.py#L144">codereader.py:144</a>
 <span class="d">    &quot;&quot;&quot;C++ by its content (any font): a token pattern only code has - scope &#x27;::&#x27;, member</span>
@@ -304,30 +314,35 @@ a.t{color:inherit;text-decoration:underline dotted}a.ln{color:var(--mut);font-si
 <span class="d">    &quot;&quot;&quot;per-line facts for one stream of code lines&quot;&quot;&quot;</span>
     <span class="c"># calls: </span><a class="t" href="#lib.pdf.checks.codereader.CodeStream">CodeStream</a><span class="c"></span>
 
-<span class="c"># + 1 private module-level name</span></pre><h2 id="lib-pdf-checks-coherence-py">lib/pdf/checks/coherence.py<a class="src" href="../../lib/pdf/checks/coherence.py">source</a></h2><pre><span class="d">&quot;&quot;&quot;Meaning: column coherence of the area&#x27;s best reading - items per cell,</span>
+<span class="c"># + 1 private module-level name</span></pre><h2 id="lib-pdf-checks-coherence-py">lib/pdf/checks/coherence.py<a class="src" href="../../lib/pdf/checks/coherence.py">source</a></h2><p class="sum">Typed: 1 of 9 functions and methods (11%).</p><pre><span class="d">&quot;&quot;&quot;Meaning: column coherence of the area&#x27;s best reading - items per cell,</span>
 <span class="d">fragments, header vs body, the weakest column&#x27;s shape uniformity, and the</span>
 <span class="d">first column as a list of keys (local shape tier; no Jev).</span>
 <span class="d">&quot;&quot;&quot;</span>
 
 <span class="k">def </span><span class="n" id="lib.pdf.checks.coherence.column_coherence">column_coherence</span>(rows, skip_header=True):<a class="ln" href="../../lib/pdf/checks/coherence.py#L33">coherence.py:33</a>
 <span class="d">    &quot;&quot;&quot;Per column: share of the dominant shape among filled body cells, or None (abstain).&quot;&quot;&quot;</span>
+    <span class="c u"># untyped: rows, skip_header, return</span>
     <span class="c"># calls: </span><a class="t" href="#lib.pdf.checks.coherence.shape">shape</a><span class="c"></span>
     <span class="c"># called by: </span><a class="t" href="#lib.pdf.checks.coherence.table_coherence">table_coherence</a><span class="c"></span>
 
 <span class="k">def </span><span class="n" id="lib.pdf.checks.coherence.content_features">content_features</span>(rows) -&gt; dict:<a class="ln" href="../../lib/pdf/checks/coherence.py#L128">coherence.py:128</a>
+    <span class="c u"># untyped: rows</span>
     <span class="c"># calls: </span><a class="t" href="#lib.pdf.checks.coherence.shape">shape</a><span class="c"></span>
     <span class="c"># called by: </span><a class="t" href="#lib.pdf.checks.coherence.run">run</a><span class="c"></span>
+    ...
 
 <span class="k">def </span><span class="n" id="lib.pdf.checks.coherence.fragment_share">fragment_share</span>(rows):<a class="ln" href="../../lib/pdf/checks/coherence.py#L83">coherence.py:83</a>
 <span class="d">    &quot;&quot;&quot;Fragments: body cells that start as a continuation (lowercase first word</span>
 <span class="d">    after a cell above that ended mid-phrase) or end mid-phrase.</span>
 <span class="d">    &quot;&quot;&quot;</span>
+    <span class="c u"># untyped: rows, return</span>
     <span class="c"># calls: </span><a class="t" href="#lib.pdf.checks.coherence.shape">shape</a><span class="c"></span>
 
 <span class="k">def </span><span class="n" id="lib.pdf.checks.coherence.header_contrast">header_contrast</span>(rows):<a class="ln" href="../../lib/pdf/checks/coherence.py#L100">coherence.py:100</a>
 <span class="d">    &quot;&quot;&quot;Header vs body: share of columns whose header cell is a different kind</span>
 <span class="d">    from the column&#x27;s body (a category over instances).</span>
 <span class="d">    &quot;&quot;&quot;</span>
+    <span class="c u"># untyped: rows, return</span>
     <span class="c"># calls: </span><a class="t" href="#lib.pdf.checks.coherence.shape">shape</a><span class="c"></span>
 
 <span class="k">def </span><span class="n" id="lib.pdf.checks.coherence.merged_share">merged_share</span>(rows):<a class="ln" href="../../lib/pdf/checks/coherence.py#L60">coherence.py:60</a>
@@ -335,20 +350,26 @@ a.t{color:inherit;text-decoration:underline dotted}a.ln{color:var(--mut);font-si
 <span class="d">    items of the column&#x27;s own single-item kind (identifiers, numbers, marks),</span>
 <span class="d">    or several sentences. High means rows were merged.</span>
 <span class="d">    &quot;&quot;&quot;</span>
+    <span class="c u"># untyped: rows, return</span>
     <span class="c"># calls: </span><a class="t" href="#lib.pdf.checks.coherence.shape">shape</a><span class="c"></span>
 
 <span class="k">def </span><span class="n" id="lib.pdf.checks.coherence.run">run</span>(ctx) -&gt; dict:<a class="ln" href="../../lib/pdf/checks/coherence.py#L147">coherence.py:147</a>
+    <span class="c u"># untyped: ctx</span>
     <span class="c"># calls: </span><a class="t" href="#lib.pdf.checks.coherence.content_features">content_features</a>, _best_reading<span class="c"></span>
+    ...
 
 <span class="k">def </span><span class="n" id="lib.pdf.checks.coherence.shape">shape</span>(cell: str) -&gt; str:<a class="ln" href="../../lib/pdf/checks/coherence.py#L15">coherence.py:15</a>
     <span class="c"># called by: </span><a class="t" href="#lib.pdf.checks.coherence.column_coherence">column_coherence</a>, <a class="t" href="#lib.pdf.checks.coherence.content_features">content_features</a>, <a class="t" href="#lib.pdf.checks.coherence.fragment_share">fragment_share</a>, <a class="t" href="#lib.pdf.checks.coherence.header_contrast">header_contrast</a>, <a class="t" href="#lib.pdf.checks.coherence.merged_share">merged_share</a><span class="c"></span>
+    ...
 
 <span class="k">def </span><span class="n" id="lib.pdf.checks.coherence.table_coherence">table_coherence</span>(rows):<a class="ln" href="../../lib/pdf/checks/coherence.py#L50">coherence.py:50</a>
+    <span class="c u"># untyped: rows, return</span>
     <span class="c"># calls: </span><a class="t" href="#lib.pdf.checks.coherence.column_coherence">column_coherence</a><span class="c"></span>
+    ...
 
 <span class="n" id="lib.pdf.checks.coherence.CHECK">CHECK</span> = ...<a class="ln" href="../../lib/pdf/checks/coherence.py#L151">coherence.py:151</a>
 
-<span class="c"># + 1 private module-level name</span></pre><h2 id="lib-pdf-checks-data-or-format-py">lib/pdf/checks/data_or_format.py<a class="src" href="../../lib/pdf/checks/data_or_format.py">source</a></h2><pre><span class="d">&quot;&quot;&quot;Meaning: tabular data or formatting? In data a cell&#x27;s meaning depends on its</span>
+<span class="c"># + 1 private module-level name</span></pre><h2 id="lib-pdf-checks-data-or-format-py">lib/pdf/checks/data_or_format.py<a class="src" href="../../lib/pdf/checks/data_or_format.py">source</a></h2><p class="sum">Typed: 0 of 3 functions and methods (0%).</p><pre><span class="d">&quot;&quot;&quot;Meaning: tabular data or formatting? In data a cell&#x27;s meaning depends on its</span>
 <span class="d">row and its column (look a value up by row key and column header); in</span>
 <span class="d">formatting the grid only places content (front matter, label: value</span>
 <span class="d">entries, callouts, slide layouts). Features follow the web-table literature</span>
@@ -358,37 +379,48 @@ a.t{color:inherit;text-decoration:underline dotted}a.ln{color:var(--mut);font-si
 <span class="d">&quot;&quot;&quot;</span>
 
 <span class="k">def </span><span class="n" id="lib.pdf.checks.data_or_format.features">features</span>(rows, f) -&gt; dict | None:<a class="ln" href="../../lib/pdf/checks/data_or_format.py#L16">data_or_format.py:16</a>
+    <span class="c u"># untyped: rows, f</span>
     <span class="c"># called by: </span><a class="t" href="#lib.pdf.checks.data_or_format.likelihood_data">likelihood_data</a><span class="c"></span>
+    ...
 
 <span class="k">def </span><span class="n" id="lib.pdf.checks.data_or_format.likelihood_data">likelihood_data</span>(rows, f) -&gt; float | None:<a class="ln" href="../../lib/pdf/checks/data_or_format.py#L37">data_or_format.py:37</a>
 <span class="d">    &quot;&quot;&quot;P(tabular data) for a reading, or None without one.&quot;&quot;&quot;</span>
+    <span class="c u"># untyped: rows, f</span>
     <span class="c"># calls: </span><a class="t" href="#lib.pdf.checks.data_or_format.features">features</a>, <a class="t" href="#lib.pdf.scan.likelihood">scan.likelihood</a><span class="c"></span>
     <span class="c"># called by: </span><a class="t" href="#lib.pdf.scan.run_scan">scan.run_scan</a><span class="c"></span>
 
-<span class="k">def </span><span class="n" id="lib.pdf.checks.data_or_format.run">run</span>(ctx) -&gt; dict: ...<a class="ln" href="../../lib/pdf/checks/data_or_format.py#L45">data_or_format.py:45</a>
+<span class="k">def </span><span class="n" id="lib.pdf.checks.data_or_format.run">run</span>(ctx) -&gt; dict:<a class="ln" href="../../lib/pdf/checks/data_or_format.py#L45">data_or_format.py:45</a>
+    <span class="c u"># untyped: ctx</span>
+    ...
 
-<span class="n" id="lib.pdf.checks.data_or_format.CHECK">CHECK</span> = ...<a class="ln" href="../../lib/pdf/checks/data_or_format.py#L49">data_or_format.py:49</a></pre><h2 id="lib-pdf-checks-drawn-lines-py">lib/pdf/checks/drawn_lines.py<a class="src" href="../../lib/pdf/checks/drawn_lines.py">source</a></h2><pre><span class="d">&quot;&quot;&quot;Drawing: rules, vertical lines, row shading and enclosing boxes in the area.&quot;&quot;&quot;</span>
+<span class="n" id="lib.pdf.checks.data_or_format.CHECK">CHECK</span> = ...<a class="ln" href="../../lib/pdf/checks/data_or_format.py#L49">data_or_format.py:49</a></pre><h2 id="lib-pdf-checks-drawn-lines-py">lib/pdf/checks/drawn_lines.py<a class="src" href="../../lib/pdf/checks/drawn_lines.py">source</a></h2><p class="sum">Typed: 0 of 1 functions and methods (0%).</p><pre><span class="d">&quot;&quot;&quot;Drawing: rules, vertical lines, row shading and enclosing boxes in the area.&quot;&quot;&quot;</span>
 
 <span class="k">def </span><span class="n" id="lib.pdf.checks.drawn_lines.run">run</span>(ctx) -&gt; dict:<a class="ln" href="../../lib/pdf/checks/drawn_lines.py#L6">drawn_lines.py:6</a>
+    <span class="c u"># untyped: ctx</span>
     <span class="c"># calls: </span><a class="t" href="#lib.pdf.checks._layout.layout_features">_layout.layout_features</a><span class="c"></span>
+    ...
 
-<span class="n" id="lib.pdf.checks.drawn_lines.CHECK">CHECK</span> = <a class="t" href="#lib.pdf.checks.__init__.Check">Check</a>(&#x27;drawn_lines&#x27;, (&#x27;region&#x27;,), &#x27;paths&#x27;, 1, False, run)<a class="ln" href="../../lib/pdf/checks/drawn_lines.py#L11">drawn_lines.py:11</a></pre><h2 id="lib-pdf-checks-footprint-py">lib/pdf/checks/footprint.py<a class="src" href="../../lib/pdf/checks/footprint.py">source</a></h2><pre><span class="d">&quot;&quot;&quot;Words: the area&#x27;s text footprint against the prose measure: left and</span>
+<span class="n" id="lib.pdf.checks.drawn_lines.CHECK">CHECK</span> = <a class="t" href="#lib.pdf.checks.__init__.Check">Check</a>(&#x27;drawn_lines&#x27;, (&#x27;region&#x27;,), &#x27;paths&#x27;, 1, False, run)<a class="ln" href="../../lib/pdf/checks/drawn_lines.py#L11">drawn_lines.py:11</a></pre><h2 id="lib-pdf-checks-footprint-py">lib/pdf/checks/footprint.py<a class="src" href="../../lib/pdf/checks/footprint.py">source</a></h2><p class="sum">Typed: 0 of 1 functions and methods (0%).</p><pre><span class="d">&quot;&quot;&quot;Words: the area&#x27;s text footprint against the prose measure: left and</span>
 <span class="d">right inset (cell padding), and how many lines end on the right measure</span>
 <span class="d">(justified prose does; cell text ends raggedly).</span>
 <span class="d">&quot;&quot;&quot;</span>
 
 <span class="k">def </span><span class="n" id="lib.pdf.checks.footprint.run">run</span>(ctx) -&gt; dict:<a class="ln" href="../../lib/pdf/checks/footprint.py#L8">footprint.py:8</a>
+    <span class="c u"># untyped: ctx</span>
     <span class="c"># calls: </span><a class="t" href="#lib.pdf.checks.wordgap.run">wordgap.run</a><span class="c"></span>
+    ...
 
-<span class="n" id="lib.pdf.checks.footprint.CHECK">CHECK</span> = ...<a class="ln" href="../../lib/pdf/checks/footprint.py#L13">footprint.py:13</a></pre><h2 id="lib-pdf-checks-nominations-py">lib/pdf/checks/nominations.py<a class="src" href="../../lib/pdf/checks/nominations.py">source</a></h2><pre><span class="d">&quot;&quot;&quot;Which scans nominated the area and which rules excluded it (the evidence</span>
+<span class="n" id="lib.pdf.checks.footprint.CHECK">CHECK</span> = ...<a class="ln" href="../../lib/pdf/checks/footprint.py#L13">footprint.py:13</a></pre><h2 id="lib-pdf-checks-nominations-py">lib/pdf/checks/nominations.py<a class="src" href="../../lib/pdf/checks/nominations.py">source</a></h2><p class="sum">Typed: 0 of 1 functions and methods (0%).</p><pre><span class="d">&quot;&quot;&quot;Which scans nominated the area and which rules excluded it (the evidence</span>
 <span class="d">record), with the number of independent information types among them.</span>
 <span class="d">&quot;&quot;&quot;</span>
 
-<span class="k">def </span><span class="n" id="lib.pdf.checks.nominations.run">run</span>(ctx) -&gt; dict: ...<a class="ln" href="../../lib/pdf/checks/nominations.py#L9">nominations.py:9</a>
+<span class="k">def </span><span class="n" id="lib.pdf.checks.nominations.run">run</span>(ctx) -&gt; dict:<a class="ln" href="../../lib/pdf/checks/nominations.py#L9">nominations.py:9</a>
+    <span class="c u"># untyped: ctx</span>
+    ...
 
 <span class="n" id="lib.pdf.checks.nominations.CHECK">CHECK</span> = <a class="t" href="#lib.pdf.checks.__init__.Check">Check</a>(&#x27;nominations&#x27;, (&#x27;region&#x27;,), &#x27;record&#x27;, 0, False, run)<a class="ln" href="../../lib/pdf/checks/nominations.py#L20">nominations.py:20</a>
 
-<span class="n" id="lib.pdf.checks.nominations.SOURCE_INFO">SOURCE_INFO</span> = ...<a class="ln" href="../../lib/pdf/checks/nominations.py#L5">nominations.py:5</a></pre><h2 id="lib-pdf-checks-plausible-py">lib/pdf/checks/plausible.py<a class="src" href="../../lib/pdf/checks/plausible.py">source</a></h2><pre><span class="d">&quot;&quot;&quot;Content plausibility: does the reading make sense as data? A meaning-based</span>
+<span class="n" id="lib.pdf.checks.nominations.SOURCE_INFO">SOURCE_INFO</span> = ...<a class="ln" href="../../lib/pdf/checks/nominations.py#L5">nominations.py:5</a></pre><h2 id="lib-pdf-checks-plausible-py">lib/pdf/checks/plausible.py<a class="src" href="../../lib/pdf/checks/plausible.py">source</a></h2><p class="sum">Typed: 0 of 6 functions and methods (0%).</p><pre><span class="d">&quot;&quot;&quot;Content plausibility: does the reading make sense as data? A meaning-based</span>
 <span class="d">witness, independent of geometry: it reads only the cells&#x27; text.</span>
 <span class="d"></span>
 <span class="d">  sequence order   a key column that is mostly ordered (dates &quot;2022.3&quot;,</span>
@@ -407,46 +439,61 @@ a.t{color:inherit;text-decoration:underline dotted}a.ln{color:var(--mut);font-si
 <span class="d">&quot;&quot;&quot;</span>
 
 <span class="k">def </span><span class="n" id="lib.pdf.checks.plausible.column_type">column_type</span>(rows) -&gt; list:<a class="ln" href="../../lib/pdf/checks/plausible.py#L80">plausible.py:80</a>
+    <span class="c u"># untyped: rows</span>
     <span class="c"># called by: </span><a class="t" href="#lib.pdf.checks.plausible.plausibility">plausibility</a><span class="c"></span>
+    ...
 
 <span class="k">def </span><span class="n" id="lib.pdf.checks.plausible.duplication">duplication</span>(rows) -&gt; list:<a class="ln" href="../../lib/pdf/checks/plausible.py#L96">plausible.py:96</a>
+    <span class="c u"># untyped: rows</span>
     <span class="c"># called by: </span><a class="t" href="#lib.pdf.checks.plausible.plausibility">plausibility</a><span class="c"></span>
+    ...
 
 <span class="k">def </span><span class="n" id="lib.pdf.checks.plausible.plausibility">plausibility</span>(rows) -&gt; list:<a class="ln" href="../../lib/pdf/checks/plausible.py#L106">plausible.py:106</a>
 <span class="d">    &quot;&quot;&quot;Every violation of the content checks for a reading (rows of cell strings).&quot;&quot;&quot;</span>
+    <span class="c u"># untyped: rows</span>
     <span class="c"># calls: </span><a class="t" href="#lib.pdf.checks.plausible.sequence_order">sequence_order</a>, <a class="t" href="#lib.pdf.checks.plausible.poll_counts">poll_counts</a>, <a class="t" href="#lib.pdf.checks.plausible.column_type">column_type</a>, <a class="t" href="#lib.pdf.checks.plausible.duplication">duplication</a><span class="c"></span>
     <span class="c"># called by: </span><a class="t" href="#lib.pdf.classify.gate_tables">classify.gate_tables</a><span class="c"></span>
 
 <span class="k">def </span><span class="n" id="lib.pdf.checks.plausible.poll_counts">poll_counts</span>(rows) -&gt; list:<a class="ln" href="../../lib/pdf/checks/plausible.py#L62">plausible.py:62</a>
+    <span class="c u"># untyped: rows</span>
     <span class="c"># called by: </span><a class="t" href="#lib.pdf.checks.plausible.plausibility">plausibility</a><span class="c"></span>
+    ...
 
 <span class="k">def </span><span class="n" id="lib.pdf.checks.plausible.sequence_order">sequence_order</span>(rows) -&gt; list:<a class="ln" href="../../lib/pdf/checks/plausible.py#L44">plausible.py:44</a>
+    <span class="c u"># untyped: rows</span>
     <span class="c"># calls: </span>_key<span class="c"></span>
     <span class="c"># called by: </span><a class="t" href="#lib.pdf.checks.plausible.plausibility">plausibility</a><span class="c"></span>
+    ...
 
-<span class="c"># + 1 private module-level name</span></pre><h2 id="lib-pdf-checks-same-code-py">lib/pdf/checks/same_code.py<a class="src" href="../../lib/pdf/checks/same_code.py">source</a></h2><pre><span class="d">&quot;&quot;&quot;Meaning: the largest code-pair similarity recorded in the area (weighted</span>
+<span class="c"># + 1 private module-level name</span></pre><h2 id="lib-pdf-checks-same-code-py">lib/pdf/checks/same_code.py<a class="src" href="../../lib/pdf/checks/same_code.py">source</a></h2><p class="sum">Typed: 0 of 1 functions and methods (0%).</p><pre><span class="d">&quot;&quot;&quot;Meaning: the largest code-pair similarity recorded in the area (weighted</span>
 <span class="d">by size where it was computed; one-line blocks abstain upstream).</span>
 <span class="d">&quot;&quot;&quot;</span>
 
-<span class="k">def </span><span class="n" id="lib.pdf.checks.same_code.run">run</span>(ctx) -&gt; dict: ...<a class="ln" href="../../lib/pdf/checks/same_code.py#L6">same_code.py:6</a>
+<span class="k">def </span><span class="n" id="lib.pdf.checks.same_code.run">run</span>(ctx) -&gt; dict:<a class="ln" href="../../lib/pdf/checks/same_code.py#L6">same_code.py:6</a>
+    <span class="c u"># untyped: ctx</span>
+    ...
 
-<span class="n" id="lib.pdf.checks.same_code.CHECK">CHECK</span> = ...<a class="ln" href="../../lib/pdf/checks/same_code.py#L10">same_code.py:10</a></pre><h2 id="lib-pdf-checks-text-alignment-py">lib/pdf/checks/text_alignment.py<a class="src" href="../../lib/pdf/checks/text_alignment.py">source</a></h2><pre><span class="d">&quot;&quot;&quot;Alignment and shape of the text: rows, pieces per row, aligned starts,</span>
+<span class="n" id="lib.pdf.checks.same_code.CHECK">CHECK</span> = ...<a class="ln" href="../../lib/pdf/checks/same_code.py#L10">same_code.py:10</a></pre><h2 id="lib-pdf-checks-text-alignment-py">lib/pdf/checks/text_alignment.py<a class="src" href="../../lib/pdf/checks/text_alignment.py">source</a></h2><p class="sum">Typed: 0 of 1 functions and methods (0%).</p><pre><span class="d">&quot;&quot;&quot;Alignment and shape of the text: rows, pieces per row, aligned starts,</span>
 <span class="d">monospace and digit shares, size and position (the classifier&#x27;s features).</span>
 <span class="d">&quot;&quot;&quot;</span>
 
 <span class="k">def </span><span class="n" id="lib.pdf.checks.text_alignment.run">run</span>(ctx) -&gt; dict:<a class="ln" href="../../lib/pdf/checks/text_alignment.py#L7">text_alignment.py:7</a>
+    <span class="c u"># untyped: ctx</span>
     <span class="c"># calls: </span><a class="t" href="#lib.pdf.checks._layout.layout_features">_layout.layout_features</a><span class="c"></span>
+    ...
 
-<span class="n" id="lib.pdf.checks.text_alignment.CHECK">CHECK</span> = <a class="t" href="#lib.pdf.checks.__init__.Check">Check</a>(&#x27;text_alignment&#x27;, (&#x27;region&#x27;,), &#x27;words&#x27;, 1, False, run)<a class="ln" href="../../lib/pdf/checks/text_alignment.py#L12">text_alignment.py:12</a></pre><h2 id="lib-pdf-checks-wordgap-py">lib/pdf/checks/wordgap.py<a class="src" href="../../lib/pdf/checks/wordgap.py">source</a></h2><pre><span class="d">&quot;&quot;&quot;Words: gaps between neighbouring words in units of the document&#x27;s normal</span>
+<span class="n" id="lib.pdf.checks.text_alignment.CHECK">CHECK</span> = <a class="t" href="#lib.pdf.checks.__init__.Check">Check</a>(&#x27;text_alignment&#x27;, (&#x27;region&#x27;,), &#x27;words&#x27;, 1, False, run)<a class="ln" href="../../lib/pdf/checks/text_alignment.py#L12">text_alignment.py:12</a></pre><h2 id="lib-pdf-checks-wordgap-py">lib/pdf/checks/wordgap.py<a class="src" href="../../lib/pdf/checks/wordgap.py">source</a></h2><p class="sum">Typed: 0 of 1 functions and methods (0%).</p><pre><span class="d">&quot;&quot;&quot;Words: gaps between neighbouring words in units of the document&#x27;s normal</span>
 <span class="d">space. Prose has uniform gaps (one space, or uniformly stretched when</span>
 <span class="d">justified); table lines have bimodal gaps that recur at the same x.</span>
 <span class="d">&quot;&quot;&quot;</span>
 
 <span class="k">def </span><span class="n" id="lib.pdf.checks.wordgap.run">run</span>(ctx) -&gt; dict:<a class="ln" href="../../lib/pdf/checks/wordgap.py#L7">wordgap.py:7</a>
+    <span class="c u"># untyped: ctx</span>
     <span class="c"># calls: </span><a class="t" href="#lib.pdf.docmeasure.area_word_features">docmeasure.area_word_features</a><span class="c"></span>
     <span class="c"># called by: </span><a class="t" href="#lib.pdf.checks.footprint.run">footprint.run</a><span class="c"></span>
+    ...
 
-<span class="n" id="lib.pdf.checks.wordgap.CHECK">CHECK</span> = ...<a class="ln" href="../../lib/pdf/checks/wordgap.py#L16">wordgap.py:16</a></pre><h2 id="lib-pdf-classify-py">lib/pdf/classify.py<a class="src" href="../../lib/pdf/classify.py">source</a></h2><pre><span class="d">&quot;&quot;&quot;Stage-2 gate: is a selected table really a table, and how is it built?</span>
+<span class="n" id="lib.pdf.checks.wordgap.CHECK">CHECK</span> = ...<a class="ln" href="../../lib/pdf/checks/wordgap.py#L16">wordgap.py:16</a></pre><h2 id="lib-pdf-classify-py">lib/pdf/classify.py<a class="src" href="../../lib/pdf/classify.py">source</a></h2><p class="sum">Typed: 6 of 12 functions and methods (50%).</p><pre><span class="d">&quot;&quot;&quot;Stage-2 gate: is a selected table really a table, and how is it built?</span>
 <span class="d"></span>
 <span class="d">Every selected table is described by cheap geometric and font features of</span>
 <span class="d">its area (rules drawn, shaded bands, column-split text rows, monospace and</span>
@@ -482,20 +529,24 @@ a.t{color:inherit;text-decoration:underline dotted}a.ln{color:var(--mut);font-si
 <span class="d">    `pages` are the pages the tables were read from (upright copies of</span>
 <span class="d">    rotated pages). Returns a summary for logging and the prompts file.</span>
 <span class="d">    &quot;&quot;&quot;</span>
+    <span class="c u"># untyped: doc, pages</span>
     <span class="c"># calls: </span><a class="t" href="#lib.pdf.classify.generator">generator</a>, <a class="t" href="#lib.pdf.classify.region_features">region_features</a>, <a class="t" href="#lib.pdf.classify.jev_table_or_not">jev_table_or_not</a>, <a class="t" href="#lib.pdf.classify.jev_enabled">jev_enabled</a>, <a class="t" href="#lib.pdf.pagecache.words_in">pagecache.words_in</a>, <a class="t" href="#lib.pdf.validate.verify_layout">validate.verify_layout</a>, <a class="t" href="#lib.pdf.validate.verify_pieces">validate.verify_pieces</a>, <a class="t" href="#lib.pdf.fullwidth.apply">fullwidth.apply</a>, <a class="t" href="#lib.pdf.evidence.reader_error">evidence.reader_error</a>, <a class="t" href="#lib.pdf.fit.fit">fit.fit</a>, <a class="t" href="#lib.pdf.fit.fit_rows">fit.fit_rows</a>, <a class="t" href="#lib.pdf.content.page_hrules">content.page_hrules</a><span class="c">, +15 more</span>
     <span class="c"># called by: </span>pdf._build_scan_tables, pdf._run_pipeline<span class="c"></span>
 
 <span class="k">def </span><span class="n" id="lib.pdf.classify.generator">generator</span>(meta: dict) -&gt; str:<a class="ln" href="../../lib/pdf/classify.py#L66">classify.py:66</a>
     <span class="c"># called by: </span>pdf._run_pipeline, <a class="t" href="#lib.pdf.classify.gate_tables">gate_tables</a>, <a class="t" href="#lib.pdf.scan.run_scan">scan.run_scan</a><span class="c"></span>
+    ...
 
 <span class="k">def </span><span class="n" id="lib.pdf.classify.image_share">image_share</span>(page, bbox) -&gt; float:<a class="ln" href="../../lib/pdf/classify.py#L286">classify.py:286</a>
 <span class="d">    &quot;&quot;&quot;The share of bbox covered by images drawn on the page (union approximated by the sum,</span>
 <span class="d">    capped at 1; overlapping images are rare inside a table).</span>
 <span class="d">    &quot;&quot;&quot;</span>
+    <span class="c u"># untyped: page, bbox</span>
     <span class="c"># called by: </span><a class="t" href="#lib.pdf.classify.gate_tables">gate_tables</a><span class="c"></span>
 
 <span class="k">def </span><span class="n" id="lib.pdf.classify.jev_enabled">jev_enabled</span>() -&gt; bool:<a class="ln" href="../../lib/pdf/classify.py#L210">classify.py:210</a>
     <span class="c"># called by: </span><a class="t" href="#lib.pdf.classify.gate_tables">gate_tables</a>, scan._jev_on<span class="c"></span>
+    ...
 
 <span class="k">def </span><span class="n" id="lib.pdf.classify.jev_table_or_not">jev_table_or_not</span>(paper: str, regions: list) -&gt; tuple[list, str]:<a class="ln" href="../../lib/pdf/classify.py#L238">classify.py:238</a>
 <span class="d">    &quot;&quot;&quot;[(label, probability)] for every table area, and the Jev version(s).</span>
@@ -508,15 +559,18 @@ a.t{color:inherit;text-decoration:underline dotted}a.ln{color:var(--mut);font-si
 
 <span class="k">def </span><span class="n" id="lib.pdf.classify.predict">predict</span>(tree: dict, x: dict):<a class="ln" href="../../lib/pdf/classify.py#L191">classify.py:191</a>
 <span class="d">    &quot;&quot;&quot;(label, confidence) from a tree exported by cart.Tree.export().&quot;&quot;&quot;</span>
+    <span class="c u"># untyped: return</span>
     <span class="c"># called by: </span><a class="t" href="#lib.pdf.classify.gate_tables">gate_tables</a><span class="c"></span>
 
 <span class="k">def </span><span class="n" id="lib.pdf.classify.region_features">region_features</span>(page, bbox, sources, flags, gen: str, doc_tagged: bool):<a class="ln" href="../../lib/pdf/classify.py#L113">classify.py:113</a>
 <span class="d">    &quot;&quot;&quot;(features, text lines) of one table area. Shared with the PoC&#x27;s training.&quot;&quot;&quot;</span>
+    <span class="c u"># untyped: page, bbox, sources, flags, return</span>
     <span class="c"># calls: </span><a class="t" href="#lib.pdf.classify.text_rows">text_rows</a><span class="c"></span>
     <span class="c"># called by: </span><a class="t" href="#lib.pdf.checks._layout.layout_features">_layout.layout_features</a>, <a class="t" href="#lib.pdf.classify.gate_tables">gate_tables</a>, scan._jev_tier<span class="c"></span>
 
 <span class="k">def </span><span class="n" id="lib.pdf.classify.text_rows">text_rows</span>(page, rect):<a class="ln" href="../../lib/pdf/classify.py#L81">classify.py:81</a>
 <span class="d">    &quot;&quot;&quot;Text rows in rect: [(top, bottom, [(x0, x1, text, mono)])], pieces split at wide gaps.&quot;&quot;&quot;</span>
+    <span class="c u"># untyped: page, rect, return</span>
     <span class="c"># called by: </span><a class="t" href="#lib.pdf.classify.region_features">region_features</a><span class="c"></span>
 
 <span class="n" id="lib.pdf.classify.FLAGS">FLAGS</span> = ...<a class="ln" href="../../lib/pdf/classify.py#L56">classify.py:56</a>
@@ -538,7 +592,7 @@ a.t{color:inherit;text-decoration:underline dotted}a.ln{color:var(--mut);font-si
 
 <span class="n" id="lib.pdf.classify_trees.LAYOUT_TREE">LAYOUT_TREE</span> = ...<a class="ln" href="../../lib/pdf/classify_trees.py#L223">classify_trees.py:223</a>
 
-<span class="n" id="lib.pdf.classify_trees.TABLE_TREE">TABLE_TREE</span> = ...<a class="ln" href="../../lib/pdf/classify_trees.py#L10">classify_trees.py:10</a></pre><h2 id="lib-pdf-cleanup-py">lib/pdf/cleanup.py<a class="src" href="../../lib/pdf/cleanup.py">source</a></h2><pre><span class="d">&quot;&quot;&quot;Header/footer detection and text cleanup for PDF extraction.&quot;&quot;&quot;</span>
+<span class="n" id="lib.pdf.classify_trees.TABLE_TREE">TABLE_TREE</span> = ...<a class="ln" href="../../lib/pdf/classify_trees.py#L10">classify_trees.py:10</a></pre><h2 id="lib-pdf-cleanup-py">lib/pdf/cleanup.py<a class="src" href="../../lib/pdf/cleanup.py">source</a></h2><p class="sum">Typed: 9 of 10 functions and methods (90%).</p><pre><span class="d">&quot;&quot;&quot;Header/footer detection and text cleanup for PDF extraction.&quot;&quot;&quot;</span>
 
 <span class="k">def </span><span class="n" id="lib.pdf.cleanup.cleanup_text">cleanup_text</span>(blocks: list[<a class="t" href="#lib.pdf.types.Block">Block</a>]) -&gt; list[<a class="t" href="#lib.pdf.types.Block">Block</a>]:<a class="ln" href="../../lib/pdf/cleanup.py#L303">cleanup.py:303</a>
 <span class="d">    &quot;&quot;&quot;Apply all text cleanup operations to extracted blocks.&quot;&quot;&quot;</span>
@@ -571,6 +625,7 @@ a.t{color:inherit;text-decoration:underline dotted}a.ln{color:var(--mut);font-si
 <span class="d">    false-positive stripping on Chrome &quot;Save as PDF&quot; output where</span>
 <span class="d">    an invisible accessibility overlay covers every page.</span>
 <span class="d">    &quot;&quot;&quot;</span>
+    <span class="c u"># untyped: page</span>
     <span class="c"># called by: </span>pdf._run_pipeline<span class="c"></span>
 
 <span class="k">def </span><span class="n" id="lib.pdf.cleanup.get_edge_items">get_edge_items</span>(blocks: list[<a class="t" href="#lib.pdf.types.Block">Block</a>], page_num: int, page_height: float) -&gt; list[<a class="t" href="#lib.pdf.types.PageEdgeItem">PageEdgeItem</a>]:<a class="ln" href="../../lib/pdf/cleanup.py#L26">cleanup.py:26</a>
@@ -604,7 +659,7 @@ a.t{color:inherit;text-decoration:underline dotted}a.ln{color:var(--mut);font-si
     <span class="c"># calls: </span>_y_bucket<span class="c"></span>
     <span class="c"># called by: </span>pdf._run_pipeline<span class="c"></span>
 
-<span class="c"># + 3 private module-level names</span></pre><h2 id="lib-pdf-codepair-py">lib/pdf/codepair.py<a class="src" href="../../lib/pdf/codepair.py">source</a></h2><pre><span class="d">&quot;&quot;&quot;Side-by-side code comparisons, found from geometry and confirmed by content.</span>
+<span class="c"># + 3 private module-level names</span></pre><h2 id="lib-pdf-codepair-py">lib/pdf/codepair.py<a class="src" href="../../lib/pdf/codepair.py">source</a></h2><p class="sum">Typed: 9 of 12 functions and methods (75%).</p><pre><span class="d">&quot;&quot;&quot;Side-by-side code comparisons, found from geometry and confirmed by content.</span>
 <span class="d"></span>
 <span class="d">  observation  two blocks of monospace lines on one page whose vertical</span>
 <span class="d">               extents overlap (by half the shorter one) with a gutter</span>
@@ -627,6 +682,7 @@ a.t{color:inherit;text-decoration:underline dotted}a.ln{color:var(--mut);font-si
 <span class="d">    page&#x27;s drawn horizontal rules (y, x0, x1): a rule between two lines</span>
 <span class="d">    separates them (rows of a ruled comparison are not one block).</span>
 <span class="d">    &quot;&quot;&quot;</span>
+    <span class="c u"># untyped: rules_for</span>
     <span class="c"># calls: </span>_pieces, _mono, _blocks, _box, <a class="t" href="#lib.pdf.evidence.current">evidence.current</a>, _comment_share, _code_like, <a class="t" href="#lib.pdf.codepair.same_code">same_code</a>, _label, _spaced<span class="c"></span>
     <span class="c"># called by: </span>pdf._run_pipeline<span class="c"></span>
 
@@ -635,7 +691,7 @@ a.t{color:inherit;text-decoration:underline dotted}a.ln{color:var(--mut);font-si
     <span class="c"># calls: </span>_grams<span class="c"></span>
     <span class="c"># called by: </span><a class="t" href="#lib.pdf.codepair.find_code_pairs">find_code_pairs</a><span class="c"></span>
 
-<span class="c"># + 10 private module-level names</span></pre><h2 id="lib-pdf-content-py">lib/pdf/content.py<a class="src" href="../../lib/pdf/content.py">source</a></h2><pre><span class="d">&quot;&quot;&quot;One content-first row/column builder for every table class.</span>
+<span class="c"># + 10 private module-level names</span></pre><h2 id="lib-pdf-content-py">lib/pdf/content.py<a class="src" href="../../lib/pdf/content.py">source</a></h2><p class="sum">Typed: 0 of 13 functions and methods (0%).</p><pre><span class="d">&quot;&quot;&quot;One content-first row/column builder for every table class.</span>
 <span class="d"></span>
 <span class="d">The layout class only locates the region; inside it, rows and columns come</span>
 <span class="d">from the words themselves, top down:</span>
@@ -668,26 +724,31 @@ a.t{color:inherit;text-decoration:underline dotted}a.ln{color:var(--mut);font-si
 <span class="d">    region (a specialist&#x27;s evidence at the row level: a drawn line between</span>
 <span class="d">    two text lines separates rows; no line is not evidence of anything).</span>
 <span class="d">    &quot;&quot;&quot;</span>
+    <span class="c u"># untyped: words, hrules, specialists, return</span>
     <span class="c"># calls: </span><a class="t" href="#lib.pdf.content.visual_lines">visual_lines</a>, <a class="t" href="#lib.pdf.content.pieces_of">pieces_of</a>, <a class="t" href="#lib.pdf.content.gutters">gutters</a>, _per_unit_relation<span class="c"></span>
     <span class="c"># called by: </span><a class="t" href="#lib.pdf.content.build_text">build_text</a>, <a class="t" href="#lib.pdf.content.content_candidates">content_candidates</a><span class="c"></span>
 
 <span class="k">def </span><span class="n" id="lib.pdf.content.build_text">build_text</span>(words, hrules=(), specialists=None):<a class="ln" href="../../lib/pdf/content.py#L295">content.py:295</a>
 <span class="d">    &quot;&quot;&quot;Rows of cell strings (for measurement).&quot;&quot;&quot;</span>
+    <span class="c u"># untyped: words, hrules, specialists, return</span>
     <span class="c"># calls: </span><a class="t" href="#lib.pdf.content.build">build</a><span class="c"></span>
 
 <span class="k">def </span><span class="n" id="lib.pdf.content.content_candidates">content_candidates</span>(pages, regions, specialists=None, rules_by_page=None) -&gt; list[<a class="t" href="#lib.pdf.types.TableCandidate">TableCandidate</a>]:<a class="ln" href="../../lib/pdf/content.py#L450">content.py:450</a>
 <span class="d">    &quot;&quot;&quot;For every located region (page, bbox) - from any reader, kept or not -</span>
 <span class="d">    the content-first grid of the words inside it.</span>
 <span class="d">    &quot;&quot;&quot;</span>
+    <span class="c u"># untyped: pages, regions, specialists, rules_by_page</span>
     <span class="c"># calls: </span><a class="t" href="#lib.pdf.content.page_text">page_text</a>, <a class="t" href="#lib.pdf.content.page_hrules">page_hrules</a>, <a class="t" href="#lib.pdf.content.build">build</a>, _region_rules, _rotated_header, _cell_lines, <a class="t" href="#lib.pdf.types.TableCandidate">types.TableCandidate</a><span class="c"></span>
     <span class="c"># called by: </span>pdf._build_scan_tables, pdf._run_pipeline<span class="c"></span>
 
 <span class="k">def </span><span class="n" id="lib.pdf.content.gutters">gutters</span>(lines_pieces, x_lo, x_hi):<a class="ln" href="../../lib/pdf/content.py#L77">content.py:77</a>
 <span class="d">    &quot;&quot;&quot;x intervals crossed by at most _SPAN_LINES lines&#x27; pieces.&quot;&quot;&quot;</span>
+    <span class="c u"># untyped: lines_pieces, x_lo, x_hi, return</span>
     <span class="c"># called by: </span><a class="t" href="#lib.pdf.content.build">build</a><span class="c"></span>
 
 <span class="k">def </span><span class="n" id="lib.pdf.content.page_hrules">page_hrules</span>(page, drawings=None) -&gt; list[tuple[float, float, float]]:<a class="ln" href="../../lib/pdf/content.py#L408">content.py:408</a>
 <span class="d">    &quot;&quot;&quot;Drawn horizontal separators on the page: (y, x0, x1).&quot;&quot;&quot;</span>
+    <span class="c u"># untyped: page, drawings</span>
     <span class="c"># called by: </span>pdf._run_pipeline, <a class="t" href="#lib.pdf.classify.gate_tables">classify.gate_tables</a>, <a class="t" href="#lib.pdf.content.content_candidates">content_candidates</a><span class="c"></span>
 
 <span class="k">def </span><span class="n" id="lib.pdf.content.page_text">page_text</span>(page) -&gt; tuple[list[tuple], list[tuple]]:<a class="ln" href="../../lib/pdf/content.py#L309">content.py:309</a>
@@ -695,23 +756,28 @@ a.t{color:inherit;text-decoration:underline dotted}a.ln{color:var(--mut);font-si
 <span class="d">    (x0, y0, x1, y1, text) - labels set at 90 degrees, as table headers often</span>
 <span class="d">    are. Rotated text is kept out of line, row and column building.</span>
 <span class="d">    &quot;&quot;&quot;</span>
+    <span class="c u"># untyped: page</span>
     <span class="c"># calls: </span>pagecache._dedup_words, <a class="t" href="#lib.pdf.checks.codereader.looks_like_cpp">codereader.looks_like_cpp</a><span class="c"></span>
     <span class="c"># called by: </span><a class="t" href="#lib.pdf.content.content_candidates">content_candidates</a>, <a class="t" href="#lib.pdf.content.page_words">page_words</a>, _Page.__init__<span class="c"></span>
 
 <span class="k">def </span><span class="n" id="lib.pdf.content.page_words">page_words</span>(page) -&gt; list[tuple]:<a class="ln" href="../../lib/pdf/content.py#L304">content.py:304</a>
 <span class="d">    &quot;&quot;&quot;(x0, y0, x1, y1, text, monospace) for every horizontal word on the page.&quot;&quot;&quot;</span>
+    <span class="c u"># untyped: page</span>
     <span class="c"># calls: </span><a class="t" href="#lib.pdf.content.page_text">page_text</a><span class="c"></span>
 
 <span class="k">def </span><span class="n" id="lib.pdf.content.pieces_of">pieces_of</span>(line):<a class="ln" href="../../lib/pdf/content.py#L66">content.py:66</a>
+    <span class="c u"># untyped: line, return</span>
     <span class="c"># called by: </span><a class="t" href="#lib.pdf.content.build">build</a><span class="c"></span>
+    ...
 
 <span class="k">def </span><span class="n" id="lib.pdf.content.visual_lines">visual_lines</span>(words):<a class="ln" href="../../lib/pdf/content.py#L50">content.py:50</a>
 <span class="d">    &quot;&quot;&quot;words: (x0, y0, x1, y1, text) -&gt; lines of words sorted left to right.&quot;&quot;&quot;</span>
+    <span class="c u"># untyped: words, return</span>
     <span class="c"># called by: </span>_rotated_header, <a class="t" href="#lib.pdf.content.build">build</a>, extent._row_from<span class="c"></span>
 
 <span class="n" id="lib.pdf.content.SPECIALISTS">SPECIALISTS</span> = {&#x27;code_rows&#x27;: True, &#x27;separators&#x27;: True}<a class="ln" href="../../lib/pdf/content.py#L103">content.py:103</a>
 
-<span class="c"># + 4 private module-level names</span></pre><h2 id="lib-pdf-continuation-py">lib/pdf/continuation.py<a class="src" href="../../lib/pdf/continuation.py">source</a></h2><pre><span class="d">&quot;&quot;&quot;A note on table pieces that may continue the previous page&#x27;s table (2026-10-24).</span>
+<span class="c"># + 4 private module-level names</span></pre><h2 id="lib-pdf-continuation-py">lib/pdf/continuation.py<a class="src" href="../../lib/pdf/continuation.py">source</a></h2><p class="sum">Typed: 0 of 8 functions and methods (0%).</p><pre><span class="d">&quot;&quot;&quot;A note on table pieces that may continue the previous page&#x27;s table (2026-10-24).</span>
 <span class="d"></span>
 <span class="d">When a table piece reaches the bottom of its page&#x27;s content area and the next page&#x27;s first table</span>
 <span class="d">piece starts at the top of that page&#x27;s content area, the next piece is noted as possibly</span>
@@ -731,12 +797,13 @@ a.t{color:inherit;text-decoration:underline dotted}a.ln{color:var(--mut);font-si
 <span class="d">    &quot;&quot;&quot;Set metadata[&quot;continues_from&quot;] = {&quot;page&quot;: N, &quot;reasons&quot;: [...]} (N 1-based, the previous</span>
 <span class="d">    page) on table pieces that may continue the previous page&#x27;s table. Returns the count.</span>
 <span class="d">    &quot;&quot;&quot;</span>
+    <span class="c u"># untyped: doc, tables</span>
     <span class="c"># calls: </span>_extent, _Areas, _text, _number<span class="c"></span>
     <span class="c"># called by: </span>pdf._run_pipeline<span class="c"></span>
 
 <span class="n" id="lib.pdf.continuation.NEAR">NEAR</span> = 0.06  <span class="c"># within 6% of the page height of the content edge</span><a class="ln" href="../../lib/pdf/continuation.py#L21">continuation.py:21</a>
 
-<span class="c"># + 5 private module-level names</span></pre><h2 id="lib-pdf-dimensions-py">lib/pdf/dimensions.py<a class="src" href="../../lib/pdf/dimensions.py">source</a></h2><pre><span class="d">&quot;&quot;&quot;Stage 2 (relationship plan): confidence per dimension.</span>
+<span class="c"># + 5 private module-level names</span></pre><h2 id="lib-pdf-dimensions-py">lib/pdf/dimensions.py<a class="src" href="../../lib/pdf/dimensions.py">source</a></h2><p class="sum">Typed: 2 of 2 functions and methods (100%).</p><pre><span class="d">&quot;&quot;&quot;Stage 2 (relationship plan): confidence per dimension.</span>
 <span class="d"></span>
 <span class="d">A table can be right in some respects and wrong in others. Each dimension</span>
 <span class="d">gets a level from what tomd recorded about the table:</span>
@@ -770,7 +837,7 @@ a.t{color:inherit;text-decoration:underline dotted}a.ln{color:var(--mut);font-si
 
 <span class="k">def </span><span class="n" id="lib.pdf.dimensions.weak_note">weak_note</span>(dims: dict) -&gt; str:<a class="ln" href="../../lib/pdf/dimensions.py#L65">dimensions.py:65</a>
 <span class="d">    &quot;&quot;&quot;One line for the prompts: the weak dimensions and why, or &quot;&quot;.&quot;&quot;&quot;</span>
-    <span class="c"># called by: </span><a class="t" href="#lib.pdf.emit.emit_prompts">emit.emit_prompts</a><span class="c"></span></pre><h2 id="lib-pdf-docmeasure-py">lib/pdf/docmeasure.py<a class="src" href="../../lib/pdf/docmeasure.py">source</a></h2><pre><span class="d">&quot;&quot;&quot;Level 0: what ordinary prose looks like in this document.</span>
+    <span class="c"># called by: </span><a class="t" href="#lib.pdf.emit.emit_prompts">emit.emit_prompts</a><span class="c"></span></pre><h2 id="lib-pdf-docmeasure-py">lib/pdf/docmeasure.py<a class="src" href="../../lib/pdf/docmeasure.py">source</a></h2><p class="sum">Typed: 3 of 6 functions and methods (50%).</p><pre><span class="d">&quot;&quot;&quot;Level 0: what ordinary prose looks like in this document.</span>
 <span class="d"></span>
 <span class="d">Measured once per paper from the body text (lines of multi-line blocks with</span>
 <span class="d">several words): the prose measure (left and right text edges, robust</span>
@@ -794,11 +861,13 @@ a.t{color:inherit;text-decoration:underline dotted}a.ln{color:var(--mut);font-si
 
 <span class="k">def </span><span class="n" id="lib.pdf.docmeasure.area_word_features">area_word_features</span>(words, m: <a class="t" href="#lib.pdf.docmeasure.DocMeasure">DocMeasure</a>) -&gt; dict:<a class="ln" href="../../lib/pdf/docmeasure.py#L105">docmeasure.py:105</a>
 <span class="d">    &quot;&quot;&quot;Word-gap and footprint features of the words in one area.&quot;&quot;&quot;</span>
+    <span class="c u"># untyped: words</span>
     <span class="c"># calls: </span><a class="t" href="#lib.pdf.docmeasure.visual_lines">visual_lines</a>, <a class="t" href="#lib.pdf.docmeasure.gap_stats">gap_stats</a><span class="c"></span>
     <span class="c"># called by: </span><a class="t" href="#lib.pdf.checks.wordgap.run">wordgap.run</a><span class="c"></span>
 
 <span class="k">def </span><span class="n" id="lib.pdf.docmeasure.gap_stats">gap_stats</span>(line, m: <a class="t" href="#lib.pdf.docmeasure.DocMeasure">DocMeasure</a>) -&gt; dict | None:<a class="ln" href="../../lib/pdf/docmeasure.py#L92">docmeasure.py:92</a>
 <span class="d">    &quot;&quot;&quot;One visual line&#x27;s word gaps in units of the document&#x27;s normal space.&quot;&quot;&quot;</span>
+    <span class="c u"># untyped: line</span>
     <span class="c"># called by: </span><a class="t" href="#lib.pdf.docmeasure.area_word_features">area_word_features</a><span class="c"></span>
 
 <span class="k">def </span><span class="n" id="lib.pdf.docmeasure.hyphenates">hyphenates</span>(page_words: list[list]) -&gt; bool:<a class="ln" href="../../lib/pdf/docmeasure.py#L128">docmeasure.py:128</a>
@@ -821,9 +890,10 @@ a.t{color:inherit;text-decoration:underline dotted}a.ln{color:var(--mut);font-si
 
 <span class="k">def </span><span class="n" id="lib.pdf.docmeasure.visual_lines">visual_lines</span>(words):<a class="ln" href="../../lib/pdf/docmeasure.py#L38">docmeasure.py:38</a>
 <span class="d">    &quot;&quot;&quot;Words (x0, y0, x1, y1, text, ...) sharing a baseline, left to right.&quot;&quot;&quot;</span>
+    <span class="c u"># untyped: words, return</span>
     <span class="c"># called by: </span><a class="t" href="#lib.pdf.docmeasure.area_word_features">area_word_features</a>, <a class="t" href="#lib.pdf.docmeasure.measure">measure</a><span class="c"></span></pre><h2 id="lib-pdf-dvf-model-py">lib/pdf/dvf_model.py<a class="src" href="../../lib/pdf/dvf_model.py">source</a></h2><pre><span class="d">&quot;&quot;&quot;Data-vs-formatting model, fitted by train_dvf.py on the existing keys.&quot;&quot;&quot;</span>
 
-<span class="n" id="lib.pdf.dvf_model.MODEL">MODEL</span> = ...<a class="ln" href="../../lib/pdf/dvf_model.py#L3">dvf_model.py:3</a></pre><h2 id="lib-pdf-emit-py">lib/pdf/emit.py<a class="src" href="../../lib/pdf/emit.py">source</a></h2><pre><span class="d">&quot;&quot;&quot;Markdown and companion prompts file generation.&quot;&quot;&quot;</span>
+<span class="n" id="lib.pdf.dvf_model.MODEL">MODEL</span> = ...<a class="ln" href="../../lib/pdf/dvf_model.py#L3">dvf_model.py:3</a></pre><h2 id="lib-pdf-emit-py">lib/pdf/emit.py<a class="src" href="../../lib/pdf/emit.py">source</a></h2><p class="sum">Typed: 30 of 35 functions and methods (85%).</p><pre><span class="d">&quot;&quot;&quot;Markdown and companion prompts file generation.&quot;&quot;&quot;</span>
 
 <span class="k">def </span><span class="n" id="lib.pdf.emit.emit_markdown">emit_markdown</span>(metadata: dict, sections: list[<a class="t" href="#lib.pdf.types.Section">Section</a>]) -&gt; str:<a class="ln" href="../../lib/pdf/emit.py#L607">emit.py:607</a>
 <span class="d">    &quot;&quot;&quot;Generate the output Markdown from structured sections.</span>
@@ -851,6 +921,7 @@ a.t{color:inherit;text-decoration:underline dotted}a.ln{color:var(--mut);font-si
 
 <span class="k">def </span><span class="n" id="lib.pdf.emit.set_hyphenating">set_hyphenating</span>(value: bool) -&gt; None:<a class="ln" href="../../lib/pdf/emit.py#L273">emit.py:273</a>
     <span class="c"># called by: </span>pdf._run_pipeline<span class="c"></span>
+    ...
 
 <span class="k">def </span><span class="n" id="lib.pdf.emit.table_use">table_use</span>(rows) -&gt; str:<a class="ln" href="../../lib/pdf/emit.py#L479">emit.py:479</a>
 <span class="d">    &quot;&quot;&quot;What a grid is used for, by the user&#x27;s decisions (2026-10-19):</span>
@@ -858,11 +929,12 @@ a.t{color:inherit;text-decoration:underline dotted}a.ln{color:var(--mut);font-si
 <span class="d">    &quot;contents&quot; - a contents page or reference list laid out in a grid (not a table);</span>
 <span class="d">    &quot;table&quot; - everything else.</span>
 <span class="d">    &quot;&quot;&quot;</span>
+    <span class="c u"># untyped: rows</span>
     <span class="c"># called by: </span>pdf._build_scan_tables, _render_table_inner<span class="c"></span>
 
 <span class="n" id="lib.pdf.emit.HYPHEN_STATS">HYPHEN_STATS</span>: Counter = Counter()  <span class="c"># which rule decided each hyphen (measurement)</span><a class="ln" href="../../lib/pdf/emit.py#L280">emit.py:280</a>
 
-<span class="c"># + 30 private module-level names</span></pre><h2 id="lib-pdf-evidence-py">lib/pdf/evidence.py<a class="src" href="../../lib/pdf/evidence.py">source</a></h2><pre><span class="d">&quot;&quot;&quot;The evidence record: what every scan saw, nominated and rejected, and why.</span>
+<span class="c"># + 30 private module-level names</span></pre><h2 id="lib-pdf-evidence-py">lib/pdf/evidence.py<a class="src" href="../../lib/pdf/evidence.py">source</a></h2><p class="sum">Typed: 3 of 7 functions and methods (42%).</p><pre><span class="d">&quot;&quot;&quot;The evidence record: what every scan saw, nominated and rejected, and why.</span>
 <span class="d"></span>
 <span class="d">Amendment E (no erasure) at the region level: a scan that looks at an area and</span>
 <span class="d">decides &quot;not a table&quot; records the area, the rule that decided, and the kind of</span>
@@ -896,15 +968,22 @@ a.t{color:inherit;text-decoration:underline dotted}a.ln{color:var(--mut);font-si
     <span class="c"># readers, checks and specialists that raised: never swallowed silently</span>
     <span class="n" id="lib.pdf.evidence.Record.errors">errors</span>: list[dict] = field(default_factory=list)<a class="ln" href="../../lib/pdf/evidence.py#L41">evidence.py:41</a>
     <span class="k">def </span><span class="n" id="lib.pdf.evidence.Record.exclude">exclude</span>(self, scan: str, page: int, bbox: Box, rule: str, info: str, value=None) -&gt; None:<a class="ln" href="../../lib/pdf/evidence.py#L46">evidence.py:46</a>
+        <span class="c u"># untyped: value</span>
         <span class="c"># calls: </span><a class="t" href="#lib.pdf.evidence.Entry">Entry</a><span class="c"></span>
+        ...
     <span class="k">def </span><span class="n" id="lib.pdf.evidence.Record.feature">feature</span>(self, scan: str, page: int, bbox: Box, name: str, info: str, value, observed=True) -&gt; None:<a class="ln" href="../../lib/pdf/evidence.py#L49">evidence.py:49</a>
+        <span class="c u"># untyped: value, observed</span>
         <span class="c"># calls: </span><a class="t" href="#lib.pdf.evidence.Entry">Entry</a><span class="c"></span>
+        ...
     <span class="k">def </span><span class="n" id="lib.pdf.evidence.Record.nominate">nominate</span>(self, scan: str, page: int, bbox: Box, cue: str, info: str, value=None) -&gt; None:<a class="ln" href="../../lib/pdf/evidence.py#L43">evidence.py:43</a>
+        <span class="c u"># untyped: value</span>
         <span class="c"># calls: </span><a class="t" href="#lib.pdf.evidence.Entry">Entry</a><span class="c"></span>
+        ...
     <span class="k">def </span><span class="n" id="lib.pdf.evidence.Record.on_page">on_page</span>(self, page: int, kind: str | None = None) -&gt; list[<a class="t" href="#lib.pdf.evidence.Entry">Entry</a>]: ...<a class="ln" href="../../lib/pdf/evidence.py#L52">evidence.py:52</a>
 
 <span class="k">def </span><span class="n" id="lib.pdf.evidence.current">current</span>() -&gt; <a class="t" href="#lib.pdf.evidence.Record">Record</a>:<a class="ln" href="../../lib/pdf/evidence.py#L65">evidence.py:65</a>
     <span class="c"># called by: </span><a class="t" href="#lib.pdf.codepair.find_code_pairs">codepair.find_code_pairs</a>, <a class="t" href="#lib.pdf.extent.extend">extent.extend</a>, <a class="t" href="#lib.pdf.flag.flag_possible_tables">flag.flag_possible_tables</a>, <a class="t" href="#lib.pdf.llmrepair.repair">llmrepair.repair</a>, ruled._bands_to_table, ruled._column_ruled_tables, <a class="t" href="#lib.pdf.ruled.extract_ruled_tables">ruled.extract_ruled_tables</a>, table._continuation_votes, <a class="t" href="#lib.pdf.table.cross_reader_continuation">table.cross_reader_continuation</a>, <a class="t" href="#lib.pdf.table.select_tables">table.select_tables</a>, <a class="t" href="#lib.pdf.table.stitch_pages">table.stitch_pages</a><span class="c"></span>
+    ...
 
 <span class="k">def </span><span class="n" id="lib.pdf.evidence.reader_error">reader_error</span>(stage: str, page, exc: BaseException, table=None) -&gt; None:<a class="ln" href="../../lib/pdf/evidence.py#L73">evidence.py:73</a>
 <span class="d">    &quot;&quot;&quot;Record a reader, check or specialist that raised (stage, page or None for</span>
@@ -912,11 +991,13 @@ a.t{color:inherit;text-decoration:underline dotted}a.ln{color:var(--mut);font-si
 <span class="d">    to UNCERTAIN (&quot;reader error&quot;); the prompts note and the paper summary list it.</span>
 <span class="d">    TOMD_STRICT=1 re-raises instead (tests).</span>
 <span class="d">    &quot;&quot;&quot;</span>
+    <span class="c u"># untyped: page, table</span>
     <span class="c"># called by: </span>pdf._graphic_text_page, pdf._run_pipeline, pdf._upright_page, <a class="t" href="#lib.pdf.classify.gate_tables">classify.gate_tables</a>, <a class="t" href="#lib.pdf.llmcheck.check">llmcheck.check</a>, <a class="t" href="#lib.pdf.llmrepair.repair">llmrepair.repair</a>, <a class="t" href="#lib.pdf.pagecache.hidden_chars">pagecache.hidden_chars</a>, <a class="t" href="#lib.pdf.pagecache.remove_covered_text">pagecache.remove_covered_text</a>, ruled._mark_icon_cells, <a class="t" href="#lib.pdf.tagged.extract_tagged_tables">tagged.extract_tagged_tables</a>, <a class="t" href="#lib.pdf.visibility.check_page">visibility.check_page</a>, <a class="t" href="#lib.pdf.wording.collect_line_drawings">wording.collect_line_drawings</a><span class="c"></span>
 
 <span class="k">def </span><span class="n" id="lib.pdf.evidence.reset">reset</span>() -&gt; <a class="t" href="#lib.pdf.evidence.Record">Record</a>:<a class="ln" href="../../lib/pdf/evidence.py#L59">evidence.py:59</a>
     <span class="c"># calls: </span><a class="t" href="#lib.pdf.evidence.Record">Record</a><span class="c"></span>
-    <span class="c"># called by: </span>pdf._run_pipeline<span class="c"></span></pre><h2 id="lib-pdf-extent-py">lib/pdf/extent.py<a class="src" href="../../lib/pdf/extent.py">source</a></h2><pre><span class="d">&quot;&quot;&quot;The extent step: where each reader&#x27;s table stops, and the rows just outside it.</span>
+    <span class="c"># called by: </span>pdf._run_pipeline<span class="c"></span>
+    ...</pre><h2 id="lib-pdf-extent-py">lib/pdf/extent.py<a class="src" href="../../lib/pdf/extent.py">source</a></h2><p class="sum">Typed: 1 of 20 functions and methods (5%).</p><pre><span class="d">&quot;&quot;&quot;The extent step: where each reader&#x27;s table stops, and the rows just outside it.</span>
 <span class="d"></span>
 <span class="d">Runs after every reader, before selection, with the pages at hand.</span>
 <span class="d"></span>
@@ -947,10 +1028,11 @@ a.t{color:inherit;text-decoration:underline dotted}a.ln{color:var(--mut);font-si
 <span class="k">def </span><span class="n" id="lib.pdf.extent.extend">extend</span>(cands: list[<a class="t" href="#lib.pdf.types.TableCandidate">TableCandidate</a>], pages: dict) -&gt; None:<a class="ln" href="../../lib/pdf/extent.py#L400">extent.py:400</a>
     <span class="c"># calls: </span><a class="t" href="#lib.pdf.evidence.current">evidence.current</a>, _Page, _beyond, _row_height, _overlaps, _block, _kind, _pieces, _row_from<span class="c"></span>
     <span class="c"># called by: </span>pdf._run_pipeline<span class="c"></span>
+    ...
 
 <span class="n" id="lib.pdf.extent.EXTENT_RULE">EXTENT_RULE</span> = ...<a class="ln" href="../../lib/pdf/extent.py#L66">extent.py:66</a>
 
-<span class="c"># + 19 private module-level names</span></pre><h2 id="lib-pdf-extract-py">lib/pdf/extract.py<a class="src" href="../../lib/pdf/extract.py">source</a></h2><pre><span class="d">&quot;&quot;&quot;Dual-path PDF text extraction: MuPDF grouping and spatial rules.&quot;&quot;&quot;</span>
+<span class="c"># + 19 private module-level names</span></pre><h2 id="lib-pdf-extract-py">lib/pdf/extract.py<a class="src" href="../../lib/pdf/extract.py">source</a></h2><p class="sum">Typed: 1 of 4 functions and methods (25%).</p><pre><span class="d">&quot;&quot;&quot;Dual-path PDF text extraction: MuPDF grouping and spatial rules.&quot;&quot;&quot;</span>
 
 <span class="k">def </span><span class="n" id="lib.pdf.extract.attach_links">attach_links</span>(blocks: list[<a class="t" href="#lib.pdf.types.Block">Block</a>], links: list[dict]) -&gt; None:<a class="ln" href="../../lib/pdf/extract.py#L228">extract.py:228</a>
 <span class="d">    &quot;&quot;&quot;Match link annotations to text spans by bounding rect overlap.</span>
@@ -966,6 +1048,7 @@ a.t{color:inherit;text-decoration:underline dotted}a.ln{color:var(--mut);font-si
 <span class="d">    Returns a list of dicts with &#x27;uri&#x27; and &#x27;bbox&#x27; keys.</span>
 <span class="d">    Only http, https, and mailto schemes are kept.</span>
 <span class="d">    &quot;&quot;&quot;</span>
+    <span class="c u"># untyped: page</span>
     <span class="c"># called by: </span>pdf._run_pipeline<span class="c"></span>
 
 <span class="k">def </span><span class="n" id="lib.pdf.extract.extract_mupdf">extract_mupdf</span>(page, page_num: int) -&gt; list[<a class="t" href="#lib.pdf.types.Block">Block</a>]:<a class="ln" href="../../lib/pdf/extract.py#L23">extract.py:23</a>
@@ -974,6 +1057,7 @@ a.t{color:inherit;text-decoration:underline dotted}a.ln{color:var(--mut);font-si
 <span class="d">    Uses page.get_text(&quot;dict&quot;). Returns MuPDF&#x27;s interpretation of</span>
 <span class="d">    paragraphs, lines, and word groupings with font metadata preserved.</span>
 <span class="d">    &quot;&quot;&quot;</span>
+    <span class="c u"># untyped: page</span>
     <span class="c"># calls: </span><a class="t" href="#lib.pdf.types.Span">types.Span</a>, <a class="t" href="#lib.pdf.mono.classify_monospace">mono.classify_monospace</a>, <a class="t" href="#lib.pdf.types.Line">types.Line</a>, <a class="t" href="#lib.pdf.types.Block">types.Block</a><span class="c"></span>
     <span class="c"># called by: </span>pdf._run_pipeline<span class="c"></span>
 
@@ -989,8 +1073,9 @@ a.t{color:inherit;text-decoration:underline dotted}a.ln{color:var(--mut);font-si
 <span class="d">      dy &gt; WORD_GAP_RATIO    * avg_fs  -&gt; flush line (large vertical gap)</span>
 <span class="d">      dx &gt; WORD_GAP_RATIO    * avg_fs  -&gt; flush word + insert space span</span>
 <span class="d">    &quot;&quot;&quot;</span>
+    <span class="c u"># untyped: page</span>
     <span class="c"># calls: </span><a class="t" href="#lib.pdf.types.Span">types.Span</a>, <a class="t" href="#lib.pdf.mono.classify_monospace">mono.classify_monospace</a>, <a class="t" href="#lib.pdf.types.compute_bbox">types.compute_bbox</a>, <a class="t" href="#lib.pdf.types.Line">types.Line</a>, <a class="t" href="#lib.pdf.types.Block">types.Block</a><span class="c"></span>
-    <span class="c"># called by: </span>pdf._run_pipeline<span class="c"></span></pre><h2 id="lib-pdf-figures-py">lib/pdf/figures.py<a class="src" href="../../lib/pdf/figures.py">source</a></h2><pre><span class="d">&quot;&quot;&quot;Tables inside figures: label them with the figure they belong to.</span>
+    <span class="c"># called by: </span>pdf._run_pipeline<span class="c"></span></pre><h2 id="lib-pdf-figures-py">lib/pdf/figures.py<a class="src" href="../../lib/pdf/figures.py">source</a></h2><p class="sum">Typed: 0 of 3 functions and methods (0%).</p><pre><span class="d">&quot;&quot;&quot;Tables inside figures: label them with the figure they belong to.</span>
 <span class="d"></span>
 <span class="d">Convention (user decision): small tables drawn inside a figure are converted</span>
 <span class="d">as tables, labelled with the figure they belong to, e.g. &quot;Figure 4(a)&quot;. The</span>
@@ -1006,14 +1091,16 @@ a.t{color:inherit;text-decoration:underline dotted}a.ln{color:var(--mut);font-si
 
 <span class="k">def </span><span class="n" id="lib.pdf.figures.figure_label">figure_label</span>(blocks, bbox, text_width: float) -&gt; str | None:<a class="ln" href="../../lib/pdf/figures.py#L37">figures.py:37</a>
 <span class="d">    &quot;&quot;&quot;blocks: (bbox, text) of the page&#x27;s text blocks; bbox: the table&#x27;s box.&quot;&quot;&quot;</span>
+    <span class="c u"># untyped: blocks, bbox</span>
     <span class="c"># called by: </span><a class="t" href="#lib.pdf.figures.label_figure_tables">label_figure_tables</a><span class="c"></span>
 
 <span class="k">def </span><span class="n" id="lib.pdf.figures.label_figure_tables">label_figure_tables</span>(doc, table_sections) -&gt; int:<a class="ln" href="../../lib/pdf/figures.py#L65">figures.py:65</a>
 <span class="d">    &quot;&quot;&quot;Set metadata[&quot;figure_label&quot;] on single-page tables drawn inside a figure.&quot;&quot;&quot;</span>
+    <span class="c u"># untyped: doc, table_sections</span>
     <span class="c"># calls: </span>_blocks, <a class="t" href="#lib.pdf.figures.figure_label">figure_label</a><span class="c"></span>
     <span class="c"># called by: </span>pdf._run_pipeline<span class="c"></span>
 
-<span class="c"># + 1 private module-level name</span></pre><h2 id="lib-pdf-fit-py">lib/pdf/fit.py<a class="src" href="../../lib/pdf/fit.py">source</a></h2><pre><span class="d">&quot;&quot;&quot;The fit witness: does the word layout fit the drawn cells evenly?</span>
+<span class="c"># + 1 private module-level name</span></pre><h2 id="lib-pdf-fit-py">lib/pdf/fit.py<a class="src" href="../../lib/pdf/fit.py">source</a></h2><p class="sum">Typed: 1 of 9 functions and methods (11%).</p><pre><span class="d">&quot;&quot;&quot;The fit witness: does the word layout fit the drawn cells evenly?</span>
 <span class="d"></span>
 <span class="d">A drawn grid and the words on the page are two independent sources (paths</span>
 <span class="d">and words). When a reading is right, the words fit the drawn cells the way</span>
@@ -1039,6 +1126,7 @@ a.t{color:inherit;text-decoration:underline dotted}a.ln{color:var(--mut);font-si
 
 <span class="k">def </span><span class="n" id="lib.pdf.fit.fit">fit</span>(page, bbox, words, columns) -&gt; dict:<a class="ln" href="../../lib/pdf/fit.py#L125">fit.py:125</a>
 <span class="d">    &quot;&quot;&quot;Does the reading `columns` (rows of cells of spans) fit the drawn grid?&quot;&quot;&quot;</span>
+    <span class="c u"># untyped: page, bbox, words, columns</span>
     <span class="c"># calls: </span><a class="t" href="#lib.pdf.fit.grid_of">grid_of</a>, _frame_continues, _spread, _squash<span class="c"></span>
     <span class="c"># called by: </span><a class="t" href="#lib.pdf.classify.gate_tables">classify.gate_tables</a><span class="c"></span>
 
@@ -1051,6 +1139,7 @@ a.t{color:inherit;text-decoration:underline dotted}a.ln{color:var(--mut);font-si
 <span class="d">    layer&#x27;s in its band and column. Measured apart from the grid fit; it never</span>
 <span class="d">    counts as a witness unless it separates as well.</span>
 <span class="d">    &quot;&quot;&quot;</span>
+    <span class="c u"># untyped: page, bbox, words, columns</span>
     <span class="c"># calls: </span>_segments, _clusters, _squash<span class="c"></span>
     <span class="c"># called by: </span><a class="t" href="#lib.pdf.classify.gate_tables">classify.gate_tables</a><span class="c"></span>
 
@@ -1058,10 +1147,11 @@ a.t{color:inherit;text-decoration:underline dotted}a.ln{color:var(--mut);font-si
 <span class="d">    &quot;&quot;&quot;(xs, ys, has_v, has_h) of the drawn grid, or None: at least 3 column</span>
 <span class="d">    lines and 3 row lines that span the region.</span>
 <span class="d">    &quot;&quot;&quot;</span>
+    <span class="c u"># untyped: page, bbox, return</span>
     <span class="c"># calls: </span>_segments, _clusters, _covers<span class="c"></span>
     <span class="c"># called by: </span><a class="t" href="#lib.pdf.fit.fit">fit</a><span class="c"></span>
 
-<span class="c"># + 6 private module-level names</span></pre><h2 id="lib-pdf-flag-py">lib/pdf/flag.py<a class="src" href="../../lib/pdf/flag.py">source</a></h2><pre><span class="d">&quot;&quot;&quot;Mark text that is probably a table but was not extracted as one.</span>
+<span class="c"># + 6 private module-level names</span></pre><h2 id="lib-pdf-flag-py">lib/pdf/flag.py<a class="src" href="../../lib/pdf/flag.py">source</a></h2><p class="sum">Typed: 9 of 18 functions and methods (50%).</p><pre><span class="d">&quot;&quot;&quot;Mark text that is probably a table but was not extracted as one.</span>
 <span class="d"></span>
 <span class="d">The table sources only emit what passes their checks, so a real table can</span>
 <span class="d">reach the output as plain paragraphs or code with no warning. This module</span>
@@ -1136,7 +1226,7 @@ a.t{color:inherit;text-decoration:underline dotted}a.ln{color:var(--mut);font-si
     <span class="c"># calls: </span>_rows, _is_not_table, _is_table_row, _shared_starts<span class="c"></span>
     <span class="c"># called by: </span>pdf._run_pipeline<span class="c"></span>
 
-<span class="c"># + 11 private module-level names</span></pre><h2 id="lib-pdf-fullwidth-py">lib/pdf/fullwidth.py<a class="src" href="../../lib/pdf/fullwidth.py">source</a></h2><pre><span class="d">&quot;&quot;&quot;Full-width rows in drawn tables: titles and spanning rows read as spans.</span>
+<span class="c"># + 11 private module-level names</span></pre><h2 id="lib-pdf-fullwidth-py">lib/pdf/fullwidth.py<a class="src" href="../../lib/pdf/fullwidth.py">source</a></h2><p class="sum">Typed: 0 of 4 functions and methods (0%).</p><pre><span class="d">&quot;&quot;&quot;Full-width rows in drawn tables: titles and spanning rows read as spans.</span>
 <span class="d"></span>
 <span class="d">A boxed table often has rows that run across every column: a title over the</span>
 <span class="d">table (&quot;[comma.value-category]&quot;, set right-aligned), a link or an</span>
@@ -1156,14 +1246,17 @@ a.t{color:inherit;text-decoration:underline dotted}a.ln{color:var(--mut);font-si
 
 <span class="k">def </span><span class="n" id="lib.pdf.fullwidth.apply">apply</span>(sec, page, bbox) -&gt; list[int]:<a class="ln" href="../../lib/pdf/fullwidth.py#L62">fullwidth.py:62</a>
 <span class="d">    &quot;&quot;&quot;Move each full-width row&#x27;s text to its first cell; record the spans.&quot;&quot;&quot;</span>
+    <span class="c u"># untyped: sec, page, bbox</span>
     <span class="c"># calls: </span><a class="t" href="#lib.pdf.fullwidth.full_width_rows">full_width_rows</a><span class="c"></span>
     <span class="c"># called by: </span><a class="t" href="#lib.pdf.classify.gate_tables">classify.gate_tables</a><span class="c"></span>
 
 <span class="k">def </span><span class="n" id="lib.pdf.fullwidth.full_width_rows">full_width_rows</span>(columns, page, bbox) -&gt; list[int]:<a class="ln" href="../../lib/pdf/fullwidth.py#L46">fullwidth.py:46</a>
+    <span class="c u"># untyped: columns, page, bbox</span>
     <span class="c"># calls: </span>_vertical_rules, _row_band<span class="c"></span>
     <span class="c"># called by: </span><a class="t" href="#lib.pdf.fullwidth.apply">apply</a><span class="c"></span>
+    ...
 
-<span class="c"># + 2 private module-level names</span></pre><h2 id="lib-pdf-levels-py">lib/pdf/levels.py<a class="src" href="../../lib/pdf/levels.py">source</a></h2><pre><span class="d">&quot;&quot;&quot;Graded table levels (L0-L5) and cell markers, from tomd&#x27;s own evidence.</span>
+<span class="c"># + 2 private module-level names</span></pre><h2 id="lib-pdf-levels-py">lib/pdf/levels.py<a class="src" href="../../lib/pdf/levels.py">source</a></h2><p class="sum">Typed: 2 of 4 functions and methods (50%).</p><pre><span class="d">&quot;&quot;&quot;Graded table levels (L0-L5) and cell markers, from tomd&#x27;s own evidence.</span>
 <span class="d"></span>
 <span class="d">The binary HIGH / UNCERTAIN says only whether to trust a table; a reader of the</span>
 <span class="d">output (an AI evaluating the paper) also needs to know how a flagged table may be</span>
@@ -1187,20 +1280,23 @@ a.t{color:inherit;text-decoration:underline dotted}a.ln{color:var(--mut);font-si
 
 <span class="k">def </span><span class="n" id="lib.pdf.levels.assign">assign</span>(sec) -&gt; dict:<a class="ln" href="../../lib/pdf/levels.py#L62">levels.py:62</a>
 <span class="d">    &quot;&quot;&quot;{&quot;level&quot;, &quot;name&quot;, &quot;why&quot;, &quot;incomplete&quot;, &quot;cells&quot;} for a table section&quot;&quot;&quot;</span>
+    <span class="c u"># untyped: sec</span>
     <span class="c"># calls: </span><a class="t" href="#lib.pdf.levels.cell_markers">cell_markers</a><span class="c"></span>
     <span class="c"># called by: </span>pdf._run_pipeline, <a class="t" href="#lib.pdf.classify.gate_tables">classify.gate_tables</a><span class="c"></span>
 
 <span class="k">def </span><span class="n" id="lib.pdf.levels.cell_markers">cell_markers</span>(sec) -&gt; list[tuple[int, int]]:<a class="ln" href="../../lib/pdf/levels.py#L44">levels.py:44</a>
 <span class="d">    &quot;&quot;&quot;cells where an alternative reading of the same shape disagrees with the table&quot;&quot;&quot;</span>
+    <span class="c u"># untyped: sec</span>
     <span class="c"># calls: </span>_rows<span class="c"></span>
     <span class="c"># called by: </span><a class="t" href="#lib.pdf.levels.assign">assign</a><span class="c"></span>
 
 <span class="k">def </span><span class="n" id="lib.pdf.levels.comment">comment</span>(info: dict) -&gt; str:<a class="ln" href="../../lib/pdf/levels.py#L102">levels.py:102</a>
     <span class="c"># called by: </span><a class="t" href="#lib.pdf.emit.emit_markdown">emit.emit_markdown</a><span class="c"></span>
+    ...
 
 <span class="n" id="lib.pdf.levels.NAMES">NAMES</span> = ...<a class="ln" href="../../lib/pdf/levels.py#L26">levels.py:26</a>
 
-<span class="c"># + 1 private module-level name</span></pre><h2 id="lib-pdf-llmcheck-py">lib/pdf/llmcheck.py<a class="src" href="../../lib/pdf/llmcheck.py">source</a></h2><pre><span class="d">&quot;&quot;&quot;Opt-in LLM second look at questionable tables: a narrow check, asked twice.</span>
+<span class="c"># + 1 private module-level name</span></pre><h2 id="lib-pdf-llmcheck-py">lib/pdf/llmcheck.py<a class="src" href="../../lib/pdf/llmcheck.py">source</a></h2><p class="sum">Typed: 4 of 7 functions and methods (57%).</p><pre><span class="d">&quot;&quot;&quot;Opt-in LLM second look at questionable tables: a narrow check, asked twice.</span>
 <span class="d"></span>
 <span class="d">For a table at L3 (structure uncertain) or L4 (content at risk) - never L0-L2 - a</span>
 <span class="d">vision model gets the page crop and tomd&#x27;s reading, and answers one narrow question:</span>
@@ -1222,24 +1318,28 @@ a.t{color:inherit;text-decoration:underline dotted}a.ln{color:var(--mut);font-si
 <span class="d">    &quot;&quot;&quot;{&quot;match&quot;, &quot;wrong_rows&quot;, &quot;consistent&quot;} from two identical answers, or None (the</span>
 <span class="d">    answers differed, an error, or the budget is spent)</span>
 <span class="d">    &quot;&quot;&quot;</span>
+    <span class="c u"># untyped: client, page, bbox, rows</span>
     <span class="c"># calls: </span>_cache_path, _budget, llmrepair._image, _ask_once, <a class="t" href="#lib.pdf.evidence.reader_error">evidence.reader_error</a><span class="c"></span>
     <span class="c"># called by: </span>pdf._run_pipeline, <a class="t" href="#lib.pdf.llmrepair.repair">llmrepair.repair</a><span class="c"></span>
 
 <span class="k">def </span><span class="n" id="lib.pdf.llmcheck.enabled">enabled</span>() -&gt; bool:<a class="ln" href="../../lib/pdf/llmcheck.py#L52">llmcheck.py:52</a>
     <span class="c"># calls: </span>llmrepair._has_credentials<span class="c"></span>
     <span class="c"># called by: </span>pdf._run_pipeline<span class="c"></span>
+    ...
 
 <span class="k">def </span><span class="n" id="lib.pdf.llmcheck.reset">reset</span>() -&gt; None:<a class="ln" href="../../lib/pdf/llmcheck.py#L65">llmcheck.py:65</a>
     <span class="c"># called by: </span>pdf._run_pipeline<span class="c"></span>
+    ...
 
 <span class="k">def </span><span class="n" id="lib.pdf.llmcheck.state">state</span>() -&gt; dict:<a class="ln" href="../../lib/pdf/llmcheck.py#L61">llmcheck.py:61</a>
     <span class="c"># called by: </span>pdf._run_pipeline<span class="c"></span>
+    ...
 
 <span class="n" id="lib.pdf.llmcheck.CHECK_MODEL">CHECK_MODEL</span> = &#x27;claude-sonnet-5-5&#x27;<a class="ln" href="../../lib/pdf/llmcheck.py#L31">llmcheck.py:31</a>
 
 <span class="n" id="lib.pdf.llmcheck.PROMPT_VERSION">PROMPT_VERSION</span> = &#x27;check-v1&#x27;<a class="ln" href="../../lib/pdf/llmcheck.py#L32">llmcheck.py:32</a>
 
-<span class="c"># + 3 private module-level names</span></pre><h2 id="lib-pdf-llmrepair-py">lib/pdf/llmrepair.py<a class="src" href="../../lib/pdf/llmrepair.py">source</a></h2><pre><span class="d">&quot;&quot;&quot;Opt-in LLM repair of flagged tables: structure only, never content.</span>
+<span class="c"># + 3 private module-level names</span></pre><h2 id="lib-pdf-llmrepair-py">lib/pdf/llmrepair.py<a class="src" href="../../lib/pdf/llmrepair.py">source</a></h2><p class="sum">Typed: 6 of 14 functions and methods (42%).</p><pre><span class="d">&quot;&quot;&quot;Opt-in LLM repair of flagged tables: structure only, never content.</span>
 <span class="d"></span>
 <span class="d">A table that is still UNCERTAIN after every deterministic reader and the</span>
 <span class="d">escalation moves may be sent to a vision model - only when TOMD_LLM=1 and</span>
@@ -1262,6 +1362,7 @@ a.t{color:inherit;text-decoration:underline dotted}a.ln{color:var(--mut);font-si
 
 <span class="k">def </span><span class="n" id="lib.pdf.llmrepair.ask">ask</span>(client, page, bbox, words):<a class="ln" href="../../lib/pdf/llmrepair.py#L146">llmrepair.py:146</a>
 <span class="d">    &quot;&quot;&quot;(rows of index lists, model id, seconds, usage) or None.&quot;&quot;&quot;</span>
+    <span class="c u"># untyped: client, page, bbox, words, return</span>
     <span class="c"># calls: </span>_image, _prompt, _note<span class="c"></span>
     <span class="c"># called by: </span><a class="t" href="#lib.pdf.llmrepair.repair">repair</a><span class="c"></span>
 
@@ -1269,6 +1370,7 @@ a.t{color:inherit;text-decoration:underline dotted}a.ln{color:var(--mut);font-si
 <span class="d">    &quot;&quot;&quot;Cells of spans from word indices, or (None, reason) if the answer is unusable:</span>
 <span class="d">    an index out of range, used twice, or a word left out.</span>
 <span class="d">    &quot;&quot;&quot;</span>
+    <span class="c u"># untyped: rows, words, return</span>
     <span class="c"># calls: </span><a class="t" href="#lib.pdf.types.Span">types.Span</a><span class="c"></span>
     <span class="c"># called by: </span><a class="t" href="#lib.pdf.llmrepair.repair">repair</a><span class="c"></span>
 
@@ -1280,11 +1382,13 @@ a.t{color:inherit;text-decoration:underline dotted}a.ln{color:var(--mut);font-si
 <span class="d">    undid two of the seven fixes (p2329r0-t2, p1985r3-t2), whose first readings had packed</span>
 <span class="d">    several rows into one code cell; it is not used.</span>
 <span class="d">    &quot;&quot;&quot;</span>
+    <span class="c u"># untyped: first, repaired</span>
     <span class="c"># called by: </span><a class="t" href="#lib.pdf.llmrepair.repair">repair</a><span class="c"></span>
 
 <span class="k">def </span><span class="n" id="lib.pdf.llmrepair.llm_enabled">llm_enabled</span>() -&gt; bool:<a class="ln" href="../../lib/pdf/llmrepair.py#L121">llmrepair.py:121</a>
     <span class="c"># calls: </span>_has_credentials, _budget<span class="c"></span>
     <span class="c"># called by: </span><a class="t" href="#lib.pdf.classify.gate_tables">classify.gate_tables</a><span class="c"></span>
+    ...
 
 <span class="k">def </span><span class="n" id="lib.pdf.llmrepair.paper_record">paper_record</span>() -&gt; dict:<a class="ln" href="../../lib/pdf/llmrepair.py#L95">llmrepair.py:95</a>
 <span class="d">    &quot;&quot;&quot;What LLM repair did for this paper, for the paper summary: whether it</span>
@@ -1297,15 +1401,17 @@ a.t{color:inherit;text-decoration:underline dotted}a.ln{color:var(--mut);font-si
 
 <span class="k">def </span><span class="n" id="lib.pdf.llmrepair.repair">repair</span>(sec, page, bbox, words, verify, client=None) -&gt; str:<a class="ln" href="../../lib/pdf/llmrepair.py#L237">llmrepair.py:237</a>
 <span class="d">    &quot;&quot;&quot;Try to repair one flagged table in place. Returns what happened.&quot;&quot;&quot;</span>
+    <span class="c u"># untyped: sec, page, bbox, words, verify, client</span>
     <span class="c"># calls: </span>_note, _paper_budget, _client, <a class="t" href="#lib.pdf.llmrepair.ask">ask</a>, <a class="t" href="#lib.pdf.llmrepair.build_columns">build_columns</a>, <a class="t" href="#lib.pdf.llmrepair.code_guard">code_guard</a>, <a class="t" href="#lib.pdf.llmcheck.check">llmcheck.check</a>, <a class="t" href="#lib.pdf.evidence.current">evidence.current</a>, <a class="t" href="#lib.pdf.evidence.reader_error">evidence.reader_error</a><span class="c"></span>
     <span class="c"># called by: </span><a class="t" href="#lib.pdf.classify.gate_tables">classify.gate_tables</a><span class="c"></span>
 
 <span class="k">def </span><span class="n" id="lib.pdf.llmrepair.reset_paper">reset_paper</span>() -&gt; None:<a class="ln" href="../../lib/pdf/llmrepair.py#L83">llmrepair.py:83</a>
     <span class="c"># called by: </span>pdf._run_pipeline, _note<span class="c"></span>
+    ...
 
 <span class="n" id="lib.pdf.llmrepair.MODEL">MODEL</span> = &#x27;claude-opus-5-5&#x27;<a class="ln" href="../../lib/pdf/llmrepair.py#L32">llmrepair.py:32</a>
 
-<span class="c"># + 7 private module-level names</span></pre><h2 id="lib-pdf-mono-py">lib/pdf/mono.py<a class="src" href="../../lib/pdf/mono.py">source</a></h2><pre><span class="d">&quot;&quot;&quot;Triple-signal monospace font detection.</span>
+<span class="c"># + 7 private module-level names</span></pre><h2 id="lib-pdf-mono-py">lib/pdf/mono.py<a class="src" href="../../lib/pdf/mono.py">source</a></h2><p class="sum">Typed: 8 of 8 functions and methods (100%).</p><pre><span class="d">&quot;&quot;&quot;Triple-signal monospace font detection.</span>
 <span class="d"></span>
 <span class="d">Three independent signals:</span>
 <span class="d">  1. Font name decomposition (strip modifiers, split camelCase, check keywords)</span>
@@ -1354,7 +1460,7 @@ a.t{color:inherit;text-decoration:underline dotted}a.ln{color:var(--mut);font-si
     <span class="c"># calls: </span><a class="t" href="#lib.pdf.mono.classify_monospace">classify_monospace</a><span class="c"></span>
     <span class="c"># called by: </span>pdf._run_pipeline<span class="c"></span>
 
-<span class="c"># + 6 private module-level names</span></pre><h2 id="lib-pdf-ocrcheck-py">lib/pdf/ocrcheck.py<a class="src" href="../../lib/pdf/ocrcheck.py">source</a></h2><pre><span class="d">&quot;&quot;&quot;Check a HIGH table&#x27;s text layer against the picture of the page.</span>
+<span class="c"># + 6 private module-level names</span></pre><h2 id="lib-pdf-ocrcheck-py">lib/pdf/ocrcheck.py<a class="src" href="../../lib/pdf/ocrcheck.py">source</a></h2><p class="sum">Typed: 2 of 5 functions and methods (40%).</p><pre><span class="d">&quot;&quot;&quot;Check a HIGH table&#x27;s text layer against the picture of the page.</span>
 <span class="d"></span>
 <span class="d">Table sources agree because they all read the same text layer, so a text</span>
 <span class="d">layer that differs from what is printed fools them all at once (p3830r0:</span>
@@ -1370,6 +1476,7 @@ a.t{color:inherit;text-decoration:underline dotted}a.ln{color:var(--mut);font-si
 
 <span class="k">def </span><span class="n" id="lib.pdf.ocrcheck.check_table">check_table</span>(page, sec) -&gt; str:<a class="ln" href="../../lib/pdf/ocrcheck.py#L66">ocrcheck.py:66</a>
 <span class="d">    &quot;&quot;&quot;&quot;&quot; if the header (and a poll&#x27;s votes) read the same in the picture, else a note.&quot;&quot;&quot;</span>
+    <span class="c u"># untyped: page, sec</span>
     <span class="c"># calls: </span>_row_box, <a class="t" href="#lib.pdf.ocrcheck.mismatched_tokens">mismatched_tokens</a>, _ocr<span class="c"></span>
     <span class="c"># called by: </span><a class="t" href="#lib.pdf.classify.gate_tables">classify.gate_tables</a><span class="c"></span>
 
@@ -1379,8 +1486,9 @@ a.t{color:inherit;text-decoration:underline dotted}a.ln{color:var(--mut);font-si
 
 <span class="k">def </span><span class="n" id="lib.pdf.ocrcheck.ocr_enabled">ocr_enabled</span>() -&gt; bool:<a class="ln" href="../../lib/pdf/ocrcheck.py#L27">ocrcheck.py:27</a>
     <span class="c"># called by: </span><a class="t" href="#lib.pdf.classify.gate_tables">classify.gate_tables</a><span class="c"></span>
+    ...
 
-<span class="c"># + 2 private module-level names</span></pre><h2 id="lib-pdf-pagecache-py">lib/pdf/pagecache.py<a class="src" href="../../lib/pdf/pagecache.py">source</a></h2><pre><span class="d">&quot;&quot;&quot;One rawdict extraction per page, shared by the readers that need characters</span>
+<span class="c"># + 2 private module-level names</span></pre><h2 id="lib-pdf-pagecache-py">lib/pdf/pagecache.py<a class="src" href="../../lib/pdf/pagecache.py">source</a></h2><p class="sum">Typed: 3 of 7 functions and methods (42%).</p><pre><span class="d">&quot;&quot;&quot;One rawdict extraction per page, shared by the readers that need characters</span>
 <span class="d">(the rule-band reader and the poll reader each extracted it on their own).</span>
 <span class="d">The cache lives on the document object, so it goes away with it (keying a</span>
 <span class="d">global cache by id() returned another document&#x27;s text once ids were reused).</span>
@@ -1394,15 +1502,19 @@ a.t{color:inherit;text-decoration:underline dotted}a.ln{color:var(--mut);font-si
 <span class="d">    &quot;&quot;&quot;bboxes of characters an opaque box drawn after them covers (slide decks hide</span>
 <span class="d">    the rows of a build under a white box): text the page does not show</span>
 <span class="d">    &quot;&quot;&quot;</span>
+    <span class="c u"># untyped: page, drawings</span>
     <span class="c"># calls: </span><a class="t" href="#lib.pdf.evidence.reader_error">evidence.reader_error</a><span class="c"></span>
     <span class="c"># called by: </span><a class="t" href="#lib.pdf.pagecache.remove_covered_text">remove_covered_text</a><span class="c"></span>
 
 <span class="k">def </span><span class="n" id="lib.pdf.pagecache.rawdict">rawdict</span>(page):<a class="ln" href="../../lib/pdf/pagecache.py#L14">pagecache.py:14</a>
+    <span class="c u"># untyped: page, return</span>
     <span class="c"># calls: </span>_dedup_raw<span class="c"></span>
     <span class="c"># called by: </span><a class="t" href="#lib.pdf.pagecache.words_in">words_in</a>, <a class="t" href="#lib.pdf.poll.extract_poll_tables">poll.extract_poll_tables</a>, ruled._grid_tables_in, <a class="t" href="#lib.pdf.ruled.extract_ruled_tables">ruled.extract_ruled_tables</a><span class="c"></span>
+    ...
 
 <span class="k">def </span><span class="n" id="lib.pdf.pagecache.remove_covered_text">remove_covered_text</span>(pages) -&gt; int:<a class="ln" href="../../lib/pdf/pagecache.py#L128">pagecache.py:128</a>
 <span class="d">    &quot;&quot;&quot;redact (in memory) the characters hidden_chars finds; pages changed&quot;&quot;&quot;</span>
+    <span class="c u"># untyped: pages</span>
     <span class="c"># calls: </span><a class="t" href="#lib.pdf.pagecache.hidden_chars">hidden_chars</a>, <a class="t" href="#lib.pdf.evidence.reader_error">evidence.reader_error</a><span class="c"></span>
     <span class="c"># called by: </span>pdf._upright_page<span class="c"></span>
 
@@ -1411,6 +1523,7 @@ a.t{color:inherit;text-decoration:underline dotted}a.ln{color:var(--mut);font-si
 <span class="d">    whole page: a clipped extraction drops glyphs whose ink falls outside the clip</span>
 <span class="d">    (a period on the baseline below a region&#x27;s edge) and splits the word there.</span>
 <span class="d">    &quot;&quot;&quot;</span>
+    <span class="c u"># untyped: page, bbox, return</span>
     <span class="c"># calls: </span>_dedup_words, <a class="t" href="#lib.pdf.pagecache.rawdict">rawdict</a><span class="c"></span>
     <span class="c"># called by: </span><a class="t" href="#lib.pdf.classify.gate_tables">classify.gate_tables</a><span class="c"></span>
 
@@ -1425,7 +1538,7 @@ a.t{color:inherit;text-decoration:underline dotted}a.ln{color:var(--mut);font-si
 
 <span class="n" id="lib.pdf.paper_model.BANDS">BANDS</span> = ...<a class="ln" href="../../lib/pdf/paper_model.py#L60">paper_model.py:60</a>
 
-<span class="n" id="lib.pdf.paper_model.MODEL">MODEL</span> = ...<a class="ln" href="../../lib/pdf/paper_model.py#L9">paper_model.py:9</a></pre><h2 id="lib-pdf-poll-py">lib/pdf/poll.py<a class="src" href="../../lib/pdf/poll.py">source</a></h2><pre><span class="d">&quot;&quot;&quot;WG21 poll result tables.</span>
+<span class="n" id="lib.pdf.paper_model.MODEL">MODEL</span> = ...<a class="ln" href="../../lib/pdf/paper_model.py#L9">paper_model.py:9</a></pre><h2 id="lib-pdf-poll-py">lib/pdf/poll.py<a class="src" href="../../lib/pdf/poll.py">source</a></h2><p class="sum">Typed: 3 of 9 functions and methods (33%).</p><pre><span class="d">&quot;&quot;&quot;WG21 poll result tables.</span>
 <span class="d"></span>
 <span class="d">WG21 papers and minutes record straw polls in a fixed shape: a header line</span>
 <span class="d">&quot;SF F N A SA&quot; (Strongly For, For, Neutral, Against, Strongly Against) with</span>
@@ -1446,6 +1559,7 @@ a.t{color:inherit;text-decoration:underline dotted}a.ln{color:var(--mut);font-si
 <span class="d">    &quot;&quot;&quot;Poll result tables on one page. `words_hint` (the page&#x27;s words, already</span>
 <span class="d">    extracted) lets a page with no vote label skip the character extraction.</span>
 <span class="d">    &quot;&quot;&quot;</span>
+    <span class="c u"># untyped: page, words_hint</span>
     <span class="c"># calls: </span>_clean, _split_pipes, <a class="t" href="#lib.pdf.pagecache.rawdict">pagecache.rawdict</a>, ruled._page_words, _baseline_lines, <a class="t" href="#lib.pdf.poll.vote_header">vote_header</a>, _label_cells, _header_prefix, _row_cells, _strip_zero_width, ruled._chars_to_lines, ruled._word_chars<span class="c">, +1 more</span>
     <span class="c"># called by: </span>pdf._run_pipeline<span class="c"></span>
 
@@ -1458,7 +1572,7 @@ a.t{color:inherit;text-decoration:underline dotted}a.ln{color:var(--mut);font-si
 <span class="c"># &quot;SF F N A SA&quot;, &quot;SF WF N WA SA&quot;, &quot;F N A&quot;, &quot;Strongly Favor ... Strongly Against&quot;.</span>
 <span class="n" id="lib.pdf.poll.VOTE_LABELS">VOTE_LABELS</span> = ...<a class="ln" href="../../lib/pdf/poll.py#L31">poll.py:31</a>
 
-<span class="c"># + 7 private module-level names</span></pre><h2 id="lib-pdf-qa-py">lib/pdf/qa.py<a class="src" href="../../lib/pdf/qa.py">source</a></h2><pre><span class="d">&quot;&quot;&quot;Quality assurance metrics and scoring for Markdown conversion output.</span>
+<span class="c"># + 7 private module-level names</span></pre><h2 id="lib-pdf-qa-py">lib/pdf/qa.py<a class="src" href="../../lib/pdf/qa.py">source</a></h2><p class="sum">Typed: 10 of 10 functions and methods (100%).</p><pre><span class="d">&quot;&quot;&quot;Quality assurance metrics and scoring for Markdown conversion output.</span>
 <span class="d"></span>
 <span class="d">Parses the Markdown output with mistune to validate structure from</span>
 <span class="d">the reader&#x27;s perspective, not from pipeline internals.</span>
@@ -1507,7 +1621,7 @@ a.t{color:inherit;text-decoration:underline dotted}a.ln{color:var(--mut);font-si
     <span class="c"># calls: </span>_qa_metrics_from_dict, <a class="t" href="#lib.pdf.qa.QAMetrics">QAMetrics</a>, _qa_one<span class="c"></span>
     <span class="c"># called by: </span><a class="t" href="#main.main">main.main</a><span class="c"></span>
 
-<span class="c"># + 8 private module-level names</span></pre><h2 id="lib-pdf-records-py">lib/pdf/records.py<a class="src" href="../../lib/pdf/records.py">source</a></h2><pre><span class="d">&quot;&quot;&quot;Content record-pattern reader: a table seen as runs of records that share a</span>
+<span class="c"># + 8 private module-level names</span></pre><h2 id="lib-pdf-records-py">lib/pdf/records.py<a class="src" href="../../lib/pdf/records.py">source</a></h2><p class="sum">Typed: 4 of 7 functions and methods (57%).</p><pre><span class="d">&quot;&quot;&quot;Content record-pattern reader: a table seen as runs of records that share a</span>
 <span class="d">schema of kinds, with no geometry.</span>
 <span class="d"></span>
 <span class="d">The text layer gives a region&#x27;s lines in reading order. Each line has a kind</span>
@@ -1541,15 +1655,17 @@ a.t{color:inherit;text-decoration:underline dotted}a.ln{color:var(--mut);font-si
 <span class="d">    with its header and its own box; none unless together they cover most of</span>
 <span class="d">    the region&#x27;s lines (a region holding two stacked tables reads as two).</span>
 <span class="d">    &quot;&quot;&quot;</span>
+    <span class="c u"># untyped: page, bbox</span>
     <span class="c"># calls: </span>_lines_in, <a class="t" href="#lib.pdf.records.line_kind">line_kind</a>, _text, <a class="t" href="#lib.pdf.records.periodic_runs">periodic_runs</a>, <a class="t" href="#lib.pdf.types.TableCandidate">types.TableCandidate</a><span class="c"></span>
     <span class="c"># called by: </span><a class="t" href="#lib.pdf.records.records_candidates">records_candidates</a><span class="c"></span>
 
 <span class="k">def </span><span class="n" id="lib.pdf.records.records_candidates">records_candidates</span>(pages, regions) -&gt; list[<a class="t" href="#lib.pdf.types.TableCandidate">TableCandidate</a>]:<a class="ln" href="../../lib/pdf/records.py#L128">records.py:128</a>
 <span class="d">    &quot;&quot;&quot;The record-pattern reading of every located region (page, bbox).&quot;&quot;&quot;</span>
+    <span class="c u"># untyped: pages, regions</span>
     <span class="c"># calls: </span><a class="t" href="#lib.pdf.records.read_region">read_region</a><span class="c"></span>
     <span class="c"># called by: </span>pdf._run_pipeline<span class="c"></span>
 
-<span class="c"># + 3 private module-level names</span></pre><h2 id="lib-pdf-relations-py">lib/pdf/relations.py<a class="src" href="../../lib/pdf/relations.py">source</a></h2><pre><span class="d">&quot;&quot;&quot;Stage 1: the relationship record and the relational checker.</span>
+<span class="c"># + 3 private module-level names</span></pre><h2 id="lib-pdf-relations-py">lib/pdf/relations.py<a class="src" href="../../lib/pdf/relations.py">source</a></h2><p class="sum">Typed: 1 of 5 functions and methods (20%).</p><pre><span class="d">&quot;&quot;&quot;Stage 1: the relationship record and the relational checker.</span>
 <span class="d"></span>
 <span class="d">A table asserts relationships between the words of its region: two words</span>
 <span class="d">share a row, share a column, share a cell. The page shows others, observed</span>
@@ -1592,15 +1708,17 @@ a.t{color:inherit;text-decoration:underline dotted}a.ln{color:var(--mut);font-si
 <span class="d">    crossing most of the table are row boundaries (an underline, a strike-through</span>
 <span class="d">    or one cell&#x27;s own rule is not).</span>
 <span class="d">    &quot;&quot;&quot;</span>
+    <span class="c u"># untyped: hrules, mono</span>
     <span class="c"># calls: </span><a class="t" href="#lib.pdf.relations.RelationRecord">RelationRecord</a>, _cell_of, <a class="t" href="#lib.pdf.relations.Violation">Violation</a>, _recurs<span class="c"></span>
     <span class="c"># called by: </span><a class="t" href="#lib.pdf.relations.record_for">record_for</a><span class="c"></span>
 
 <span class="k">def </span><span class="n" id="lib.pdf.relations.record_for">record_for</span>(sec, words, hrules=()) -&gt; <a class="t" href="#lib.pdf.relations.RelationRecord">RelationRecord</a>:<a class="ln" href="../../lib/pdf/relations.py#L154">relations.py:154</a>
 <span class="d">    &quot;&quot;&quot;The relationship record of an emitted table section (cells from its spans).&quot;&quot;&quot;</span>
+    <span class="c u"># untyped: sec, words, hrules</span>
     <span class="c"># calls: </span><a class="t" href="#lib.pdf.relations.check">check</a><span class="c"></span>
     <span class="c"># called by: </span>classify._repair_stray_words, <a class="t" href="#lib.pdf.classify.gate_tables">classify.gate_tables</a><span class="c"></span>
 
-<span class="c"># + 2 private module-level names</span></pre><h2 id="lib-pdf-repair-py">lib/pdf/repair.py<a class="src" href="../../lib/pdf/repair.py">source</a></h2><pre><span class="d">&quot;&quot;&quot;Stage 3 (relationship plan): blind smallest-set repair and inferred cells.</span>
+<span class="c"># + 2 private module-level names</span></pre><h2 id="lib-pdf-repair-py">lib/pdf/repair.py<a class="src" href="../../lib/pdf/repair.py">source</a></h2><p class="sum">Typed: 1 of 6 functions and methods (16%).</p><pre><span class="d">&quot;&quot;&quot;Stage 3 (relationship plan): blind smallest-set repair and inferred cells.</span>
 <span class="d"></span>
 <span class="d">A flagged table whose region holds page words that lie in no cell (the</span>
 <span class="d">relational checker&#x27;s &quot;word outside every cell&quot;) lost text. The smallest</span>
@@ -1624,10 +1742,11 @@ a.t{color:inherit;text-decoration:underline dotted}a.ln{color:var(--mut);font-si
 <span class="d">    &quot;&quot;&quot;(new columns, inferred [(row, col)], stray words) or None when the stray</span>
 <span class="d">    words are not explained by the table&#x27;s own rows and columns.</span>
 <span class="d">    &quot;&quot;&quot;</span>
+    <span class="c u"># untyped: return</span>
     <span class="c"># calls: </span>_box, _lines, _place, _span_for, _join<span class="c"></span>
     <span class="c"># called by: </span>classify._repair_stray_words<span class="c"></span>
 
-<span class="c"># + 5 private module-level names</span></pre><h2 id="lib-pdf-rowbands-py">lib/pdf/rowbands.py<a class="src" href="../../lib/pdf/rowbands.py">source</a></h2><pre><span class="d">&quot;&quot;&quot;Rows bounded by drawn rules (2026-10-24).</span>
+<span class="c"># + 5 private module-level names</span></pre><h2 id="lib-pdf-rowbands-py">lib/pdf/rowbands.py<a class="src" href="../../lib/pdf/rowbands.py">source</a></h2><p class="sum">Typed: 0 of 3 functions and methods (0%).</p><pre><span class="d">&quot;&quot;&quot;Rows bounded by drawn rules (2026-10-24).</span>
 <span class="d"></span>
 <span class="d">In a drawn grid whose records are separated by horizontal rules (comment forms such as national-</span>
 <span class="d">body ballots), every text line between the same pair of rules belongs to one record. A reader</span>
@@ -1649,6 +1768,7 @@ a.t{color:inherit;text-decoration:underline dotted}a.ln{color:var(--mut);font-si
 <span class="d">    &quot;&quot;&quot;Join empty-key continuation rows into the record above within one rule band; returns the</span>
 <span class="d">    number of rows joined. rules: the page&#x27;s horizontal rule segments (y, x0, x1).</span>
 <span class="d">    &quot;&quot;&quot;</span>
+    <span class="c u"># untyped: sec, rules</span>
     <span class="c"># calls: </span>_full_rules, _text, <a class="t" href="#lib.pdf.types.Span">types.Span</a><span class="c"></span>
     <span class="c"># called by: </span>pdf._run_pipeline<span class="c"></span>
 
@@ -1662,7 +1782,7 @@ a.t{color:inherit;text-decoration:underline dotted}a.ln{color:var(--mut);font-si
 
 <span class="n" id="lib.pdf.rowbands.MIN_SEGMENT">MIN_SEGMENT</span> = 15.0  <span class="c"># pt: shorter strokes are not row separators</span><a class="ln" href="../../lib/pdf/rowbands.py#L22">rowbands.py:22</a>
 
-<span class="c"># + 2 private module-level names</span></pre><h2 id="lib-pdf-ruled-py">lib/pdf/ruled.py<a class="src" href="../../lib/pdf/ruled.py">source</a></h2><pre><span class="d">&quot;&quot;&quot;Table detection from ruling lines (vector drawings).</span>
+<span class="c"># + 2 private module-level names</span></pre><h2 id="lib-pdf-ruled-py">lib/pdf/ruled.py<a class="src" href="../../lib/pdf/ruled.py">source</a></h2><p class="sum">Typed: 9 of 42 functions and methods (21%).</p><pre><span class="d">&quot;&quot;&quot;Table detection from ruling lines (vector drawings).</span>
 <span class="d"></span>
 <span class="d">An extractor independent of the MuPDF text blocks that table.py uses: it</span>
 <span class="d">looks only at the lines and thin rectangles a page draws, and at character</span>
@@ -1692,6 +1812,7 @@ a.t{color:inherit;text-decoration:underline dotted}a.ln{color:var(--mut);font-si
 <span class="d">    &quot;&quot;&quot;a closed grid&#x27;s own layout explains its empty cells, unless a whole column is</span>
 <span class="d">    empty (a doubled rule read as a column of its own)</span>
 <span class="d">    &quot;&quot;&quot;</span>
+    <span class="c u"># untyped: t</span>
     <span class="c"># called by: </span>_bad_flags, <a class="t" href="#lib.pdf.ruled.sparse_mapping">sparse_mapping</a>, table._is_bad<span class="c"></span>
 
 <span class="k">def </span><span class="n" id="lib.pdf.ruled.drawn_spans">drawn_spans</span>(page, columns, spans) -&gt; list[dict]:<a class="ln" href="../../lib/pdf/ruled.py#L455">ruled.py:455</a>
@@ -1699,11 +1820,13 @@ a.t{color:inherit;text-decoration:underline dotted}a.ln{color:var(--mut);font-si
 <span class="d">    position is dropped when a drawn line separates the cells it would join (the</span>
 <span class="d">    grid draws every cell it has; an empty drawn cell is not part of its neighbour)</span>
 <span class="d">    &quot;&quot;&quot;</span>
+    <span class="c u"># untyped: page, columns, spans</span>
     <span class="c"># calls: </span>_segments<span class="c"></span>
     <span class="c"># called by: </span><a class="t" href="#lib.pdf.classify.gate_tables">classify.gate_tables</a><span class="c"></span>
 
 <span class="k">def </span><span class="n" id="lib.pdf.ruled.extract_ruled_tables">extract_ruled_tables</span>(page, page_num: int, drawings=None) -&gt; list[<a class="t" href="#lib.pdf.types.TableCandidate">TableCandidate</a>]:<a class="ln" href="../../lib/pdf/ruled.py#L1262">ruled.py:1262</a>
 <span class="d">    &quot;&quot;&quot;All tables on one page that ruling lines reveal.&quot;&quot;&quot;</span>
+    <span class="c u"># untyped: page, drawings</span>
     <span class="c"># calls: </span>_unrotate, <a class="t" href="#lib.pdf.pagecache.rawdict">pagecache.rawdict</a>, _page_chars, _page_words, _grid_tables, _column_ruled_tables, _bad_flags, <a class="t" href="#lib.pdf.evidence.current">evidence.current</a>, <a class="t" href="#lib.pdf.table.table_flags">table.table_flags</a>, _horizontal_rules, _rule_groups, _overlaps<span class="c">, +2 more</span>
     <span class="c"># called by: </span>pdf._run_pipeline<span class="c"></span>
 
@@ -1712,6 +1835,7 @@ a.t{color:inherit;text-decoration:underline dotted}a.ln{color:var(--mut);font-si
 <span class="d">    cell with a short label (a mapping where most entries have no counterpart): a table,</span>
 <span class="d">    not a framed paragraph under a lead-in line (whose single cells are prose)</span>
 <span class="d">    &quot;&quot;&quot;</span>
+    <span class="c u"># untyped: t</span>
     <span class="c"># calls: </span><a class="t" href="#lib.pdf.ruled.closed_exempt">closed_exempt</a><span class="c"></span>
     <span class="c"># called by: </span>_bad_flags, table._is_bad<span class="c"></span>
 
@@ -1723,7 +1847,7 @@ a.t{color:inherit;text-decoration:underline dotted}a.ln{color:var(--mut);font-si
 <span class="c"># author&#x27;s layout there, not a misread (the content checks still apply)</span>
 <span class="n" id="lib.pdf.ruled.CLOSED_GRID_EXEMPT">CLOSED_GRID_EXEMPT</span> = ...<a class="ln" href="../../lib/pdf/ruled.py#L408">ruled.py:408</a>
 
-<span class="c"># + 37 private module-level names</span></pre><h2 id="lib-pdf-scan-py">lib/pdf/scan.py<a class="src" href="../../lib/pdf/scan.py">source</a></h2><pre><span class="d">&quot;&quot;&quot;The region scan: check every piece that makes a table, then decide.</span>
+<span class="c"># + 37 private module-level names</span></pre><h2 id="lib-pdf-scan-py">lib/pdf/scan.py<a class="src" href="../../lib/pdf/scan.py">source</a></h2><p class="sum">Typed: 5 of 12 functions and methods (41%).</p><pre><span class="d">&quot;&quot;&quot;The region scan: check every piece that makes a table, then decide.</span>
 <span class="d"></span>
 <span class="d">1. Areas: every place any scan nominated or excluded (the evidence record),</span>
 <span class="d">   merged per page. Nominating is not deciding; nothing nominated is lost.</span>
@@ -1743,19 +1867,23 @@ a.t{color:inherit;text-decoration:underline dotted}a.ln{color:var(--mut);font-si
 <span class="d">    &quot;&quot;&quot;Every enabled region-level check&#x27;s evidence for one area (checks/); the</span>
 <span class="d">    last-resort tier only while decided(features) is False.</span>
 <span class="d">    &quot;&quot;&quot;</span>
+    <span class="c u"># untyped: page, a, measure, decided</span>
     <span class="c"># calls: </span><a class="t" href="#lib.pdf.checks.__init__.run_region_checks">checks.run_region_checks</a>, <a class="t" href="#lib.pdf.checks.__init__.AreaContext">checks.AreaContext</a><span class="c"></span>
     <span class="c"># called by: </span><a class="t" href="#lib.pdf.scan.run_scan">run_scan</a><span class="c"></span>
 
 <span class="k">def </span><span class="n" id="lib.pdf.scan.areas">areas</span>(record) -&gt; list[dict]:<a class="ln" href="../../lib/pdf/scan.py#L64">scan.py:64</a>
 <span class="d">    &quot;&quot;&quot;Nominated and excluded places, merged per page (half the smaller one overlapping).&quot;&quot;&quot;</span>
+    <span class="c u"># untyped: record</span>
     <span class="c"># calls: </span>_inter, _area<span class="c"></span>
     <span class="c"># called by: </span><a class="t" href="#lib.pdf.scan.run_scan">run_scan</a><span class="c"></span>
 
 <span class="k">def </span><span class="n" id="lib.pdf.scan.band">band</span>(p: float, info_types: int) -&gt; str:<a class="ln" href="../../lib/pdf/scan.py#L129">scan.py:129</a>
     <span class="c"># called by: </span><a class="t" href="#lib.pdf.scan.run_scan">run_scan</a><span class="c"></span>
+    ...
 
 <span class="k">def </span><span class="n" id="lib.pdf.scan.info_of">info_of</span>(name: str) -&gt; str:<a class="ln" href="../../lib/pdf/scan.py#L32">scan.py:32</a>
     <span class="c"># called by: </span><a class="t" href="#lib.pdf.scan.run_scan">run_scan</a><span class="c"></span>
+    ...
 
 <span class="k">def </span><span class="n" id="lib.pdf.scan.likelihood">likelihood</span>(x: dict, model: dict) -&gt; tuple[float, list[tuple[str, float]]]:<a class="ln" href="../../lib/pdf/scan.py#L114">scan.py:114</a>
 <span class="d">    &quot;&quot;&quot;P(table) and the features that pushed it most (signed contributions).&quot;&quot;&quot;</span>
@@ -1769,6 +1897,7 @@ a.t{color:inherit;text-decoration:underline dotted}a.ln{color:var(--mut);font-si
 <span class="d">    without a table come back as possible-table regions (page, bbox, reason,</span>
 <span class="d">    rows) for the build and mark bands; the rest are only recorded.</span>
 <span class="d">    &quot;&quot;&quot;</span>
+    <span class="c u"># untyped: path, record, tables</span>
     <span class="c"># calls: </span><a class="t" href="#lib.pdf.classify.generator">classify.generator</a>, <a class="t" href="#lib.pdf.scan.areas">areas</a>, _inter, _area, _table_boxes, <a class="t" href="#lib.pdf.scan.likelihood">likelihood</a>, _at_mean, <a class="t" href="#lib.pdf.scan.area_features">area_features</a>, <a class="t" href="#lib.pdf.scan.info_of">info_of</a>, <a class="t" href="#lib.pdf.scan.band">band</a>, <a class="t" href="#lib.pdf.checks.data_or_format.likelihood_data">data_or_format.likelihood_data</a>, _jev_tier<span class="c">, +1 more</span>
     <span class="c"># called by: </span>pdf._run_pipeline<span class="c"></span>
 
@@ -1799,7 +1928,7 @@ a.t{color:inherit;text-decoration:underline dotted}a.ln{color:var(--mut);font-si
 
 <span class="c"># + 6 private module-level names</span></pre><h2 id="lib-pdf-scan-model-py">lib/pdf/scan_model.py<a class="src" href="../../lib/pdf/scan_model.py">source</a></h2><pre><span class="d">&quot;&quot;&quot;Region scan model, fitted by train_scan.py on the existing truth sets.&quot;&quot;&quot;</span>
 
-<span class="n" id="lib.pdf.scan_model.MODEL">MODEL</span> = ...<a class="ln" href="../../lib/pdf/scan_model.py#L3">scan_model.py:3</a></pre><h2 id="lib-pdf-spans-py">lib/pdf/spans.py<a class="src" href="../../lib/pdf/spans.py">source</a></h2><pre><span class="d">&quot;&quot;&quot;Span normalization - snap style boundaries to word edges.</span>
+<span class="n" id="lib.pdf.scan_model.MODEL">MODEL</span> = ...<a class="ln" href="../../lib/pdf/scan_model.py#L3">scan_model.py:3</a></pre><h2 id="lib-pdf-spans-py">lib/pdf/spans.py<a class="src" href="../../lib/pdf/spans.py">source</a></h2><p class="sum">Typed: 8 of 8 functions and methods (100%).</p><pre><span class="d">&quot;&quot;&quot;Span normalization - snap style boundaries to word edges.</span>
 <span class="d"></span>
 <span class="d">When a bold or italic boundary falls inside a word (no whitespace</span>
 <span class="d">between adjacent spans with different styles), extend the styled</span>
@@ -1815,7 +1944,7 @@ a.t{color:inherit;text-decoration:underline dotted}a.ln{color:var(--mut);font-si
     <span class="c"># calls: </span>_normalize_line_spans, <a class="t" href="#lib.pdf.types.Line">types.Line</a>, <a class="t" href="#lib.pdf.types.Block">types.Block</a><span class="c"></span>
     <span class="c"># called by: </span>pdf._run_pipeline<span class="c"></span>
 
-<span class="c"># + 7 private module-level names</span></pre><h2 id="lib-pdf-stacked-py">lib/pdf/stacked.py<a class="src" href="../../lib/pdf/stacked.py">source</a></h2><pre><span class="d">&quot;&quot;&quot;Stacked entries are one row each (table convention, &quot;Rows: one row per entry&quot;).</span>
+<span class="c"># + 7 private module-level names</span></pre><h2 id="lib-pdf-stacked-py">lib/pdf/stacked.py<a class="src" href="../../lib/pdf/stacked.py">source</a></h2><p class="sum">Typed: 6 of 6 functions and methods (100%).</p><pre><span class="d">&quot;&quot;&quot;Stacked entries are one row each (table convention, &quot;Rows: one row per entry&quot;).</span>
 <span class="d"></span>
 <span class="d">Several entries stacked in one drawn band, on baselines shared across columns</span>
 <span class="d">(&quot;Linux / QNX / NetBSD&quot; beside three function names), are one row each; a cell</span>
@@ -1837,12 +1966,14 @@ a.t{color:inherit;text-decoration:underline dotted}a.ln{color:var(--mut);font-si
 <span class="k">def </span><span class="n" id="lib.pdf.stacked.apply">apply</span>(cands: list[<a class="t" href="#lib.pdf.types.TableCandidate">TableCandidate</a>]) -&gt; list[<a class="t" href="#lib.pdf.types.TableCandidate">TableCandidate</a>]:<a class="ln" href="../../lib/pdf/stacked.py#L146">stacked.py:146</a>
     <span class="c"># calls: </span><a class="t" href="#lib.pdf.stacked.split_stacked">split_stacked</a><span class="c"></span>
     <span class="c"># called by: </span><a class="t" href="#lib.pdf.table.select_tables">table.select_tables</a><span class="c"></span>
+    ...
 
 <span class="k">def </span><span class="n" id="lib.pdf.stacked.split_stacked">split_stacked</span>(cand: <a class="t" href="#lib.pdf.types.TableCandidate">TableCandidate</a>) -&gt; <a class="t" href="#lib.pdf.types.TableCandidate">TableCandidate</a>:<a class="ln" href="../../lib/pdf/stacked.py#L58">stacked.py:58</a>
     <span class="c"># calls: </span>_code_block, _height, _baseline, <a class="t" href="#lib.pdf.types.TableCandidate">types.TableCandidate</a><span class="c"></span>
     <span class="c"># called by: </span><a class="t" href="#lib.pdf.stacked.apply">apply</a><span class="c"></span>
+    ...
 
-<span class="c"># + 4 private module-level names</span></pre><h2 id="lib-pdf-structure-py">lib/pdf/structure.py<a class="src" href="../../lib/pdf/structure.py">source</a></h2><pre><span class="d">&quot;&quot;&quot;Dual-path comparison, heading intelligence, and document structuring.&quot;&quot;&quot;</span>
+<span class="c"># + 4 private module-level names</span></pre><h2 id="lib-pdf-structure-py">lib/pdf/structure.py<a class="src" href="../../lib/pdf/structure.py">source</a></h2><p class="sum">Typed: 23 of 25 functions and methods (92%).</p><pre><span class="d">&quot;&quot;&quot;Dual-path comparison, heading intelligence, and document structuring.&quot;&quot;&quot;</span>
 
 <span class="k">def </span><span class="n" id="lib.pdf.structure.compare_extractions">compare_extractions</span>(mupdf_blocks: list[<a class="t" href="#lib.pdf.types.Block">Block</a>], spatial_blocks: list[<a class="t" href="#lib.pdf.types.Block">Block</a>]) -&gt; list[<a class="t" href="#lib.pdf.types.Section">Section</a>]:<a class="ln" href="../../lib/pdf/structure.py#L75">structure.py:75</a>
 <span class="d">    &quot;&quot;&quot;Compare two extraction paths using per-page word-level multiset similarity.</span>
@@ -1873,7 +2004,7 @@ a.t{color:inherit;text-decoration:underline dotted}a.ln{color:var(--mut);font-si
     <span class="c"># calls: </span>_extract_metadata, _detect_body_size, _rank_font_sizes, _heading_level_from_number, <a class="t" href="#lib.pdf.structure.heading_confidence">heading_confidence</a>, _detect_lists_by_position, _merge_paragraphs, _detect_code_blocks, _detect_lang_label, _classify_wording_sections, _demote_repeated_low_confidence_numbers, _validate_nesting<span class="c"></span>
     <span class="c"># called by: </span>pdf._run_pipeline<span class="c"></span>
 
-<span class="c"># + 22 private module-level names</span></pre><h2 id="lib-pdf-summary-py">lib/pdf/summary.py<a class="src" href="../../lib/pdf/summary.py">source</a></h2><pre><span class="d">&quot;&quot;&quot;Paper-level summary: what tomd did with this paper&#x27;s tables, how sure it is,</span>
+<span class="c"># + 22 private module-level names</span></pre><h2 id="lib-pdf-summary-py">lib/pdf/summary.py<a class="src" href="../../lib/pdf/summary.py">source</a></h2><p class="sum">Typed: 5 of 6 functions and methods (83%).</p><pre><span class="d">&quot;&quot;&quot;Paper-level summary: what tomd did with this paper&#x27;s tables, how sure it is,</span>
 <span class="d">and how unlike the measured papers this one is.</span>
 <span class="d"></span>
 <span class="d">The output feeds AI analysis of WG21 papers, where a trusted-but-wrong</span>
@@ -1901,8 +2032,10 @@ a.t{color:inherit;text-decoration:underline dotted}a.ln{color:var(--mut);font-si
 <span class="d">&quot;&quot;&quot;</span>
 
 <span class="k">def </span><span class="n" id="lib.pdf.summary.build">build</span>(result, sections, evidence, generator: str) -&gt; dict:<a class="ln" href="../../lib/pdf/summary.py#L97">summary.py:97</a>
+    <span class="c u"># untyped: result, sections, evidence</span>
     <span class="c"># calls: </span><a class="t" href="#lib.pdf.summary.unfamiliarity">unfamiliarity</a>, <a class="t" href="#lib.pdf.llmrepair.paper_record">llmrepair.paper_record</a>, <a class="t" href="#lib.pdf.summary.confidence">confidence</a><span class="c"></span>
     <span class="c"># called by: </span>pdf._run_pipeline<span class="c"></span>
+    ...
 
 <span class="k">def </span><span class="n" id="lib.pdf.summary.confidence">confidence</span>(s: dict) -&gt; dict | None:<a class="ln" href="../../lib/pdf/summary.py#L76">summary.py:76</a>
 <span class="d">    &quot;&quot;&quot;The measured chance that this paper&#x27;s tables hold no silent error: the</span>
@@ -1919,9 +2052,11 @@ a.t{color:inherit;text-decoration:underline dotted}a.ln{color:var(--mut);font-si
 
 <span class="k">def </span><span class="n" id="lib.pdf.summary.header_comment">header_comment</span>(s: dict) -&gt; str:<a class="ln" href="../../lib/pdf/summary.py#L152">summary.py:152</a>
     <span class="c"># called by: </span>pdf._run_pipeline<span class="c"></span>
+    ...
 
 <span class="k">def </span><span class="n" id="lib.pdf.summary.prompts_section">prompts_section</span>(s: dict) -&gt; str:<a class="ln" href="../../lib/pdf/summary.py#L163">summary.py:163</a>
     <span class="c"># called by: </span>pdf._run_pipeline<span class="c"></span>
+    ...
 
 <span class="k">def </span><span class="n" id="lib.pdf.summary.unfamiliarity">unfamiliarity</span>(generator: str, layouts: list[str], undecided: int, areas: int, rotated: bool, measured: bool, skipped: bool) -&gt; tuple[float, list[str]]:<a class="ln" href="../../lib/pdf/summary.py#L37">summary.py:37</a>
 <span class="d">    &quot;&quot;&quot;0 (like the measured papers) .. 1 (unlike them), with the reasons.&quot;&quot;&quot;</span>
@@ -1930,7 +2065,7 @@ a.t{color:inherit;text-decoration:underline dotted}a.ln{color:var(--mut);font-si
 <span class="n" id="lib.pdf.summary.COMMON_LAYOUTS">COMMON_LAYOUTS</span> = {&#x27;poll&#x27;, &#x27;grid&#x27;, &#x27;rule-per-row&#x27;, &#x27;tagged&#x27;, &#x27;booktabs&#x27;}<a class="ln" href="../../lib/pdf/summary.py#L34">summary.py:34</a>
 
 <span class="c"># generators of the measured papers (dev, held-out, fresh .. fresh6)</span>
-<span class="n" id="lib.pdf.summary.KNOWN_GENERATORS">KNOWN_GENERATORS</span> = ...<a class="ln" href="../../lib/pdf/summary.py#L32">summary.py:32</a></pre><h2 id="lib-pdf-table-py">lib/pdf/table.py<a class="src" href="../../lib/pdf/table.py">source</a></h2><pre><span class="d">&quot;&quot;&quot;Table detection: the text-position detector, and selection across sources.</span>
+<span class="n" id="lib.pdf.summary.KNOWN_GENERATORS">KNOWN_GENERATORS</span> = ...<a class="ln" href="../../lib/pdf/summary.py#L32">summary.py:32</a></pre><h2 id="lib-pdf-table-py">lib/pdf/table.py<a class="src" href="../../lib/pdf/table.py">source</a></h2><p class="sum">Typed: 44 of 52 functions and methods (84%).</p><pre><span class="d">&quot;&quot;&quot;Table detection: the text-position detector, and selection across sources.</span>
 <span class="d"></span>
 <span class="d">This module has two parts.</span>
 <span class="d"></span>
@@ -2025,6 +2160,7 @@ a.t{color:inherit;text-decoration:underline dotted}a.ln{color:var(--mut);font-si
 <span class="d">    lines and arrowheads; a table uses horizontal and vertical rules only (tables inside</span>
 <span class="d">    figures too). Returned as the drawn shapes&#x27; bounding boxes, merged per drawing cluster.</span>
 <span class="d">    &quot;&quot;&quot;</span>
+    <span class="c u"># untyped: page</span>
     <span class="c"># called by: </span>pdf._run_pipeline<span class="c"></span>
 
 <span class="k">def </span><span class="n" id="lib.pdf.table.join_split_words">join_split_words</span>(cands: list[<a class="t" href="#lib.pdf.types.TableCandidate">TableCandidate</a>], blocks: list[<a class="t" href="#lib.pdf.types.Block">Block</a>]) -&gt; None:<a class="ln" href="../../lib/pdf/table.py#L1072">table.py:1072</a>
@@ -2144,7 +2280,7 @@ a.t{color:inherit;text-decoration:underline dotted}a.ln{color:var(--mut);font-si
 
 <span class="n" id="lib.pdf.table.NUM_JOIN_REFUSED">NUM_JOIN_REFUSED</span> = [0]  <span class="c"># how often the number rule refused a join (measurement)</span><a class="ln" href="../../lib/pdf/table.py#L1069">table.py:1069</a>
 
-<span class="c"># + 35 private module-level names</span></pre><h2 id="lib-pdf-tablemodel-py">lib/pdf/tablemodel.py<a class="src" href="../../lib/pdf/tablemodel.py">source</a></h2><pre><span class="d">&quot;&quot;&quot;Lossless table model and its semantic flattening to plain Markdown.</span>
+<span class="c"># + 35 private module-level names</span></pre><h2 id="lib-pdf-tablemodel-py">lib/pdf/tablemodel.py<a class="src" href="../../lib/pdf/tablemodel.py">source</a></h2><p class="sum">Typed: 0 of 7 functions and methods (0%).</p><pre><span class="d">&quot;&quot;&quot;Lossless table model and its semantic flattening to plain Markdown.</span>
 <span class="d"></span>
 <span class="d">Internally a table keeps spans: {&quot;r&quot;, &quot;c&quot;, &quot;rows&quot;, &quot;cols&quot;, &quot;kind&quot;} (0-based,</span>
 <span class="d">r/c = the cell holding the text), detected from the page geometry. Markdown</span>
@@ -2175,25 +2311,29 @@ a.t{color:inherit;text-decoration:underline dotted}a.ln{color:var(--mut);font-si
 <span class="d">      of its row cannot be told from an empty cell below it, so it is left</span>
 <span class="d">      alone.</span>
 <span class="d">    &quot;&quot;&quot;</span>
+    <span class="c u"># untyped: columns</span>
     <span class="c"># calls: </span>_box, _text<span class="c"></span>
     <span class="c"># called by: </span><a class="t" href="#lib.pdf.classify.gate_tables">classify.gate_tables</a><span class="c"></span>
 
 <span class="k">def </span><span class="n" id="lib.pdf.tablemodel.flatten">flatten</span>(grid, spans, empty, combine):<a class="ln" href="../../lib/pdf/tablemodel.py#L29">tablemodel.py:29</a>
 <span class="d">    &quot;&quot;&quot;(new grid, kept spans) with the flattening convention applied.&quot;&quot;&quot;</span>
+    <span class="c u"># untyped: grid, spans, empty, combine, return</span>
     <span class="c"># calls: </span>_two_level<span class="c"></span>
     <span class="c"># called by: </span>emit._render_table_body, <a class="t" href="#lib.pdf.tablemodel.flatten_text">flatten_text</a><span class="c"></span>
 
 <span class="k">def </span><span class="n" id="lib.pdf.tablemodel.flatten_text">flatten_text</span>(rows, spans):<a class="ln" href="../../lib/pdf/tablemodel.py#L69">tablemodel.py:69</a>
 <span class="d">    &quot;&quot;&quot;Text grid version (used by the scorer).&quot;&quot;&quot;</span>
+    <span class="c u"># untyped: rows, spans, return</span>
     <span class="c"># calls: </span><a class="t" href="#lib.pdf.tablemodel.flatten">flatten</a><span class="c"></span>
 
 <span class="k">def </span><span class="n" id="lib.pdf.tablemodel.marker">marker</span>(spans) -&gt; str:<a class="ln" href="../../lib/pdf/tablemodel.py#L76">tablemodel.py:76</a>
 <span class="d">    &quot;&quot;&quot;&lt;!-- tomd:merged ... --&gt; for the spans (1-based rows/columns).&quot;&quot;&quot;</span>
+    <span class="c u"># untyped: spans</span>
     <span class="c"># called by: </span>emit._render_table_body<span class="c"></span>
 
 <span class="n" id="lib.pdf.tablemodel.SEP">SEP</span> = &#x27; / &#x27;<a class="ln" href="../../lib/pdf/tablemodel.py#L24">tablemodel.py:24</a>
 
-<span class="c"># + 3 private module-level names</span></pre><h2 id="lib-pdf-tagged-py">lib/pdf/tagged.py<a class="src" href="../../lib/pdf/tagged.py">source</a></h2><pre><span class="d">&quot;&quot;&quot;Table detection from the PDF&#x27;s accessibility tags (Tagged PDF).</span>
+<span class="c"># + 3 private module-level names</span></pre><h2 id="lib-pdf-tagged-py">lib/pdf/tagged.py<a class="src" href="../../lib/pdf/tagged.py">source</a></h2><p class="sum">Typed: 2 of 6 functions and methods (33%).</p><pre><span class="d">&quot;&quot;&quot;Table detection from the PDF&#x27;s accessibility tags (Tagged PDF).</span>
 <span class="d"></span>
 <span class="d">When the producing application wrote a structure tree (Google Docs, Word,</span>
 <span class="d">LibreOffice, Typst, Chrome print), tables are explicitly marked up as</span>
@@ -2219,10 +2359,11 @@ a.t{color:inherit;text-decoration:underline dotted}a.ln{color:var(--mut);font-si
 <span class="d">    Word exports), every candidate gets the &quot;tags-malformed&quot; flag so table</span>
 <span class="d">    selection ranks it below the ruling-line version.</span>
 <span class="d">    &quot;&quot;&quot;</span>
+    <span class="c u"># untyped: doc</span>
     <span class="c"># calls: </span>_page_tables, <a class="t" href="#lib.pdf.evidence.reader_error">evidence.reader_error</a>, _realign, <a class="t" href="#lib.pdf.types.TableCandidate">types.TableCandidate</a><span class="c"></span>
     <span class="c"># called by: </span>pdf._run_pipeline<span class="c"></span>
 
-<span class="c"># + 5 private module-level names</span></pre><h2 id="lib-pdf-types-py">lib/pdf/types.py<a class="src" href="../../lib/pdf/types.py">source</a></h2><pre><span class="d">&quot;&quot;&quot;Shared data types, constants, and precompiled regex patterns for PDF conversion.&quot;&quot;&quot;</span>
+<span class="c"># + 5 private module-level names</span></pre><h2 id="lib-pdf-types-py">lib/pdf/types.py<a class="src" href="../../lib/pdf/types.py">source</a></h2><p class="sum">Typed: 11 of 11 functions and methods (100%).</p><pre><span class="d">&quot;&quot;&quot;Shared data types, constants, and precompiled regex patterns for PDF conversion.&quot;&quot;&quot;</span>
 
 <span class="k">@dataclass</span>
 <span class="k">class </span><span class="n" id="lib.pdf.types.Block">Block</span>:<a class="ln" href="../../lib/pdf/types.py#L61">types.py:61</a>
@@ -2325,12 +2466,14 @@ a.t{color:inherit;text-decoration:underline dotted}a.ln{color:var(--mut);font-si
     <span class="n" id="lib.pdf.types.TableCandidate.flags">flags</span>: list[str] = field(default_factory=list)<a class="ln" href="../../lib/pdf/types.py#L124">types.py:124</a>
     <span class="k">def </span><span class="n" id="lib.pdf.types.TableCandidate.cell_text">cell_text</span>(self, r: int, c: int) -&gt; str:<a class="ln" href="../../lib/pdf/types.py#L134">types.py:134</a>
         <span class="c"># called by: </span><a class="t" href="#lib.pdf.types.TableCandidate.text_rows">TableCandidate.text_rows</a><span class="c"></span>
+        ...
     <span class="k">@property</span>
     <span class="k">def </span><span class="n" id="lib.pdf.types.TableCandidate.pages">pages</span>(self) -&gt; list[int]: ...<a class="ln" href="../../lib/pdf/types.py#L127">types.py:127</a>
     <span class="k">@property</span>
     <span class="k">def </span><span class="n" id="lib.pdf.types.TableCandidate.shape">shape</span>(self) -&gt; tuple[int, int]: ...<a class="ln" href="../../lib/pdf/types.py#L131">types.py:131</a>
     <span class="k">def </span><span class="n" id="lib.pdf.types.TableCandidate.text_rows">text_rows</span>(self) -&gt; list[list[str]]:<a class="ln" href="../../lib/pdf/types.py#L148">types.py:148</a>
         <span class="c"># calls: </span><a class="t" href="#lib.pdf.types.TableCandidate.cell_text">TableCandidate.cell_text</a><span class="c"></span>
+        ...
 
 <span class="k">def </span><span class="n" id="lib.pdf.types.compute_bbox">compute_bbox</span>(bboxes: list[tuple]) -&gt; tuple[float, float, float, float]:<a class="ln" href="../../lib/pdf/types.py#L252">types.py:252</a>
 <span class="d">    &quot;&quot;&quot;Compute the bounding box enclosing all given bbox tuples.</span>
@@ -2400,7 +2543,7 @@ a.t{color:inherit;text-decoration:underline dotted}a.ln{color:var(--mut);font-si
 <span class="n" id="lib.pdf.types.WORD_GAP_RATIO">WORD_GAP_RATIO</span> = 0.3<a class="ln" href="../../lib/pdf/types.py#L163">types.py:163</a>
 
 <span class="c"># Y-position tolerance for header/footer matching across pages</span>
-<span class="n" id="lib.pdf.types.Y_TOLERANCE">Y_TOLERANCE</span> = 2.0<a class="ln" href="../../lib/pdf/types.py#L168">types.py:168</a></pre><h2 id="lib-pdf-validate-py">lib/pdf/validate.py<a class="src" href="../../lib/pdf/validate.py">source</a></h2><pre><span class="d">&quot;&quot;&quot;Round-trip self-verification of an extracted table against the page.</span>
+<span class="n" id="lib.pdf.types.Y_TOLERANCE">Y_TOLERANCE</span> = 2.0<a class="ln" href="../../lib/pdf/types.py#L168">types.py:168</a></pre><h2 id="lib-pdf-validate-py">lib/pdf/validate.py<a class="src" href="../../lib/pdf/validate.py">source</a></h2><p class="sum">Typed: 3 of 25 functions and methods (12%).</p><pre><span class="d">&quot;&quot;&quot;Round-trip self-verification of an extracted table against the page.</span>
 <span class="d"></span>
 <span class="d">A table read by only one source has no second opinion. Instead of a second</span>
 <span class="d">extractor, put the extracted grid back onto the page and check that it is</span>
@@ -2424,6 +2567,7 @@ a.t{color:inherit;text-decoration:underline dotted}a.ln{color:var(--mut);font-si
 <span class="d">    &quot;&quot;&quot;The line just above the table, aligned with its columns, is its header</span>
 <span class="d">    (the region started below it). `words` must include the line above.</span>
 <span class="d">    &quot;&quot;&quot;</span>
+    <span class="c u"># untyped: sec, words, return</span>
     <span class="c"># calls: </span>_contrasts, _with_columns, <a class="t" href="#lib.pdf.types.Span">types.Span</a><span class="c"></span>
 
 <span class="k">def </span><span class="n" id="lib.pdf.validate.cell_text">cell_text</span>(cell) -&gt; str:<a class="ln" href="../../lib/pdf/validate.py#L45">validate.py:45</a>
@@ -2432,10 +2576,12 @@ a.t{color:inherit;text-decoration:underline dotted}a.ln{color:var(--mut);font-si
 <span class="d">    with a space. Joining spans with spaces broke code into &quot;has_degree &lt; G &gt;&quot;</span>
 <span class="d">    and made correct tables fail the word-boundary check.</span>
 <span class="d">    &quot;&quot;&quot;</span>
+    <span class="c u"># untyped: cell</span>
     <span class="c"># called by: </span>_contrasts, <a class="t" href="#lib.pdf.validate.verify_layout">verify_layout</a><span class="c"></span>
 
 <span class="k">def </span><span class="n" id="lib.pdf.validate.escalate">escalate</span>(sec, words, reason: str, depth: int = 2):<a class="ln" href="../../lib/pdf/validate.py#L536">validate.py:536</a>
 <span class="d">    &quot;&quot;&quot;(re-read section, moves) that passes verification, or (None, []).&quot;&quot;&quot;</span>
+    <span class="c u"># untyped: sec, words, return</span>
     <span class="c"># calls: </span><a class="t" href="#lib.pdf.validate.verify_layout">verify_layout</a><span class="c"></span>
     <span class="c"># called by: </span><a class="t" href="#lib.pdf.classify.gate_tables">classify.gate_tables</a><span class="c"></span>
 
@@ -2445,18 +2591,21 @@ a.t{color:inherit;text-decoration:underline dotted}a.ln{color:var(--mut);font-si
 <span class="d">    where neither holds; otherwise the boundary stays as it was. Code is</span>
 <span class="d">    never re-segmented (its lines belong to one listing).</span>
 <span class="d">    &quot;&quot;&quot;</span>
+    <span class="c u"># untyped: sec, words, return</span>
     <span class="c"># calls: </span>_code_row, _gap_threshold, _lines_of, _newline_span, _row_baselines, _join_lines, _with_columns<span class="c"></span>
 
 <span class="k">def </span><span class="n" id="lib.pdf.validate.split_hidden_column">split_hidden_column</span>(sec, words):<a class="ln" href="../../lib/pdf/validate.py#L468">validate.py:468</a>
 <span class="d">    &quot;&quot;&quot;A column whose cells have a wide gap at the same x is two columns:</span>
 <span class="d">    split every cell of it at that x (spans left and right of the gap).</span>
 <span class="d">    &quot;&quot;&quot;</span>
+    <span class="c u"># untyped: sec, words, return</span>
     <span class="c"># calls: </span>_lines_of, _newline_span, _join_lines, _with_columns<span class="c"></span>
 
 <span class="k">def </span><span class="n" id="lib.pdf.validate.split_stacked_rows">split_stacked_rows</span>(sec, words):<a class="ln" href="../../lib/pdf/validate.py#L318">validate.py:318</a>
 <span class="d">    &quot;&quot;&quot;Rows whose cells hold several entries on shared baselines become one</span>
 <span class="d">    row per baseline (the drawn cell grouped several entries).</span>
 <span class="d">    &quot;&quot;&quot;</span>
+    <span class="c u"># untyped: sec, words, return</span>
     <span class="c"># calls: </span>_newline_span, _lines_of, _column_rights, _code_row, _wraps, _yc, _join_lines, _with_columns<span class="c"></span>
 
 <span class="k">def </span><span class="n" id="lib.pdf.validate.switch_reader">switch_reader</span>(sec, words):<a class="ln" href="../../lib/pdf/validate.py#L501">validate.py:501</a>
@@ -2468,6 +2617,7 @@ a.t{color:inherit;text-decoration:underline dotted}a.ln{color:var(--mut);font-si
 <span class="d">    columns), never one whose rows and columns come from drawn paths or the</span>
 <span class="d">    structure tree (grid, tags) - that would be one witness checking itself.</span>
 <span class="d">    &quot;&quot;&quot;</span>
+    <span class="c u"># untyped: sec, words, return</span>
     <span class="c"># calls: </span>_with_columns, <a class="t" href="#lib.pdf.validate.verify_layout">verify_layout</a><span class="c"></span>
 
 <span class="k">def </span><span class="n" id="lib.pdf.validate.verify_layout">verify_layout</span>(sec: <a class="t" href="#lib.pdf.types.Section">Section</a>, words: list) -&gt; str:<a class="ln" href="../../lib/pdf/validate.py#L172">validate.py:172</a>
@@ -2483,10 +2633,11 @@ a.t{color:inherit;text-decoration:underline dotted}a.ln{color:var(--mut);font-si
 <span class="d">    words (words_on(page, bbox)), then the whole by its parts. &quot;&quot; when every</span>
 <span class="d">    piece verifies, else &quot;page N: what failed&quot;.</span>
 <span class="d">    &quot;&quot;&quot;</span>
+    <span class="c u"># untyped: sec, words_on</span>
     <span class="c"># calls: </span>_with_columns, <a class="t" href="#lib.pdf.validate.verify_layout">verify_layout</a><span class="c"></span>
     <span class="c"># called by: </span><a class="t" href="#lib.pdf.classify.gate_tables">classify.gate_tables</a><span class="c"></span>
 
-<span class="c"># + 16 private module-level names</span></pre><h2 id="lib-pdf-visibility-py">lib/pdf/visibility.py<a class="src" href="../../lib/pdf/visibility.py">source</a></h2><pre><span class="d">&quot;&quot;&quot;Text the PDF holds but the page does not show.</span>
+<span class="c"># + 16 private module-level names</span></pre><h2 id="lib-pdf-visibility-py">lib/pdf/visibility.py<a class="src" href="../../lib/pdf/visibility.py">source</a></h2><p class="sum">Typed: 4 of 15 functions and methods (26%).</p><pre><span class="d">&quot;&quot;&quot;Text the PDF holds but the page does not show.</span>
 <span class="d"></span>
 <span class="d">A PDF&#x27;s text layer can carry text a reader never sees: invisible render mode,</span>
 <span class="d">zero opacity, text clipped away, text outside the page, text under something</span>
@@ -2533,6 +2684,7 @@ a.t{color:inherit;text-decoration:underline dotted}a.ln{color:var(--mut);font-si
 <span class="d">    &quot;&quot;&quot;classify the page once per document, record the regions on the document,</span>
 <span class="d">    and return them (before any redaction: the caller removes them)</span>
 <span class="d">    &quot;&quot;&quot;</span>
+    <span class="c u"># untyped: page</span>
     <span class="c"># calls: </span><a class="t" href="#lib.pdf.visibility.classify">classify</a>, <a class="t" href="#lib.pdf.evidence.reader_error">evidence.reader_error</a><span class="c"></span>
     <span class="c"># called by: </span>pdf._upright_page<span class="c"></span>
 
@@ -2541,6 +2693,7 @@ a.t{color:inherit;text-decoration:underline dotted}a.ln{color:var(--mut);font-si
 <span class="d">    {page, bbox, why, chars, text, action, points}; points are the character</span>
 <span class="d">    centres to redact (empty when the text is kept or already gone).</span>
 <span class="d">    &quot;&quot;&quot;</span>
+    <span class="c u"># untyped: page</span>
     <span class="c"># calls: </span>_clipped_origins, _image_masks, _inside, _rgb, _centre, _text, _shows<span class="c"></span>
     <span class="c"># called by: </span><a class="t" href="#lib.pdf.visibility.check_page">check_page</a><span class="c"></span>
 
@@ -2558,10 +2711,12 @@ a.t{color:inherit;text-decoration:underline dotted}a.ln{color:var(--mut);font-si
 
 <span class="k">def </span><span class="n" id="lib.pdf.visibility.regions_of">regions_of</span>(doc) -&gt; list[dict]:<a class="ln" href="../../lib/pdf/visibility.py#L357">visibility.py:357</a>
 <span class="d">    &quot;&quot;&quot;every region recorded for the document, in page order&quot;&quot;&quot;</span>
+    <span class="c u"># untyped: doc</span>
     <span class="c"># called by: </span>pdf._run_pipeline<span class="c"></span>
 
 <span class="k">def </span><span class="n" id="lib.pdf.visibility.remove_hidden_text">remove_hidden_text</span>(page, regions) -&gt; bool:<a class="ln" href="../../lib/pdf/visibility.py#L321">visibility.py:321</a>
 <span class="d">    &quot;&quot;&quot;redact (in memory) the characters of the removable regions; True if any&quot;&quot;&quot;</span>
+    <span class="c u"># untyped: page, regions</span>
     <span class="c"># called by: </span>pdf._upright_page<span class="c"></span>
 
 <span class="k">def </span><span class="n" id="lib.pdf.visibility.summary">summary</span>(regions: list[dict]) -&gt; dict:<a class="ln" href="../../lib/pdf/visibility.py#L395">visibility.py:395</a>
@@ -2570,7 +2725,7 @@ a.t{color:inherit;text-decoration:underline dotted}a.ln{color:var(--mut);font-si
 
 <span class="n" id="lib.pdf.visibility.WHY_TEXT">WHY_TEXT</span> = ...<a class="ln" href="../../lib/pdf/visibility.py#L53">visibility.py:53</a>
 
-<span class="c"># + 8 private module-level names</span></pre><h2 id="lib-pdf-wg21-py">lib/pdf/wg21.py<a class="src" href="../../lib/pdf/wg21.py">source</a></h2><pre><span class="d">&quot;&quot;&quot;WG21-specific metadata extraction from PDF blocks.</span>
+<span class="c"># + 8 private module-level names</span></pre><h2 id="lib-pdf-wg21-py">lib/pdf/wg21.py<a class="src" href="../../lib/pdf/wg21.py">source</a></h2><p class="sum">Typed: 5 of 5 functions and methods (100%).</p><pre><span class="d">&quot;&quot;&quot;WG21-specific metadata extraction from PDF blocks.</span>
 <span class="d"></span>
 <span class="d">Parses the metadata block at the top of WG21 papers (document number,</span>
 <span class="d">date, audience, reply-to) from the raw MuPDF block structure, before</span>
@@ -2602,7 +2757,7 @@ a.t{color:inherit;text-decoration:underline dotted}a.ln{color:var(--mut);font-si
 <span class="c"># Maximum number of continuation blocks consumed after a reply-to label.</span>
 <span class="n" id="lib.pdf.wg21.REPLY_TO_CONTINUATION_CAP">REPLY_TO_CONTINUATION_CAP</span> = 5<a class="ln" href="../../lib/pdf/wg21.py#L29">wg21.py:29</a>
 
-<span class="c"># + 4 private module-level names</span></pre><h2 id="lib-pdf-worddict-py">lib/pdf/worddict.py<a class="src" href="../../lib/pdf/worddict.py">source</a></h2><pre><span class="d">&quot;&quot;&quot;A fixed English word list for deciding line-end hyphens in table cells (2026-10-23).</span>
+<span class="c"># + 4 private module-level names</span></pre><h2 id="lib-pdf-worddict-py">lib/pdf/worddict.py<a class="src" href="../../lib/pdf/worddict.py">source</a></h2><p class="sum">Typed: 3 of 3 functions and methods (100%).</p><pre><span class="d">&quot;&quot;&quot;A fixed English word list for deciding line-end hyphens in table cells (2026-10-23).</span>
 <span class="d"></span>
 <span class="d">The decision used to rest on the paper&#x27;s running text, which is outside the table (locality),</span>
 <span class="d">and was wrong where the paper never wrote the word whole (&quot;re-gion&quot;, &quot;illformed&quot;). The word list</span>
@@ -2614,6 +2769,7 @@ a.t{color:inherit;text-decoration:underline dotted}a.ln{color:var(--mut);font-si
 <span class="k">def </span><span class="n" id="lib.pdf.worddict.available">available</span>() -&gt; bool:<a class="ln" href="../../lib/pdf/worddict.py#L54">worddict.py:54</a>
     <span class="c"># calls: </span><a class="t" href="#lib.pdf.worddict.words">words</a><span class="c"></span>
     <span class="c"># called by: </span>emit._join_hyphenated<span class="c"></span>
+    ...
 
 <span class="k">def </span><span class="n" id="lib.pdf.worddict.is_word">is_word</span>(w: str) -&gt; bool:<a class="ln" href="../../lib/pdf/worddict.py#L30">worddict.py:30</a>
 <span class="d">    &quot;&quot;&quot;w, or w with a common inflection removed, is in the word list (False without one).&quot;&quot;&quot;</span>
@@ -2623,10 +2779,11 @@ a.t{color:inherit;text-decoration:underline dotted}a.ln{color:var(--mut);font-si
 <span class="k">@lru_cache(maxsize=1)</span>
 <span class="k">def </span><span class="n" id="lib.pdf.worddict.words">words</span>() -&gt; frozenset | None:<a class="ln" href="../../lib/pdf/worddict.py#L20">worddict.py:20</a>
     <span class="c"># called by: </span><a class="t" href="#lib.pdf.worddict.available">available</a>, <a class="t" href="#lib.pdf.worddict.is_word">is_word</a><span class="c"></span>
+    ...
 
 <span class="n" id="lib.pdf.worddict.DICT_PATH">DICT_PATH</span> = Path(&#x27;/usr/share/dict/web2&#x27;)<a class="ln" href="../../lib/pdf/worddict.py#L15">worddict.py:15</a>
 
-<span class="n" id="lib.pdf.worddict.DICT_SHA256">DICT_SHA256</span> = ...<a class="ln" href="../../lib/pdf/worddict.py#L16">worddict.py:16</a></pre><h2 id="lib-pdf-wording-py">lib/pdf/wording.py<a class="src" href="../../lib/pdf/wording.py">source</a></h2><pre><span class="d">&quot;&quot;&quot;Wording section detection via multi-signal HSV color + drawing analysis.</span>
+<span class="n" id="lib.pdf.worddict.DICT_SHA256">DICT_SHA256</span> = ...<a class="ln" href="../../lib/pdf/worddict.py#L16">worddict.py:16</a></pre><h2 id="lib-pdf-wording-py">lib/pdf/wording.py<a class="src" href="../../lib/pdf/wording.py">source</a></h2><p class="sum">Typed: 11 of 15 functions and methods (73%).</p><pre><span class="d">&quot;&quot;&quot;Wording section detection via multi-signal HSV color + drawing analysis.</span>
 <span class="d"></span>
 <span class="d">Detects ins/del markup in WG21 PDF papers by combining three signals:</span>
 <span class="d">  1. Block-level color contamination filter - blocks containing non-wording</span>
@@ -2667,6 +2824,7 @@ a.t{color:inherit;text-decoration:underline dotted}a.ln{color:var(--mut);font-si
 <span class="d"></span>
 <span class="d">    Returns list of (y, x0, x1, color_rgb) for horizontal lines.</span>
 <span class="d">    &quot;&quot;&quot;</span>
+    <span class="c u"># untyped: page</span>
     <span class="c"># calls: </span><a class="t" href="#lib.pdf.evidence.reader_error">evidence.reader_error</a><span class="c"></span>
     <span class="c"># called by: </span>pdf._run_pipeline<span class="c"></span>
 
@@ -2680,7 +2838,7 @@ a.t{color:inherit;text-decoration:underline dotted}a.ln{color:var(--mut);font-si
     <span class="c"># calls: </span>_hsv<span class="c"></span>
     <span class="c"># called by: </span>_is_wording_color, <a class="t" href="#lib.pdf.wording.classify_wording">classify_wording</a><span class="c"></span>
 
-<span class="c"># + 11 private module-level names</span></pre><h2 id="lib-similarity-py">lib/similarity.py<a class="src" href="../../lib/similarity.py">source</a></h2><pre><span class="d">&quot;&quot;&quot;String similarity algorithms for fuzzy matching.</span>
+<span class="c"># + 11 private module-level names</span></pre><h2 id="lib-similarity-py">lib/similarity.py<a class="src" href="../../lib/similarity.py">source</a></h2><p class="sum">Typed: 3 of 3 functions and methods (100%).</p><pre><span class="d">&quot;&quot;&quot;String similarity algorithms for fuzzy matching.</span>
 <span class="d"></span>
 <span class="d">Two independent algorithms with per-algorithm thresholds:</span>
 <span class="d">  1. SequenceMatcher - character-level (difflib, stdlib)</span>
@@ -2701,7 +2859,7 @@ a.t{color:inherit;text-decoration:underline dotted}a.ln{color:var(--mut);font-si
     <span class="c"># calls: </span>_sequence_similarity, _jaccard_similarity<span class="c"></span>
     <span class="c"># called by: </span><a class="t" href="#lib.toc.find_toc_indices">toc.find_toc_indices</a><span class="c"></span>
 
-<span class="c"># + 2 private module-level names</span></pre><h2 id="lib-toc-py">lib/toc.py<a class="src" href="../../lib/toc.py">source</a></h2><pre><span class="d">&quot;&quot;&quot;Table of Contents detection.</span>
+<span class="c"># + 2 private module-level names</span></pre><h2 id="lib-toc-py">lib/toc.py<a class="src" href="../../lib/toc.py">source</a></h2><p class="sum">Typed: 4 of 4 functions and methods (100%).</p><pre><span class="d">&quot;&quot;&quot;Table of Contents detection.</span>
 <span class="d"></span>
 <span class="d">Format-agnostic: operates on plain strings and returns indices.</span>
 <span class="d">No dependency on PDF or HTML converter types.</span>
@@ -2725,7 +2883,7 @@ a.t{color:inherit;text-decoration:underline dotted}a.ln{color:var(--mut);font-si
     <span class="c"># calls: </span>_normalize_toc_entry, <a class="t" href="#lib.similarity.similar">similarity.similar</a>, _first_line, _is_toc_label<span class="c"></span>
     <span class="c"># called by: </span>pdf._run_pipeline<span class="c"></span>
 
-<span class="c"># + 3 private module-level names</span></pre><h2 id="main-py">main.py<a class="src" href="../../main.py">source</a></h2><pre><span class="d">&quot;&quot;&quot;tomd - Convert PDF and HTML files to Markdown.</span>
+<span class="c"># + 3 private module-level names</span></pre><h2 id="main-py">main.py<a class="src" href="../../main.py">source</a></h2><p class="sum">Typed: 0 of 1 functions and methods (0%).</p><pre><span class="d">&quot;&quot;&quot;tomd - Convert PDF and HTML files to Markdown.</span>
 <span class="d"></span>
 <span class="d">PDF: hybrid dual extraction (MuPDF + spatial rules) with confidence scoring.</span>
 <span class="d">HTML: DOM traversal with generator-specific metadata extraction.</span>
@@ -2740,6 +2898,7 @@ a.t{color:inherit;text-decoration:underline dotted}a.ln{color:var(--mut);font-si
 
 <span class="k">def </span><span class="n" id="main.main">main</span>():<a class="ln" href="../../main.py#L34">main.py:34</a>
 <span class="d">    &quot;&quot;&quot;CLI entry point: parse arguments, resolve inputs, and convert files.&quot;&quot;&quot;</span>
+    <span class="c u"># untyped: return</span>
     <span class="c"># calls: </span><a class="t" href="#lib.pdf.qa.run_qa_report">qa.run_qa_report</a>, <a class="t" href="#lib.html.__init__.convert_html">html.convert_html</a>, <a class="t" href="#lib.pdf.__init__.convert_pdf_with_summary">pdf.convert_pdf_with_summary</a>, <a class="t" href="#lib.pdf.llmrepair.paper_record">llmrepair.paper_record</a><span class="c"></span>
 
 <span class="c"># fresh7 (70 papers): about 4,400 tokens per paper; 5M tokens covers about 1,100 papers</span>
