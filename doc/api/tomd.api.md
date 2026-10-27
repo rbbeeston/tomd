@@ -1,6 +1,6 @@
 # tomd API surface
 
-68 modules, 18 classes, 215 functions, 17 methods, 119 fields.
+68 modules, 18 classes, 215 functions, 17 methods, 119 fields. Typed: 314 of 585 functions and methods (53%).
 
 ## Contents
 
@@ -85,6 +85,8 @@
 
 ## `lib/__init__.py` ([source](../../lib/__init__.py))
 
+Typed: 4 of 6 functions and methods (66%).
+
 ```python
 """Shared text utilities and constants for PDF and HTML converters."""
 
@@ -116,6 +118,7 @@ def parse_author_lines(lines, clean_line=None, skip_line=None):
     str.strip). `skip_line` returns True for lines that are not author
     content, such as metadata labels (default: never skip).
     """
+    # untyped: lines, clean_line, skip_line, return
     # called by: extract._extract_wg21_metadata, extract._parse_mpark_authors, wg21._parse_authors
 
 def strip_format_chars(text: str) -> str:
@@ -156,6 +159,8 @@ SECTION_NUM_PREFIX_RE = re.compile(f'^{SECTION_NUM_PATTERN}\\.?\\s+')
 
 ## `lib/html/__init__.py` ([source](../../lib/html/__init__.py))
 
+Typed: 1 of 1 functions and methods (100%).
+
 ```python
 """HTML to Markdown converter for WG21 papers."""
 
@@ -174,6 +179,8 @@ def convert_html(path: Path | os.PathLike[str]) -> tuple[str, str | None]:
 <a id="lib-html-extract-py"></a>
 
 ## `lib/html/extract.py` ([source](../../lib/html/extract.py))
+
+Typed: 13 of 13 functions and methods (100%).
 
 ```python
 """HTML parsing, generator detection, metadata extraction, and boilerplate stripping."""
@@ -216,6 +223,8 @@ def strip_boilerplate(soup: BeautifulSoup, generator: str) -> list[str]:
 
 ## `lib/html/render.py` ([source](../../lib/html/render.py))
 
+Typed: 16 of 17 functions and methods (94%).
+
 ```python
 """DOM-to-Markdown rendering for WG21 HTML papers."""
 
@@ -234,6 +243,8 @@ def render_body(soup: BeautifulSoup, generator: str) -> str:
 <a id="lib-pdf-init-py"></a>
 
 ## `lib/pdf/__init__.py` ([source](../../lib/pdf/__init__.py))
+
+Typed: 4 of 17 functions and methods (23%).
 
 ```python
 """PDF to Markdown converter - pipeline entry point."""
@@ -275,6 +286,7 @@ def dropped_nomination_regions(record, tables) -> list:
     covers it, as a possible-table region - a drop never leaves the text silent - except the
     rules above. (page, bbox, reason, rows) like every mark region.
     """
+    # untyped: record, tables
     # calls: _overlap
     # called by: _run_pipeline
 
@@ -284,6 +296,8 @@ def dropped_nomination_regions(record, tables) -> list:
 <a id="lib-pdf-checks-init-py"></a>
 
 ## `lib/pdf/checks/__init__.py` ([source](../../lib/pdf/checks/__init__.py))
+
+Typed: 5 of 5 functions and methods (100%).
 
 ```python
 """The scan's checks: one file each, loaded in a fixed order.
@@ -327,6 +341,7 @@ class Check:
 
 def disabled() -> set[str]:
     # called by: registry
+    ...
 
 def full_mode() -> bool:
     """Every check on every area (training data, the ledger): TOMD_SCAN_FULL=1."""
@@ -335,6 +350,7 @@ def full_mode() -> bool:
 def registry() -> list[Check]:
     # calls: disabled
     # called by: run_region_checks
+    ...
 
 def run_region_checks(ctx: AreaContext, decided: Callable[[dict], bool] | None = None) -> dict:
     """Tier 1 first; the last-resort tier only while decided(features) is False
@@ -361,12 +377,16 @@ LEVELS = ...
 
 ## `lib/pdf/checks/_layout.py` ([source](../../lib/pdf/checks/_layout.py))
 
+Typed: 0 of 1 functions and methods (0%).
+
 ```python
 """Shared computation for the two layout checks (computed once per area)."""
 
 def layout_features(ctx) -> dict:
+    # untyped: ctx
     # calls: classify.region_features
     # called by: drawn_lines.run, text_alignment.run
+    ...
 
 DRAWN = ('hrules', 'vrules', 'row_fills', 'enclosing_fill')
 ```
@@ -375,14 +395,19 @@ DRAWN = ('hrules', 'vrules', 'row_fills', 'enclosing_fill')
 
 ## `lib/pdf/checks/caption.py` ([source](../../lib/pdf/checks/caption.py))
 
+Typed: 1 of 2 functions and methods (50%).
+
 ```python
 """Document: a "Table N" caption just above or below the area."""
 
 def has_caption(text_above: str, text_below: str) -> bool:
     # called by: run
+    ...
 
 def run(ctx) -> dict:
+    # untyped: ctx
     # calls: has_caption
+    ...
 
 CHECK = ...
 ```
@@ -390,6 +415,8 @@ CHECK = ...
 <a id="lib-pdf-checks-codereader-py"></a>
 
 ## `lib/pdf/checks/codereader.py` ([source](../../lib/pdf/checks/codereader.py))
+
+Typed: 5 of 5 functions and methods (100%).
 
 ```python
 """A lightweight reader for C++-like code lines (user, 2026-10-21): not a parser.
@@ -427,6 +454,7 @@ class CodeStream:
     def __init__(self): ...
     def feed(self, line: str) -> dict:
         # calls: _strip
+        ...
 
 def looks_like_cpp(text: str) -> bool:
     """C++ by its content (any font): a token pattern only code has - scope '::', member
@@ -446,6 +474,8 @@ def read_lines(lines: list[str]) -> list[dict]:
 
 ## `lib/pdf/checks/coherence.py` ([source](../../lib/pdf/checks/coherence.py))
 
+Typed: 1 of 9 functions and methods (11%).
+
 ```python
 """Meaning: column coherence of the area's best reading - items per cell,
 fragments, header vs body, the weakest column's shape uniformity, and the
@@ -454,23 +484,28 @@ first column as a list of keys (local shape tier; no Jev).
 
 def column_coherence(rows, skip_header=True):
     """Per column: share of the dominant shape among filled body cells, or None (abstain)."""
+    # untyped: rows, skip_header, return
     # calls: shape
     # called by: table_coherence
 
 def content_features(rows) -> dict:
+    # untyped: rows
     # calls: shape
     # called by: run
+    ...
 
 def fragment_share(rows):
     """Fragments: body cells that start as a continuation (lowercase first word
     after a cell above that ended mid-phrase) or end mid-phrase.
     """
+    # untyped: rows, return
     # calls: shape
 
 def header_contrast(rows):
     """Header vs body: share of columns whose header cell is a different kind
     from the column's body (a category over instances).
     """
+    # untyped: rows, return
     # calls: shape
 
 def merged_share(rows):
@@ -478,16 +513,22 @@ def merged_share(rows):
     items of the column's own single-item kind (identifiers, numbers, marks),
     or several sentences. High means rows were merged.
     """
+    # untyped: rows, return
     # calls: shape
 
 def run(ctx) -> dict:
+    # untyped: ctx
     # calls: content_features, _best_reading
+    ...
 
 def shape(cell: str) -> str:
     # called by: column_coherence, content_features, fragment_share, header_contrast, merged_share
+    ...
 
 def table_coherence(rows):
+    # untyped: rows, return
     # calls: column_coherence
+    ...
 
 CHECK = ...
 
@@ -497,6 +538,8 @@ CHECK = ...
 <a id="lib-pdf-checks-data-or-format-py"></a>
 
 ## `lib/pdf/checks/data_or_format.py` ([source](../../lib/pdf/checks/data_or_format.py))
+
+Typed: 0 of 3 functions and methods (0%).
 
 ```python
 """Meaning: tabular data or formatting? In data a cell's meaning depends on its
@@ -509,14 +552,19 @@ existing keys before use (train_dvf.py: cross-validated AUC 0.99).
 """
 
 def features(rows, f) -> dict | None:
+    # untyped: rows, f
     # called by: likelihood_data
+    ...
 
 def likelihood_data(rows, f) -> float | None:
     """P(tabular data) for a reading, or None without one."""
+    # untyped: rows, f
     # calls: features, scan.likelihood
     # called by: scan.run_scan
 
-def run(ctx) -> dict: ...
+def run(ctx) -> dict:
+    # untyped: ctx
+    ...
 
 CHECK = ...
 ```
@@ -525,11 +573,15 @@ CHECK = ...
 
 ## `lib/pdf/checks/drawn_lines.py` ([source](../../lib/pdf/checks/drawn_lines.py))
 
+Typed: 0 of 1 functions and methods (0%).
+
 ```python
 """Drawing: rules, vertical lines, row shading and enclosing boxes in the area."""
 
 def run(ctx) -> dict:
+    # untyped: ctx
     # calls: _layout.layout_features
+    ...
 
 CHECK = Check('drawn_lines', ('region',), 'paths', 1, False, run)
 ```
@@ -538,6 +590,8 @@ CHECK = Check('drawn_lines', ('region',), 'paths', 1, False, run)
 
 ## `lib/pdf/checks/footprint.py` ([source](../../lib/pdf/checks/footprint.py))
 
+Typed: 0 of 1 functions and methods (0%).
+
 ```python
 """Words: the area's text footprint against the prose measure: left and
 right inset (cell padding), and how many lines end on the right measure
@@ -545,7 +599,9 @@ right inset (cell padding), and how many lines end on the right measure
 """
 
 def run(ctx) -> dict:
+    # untyped: ctx
     # calls: wordgap.run
+    ...
 
 CHECK = ...
 ```
@@ -554,12 +610,16 @@ CHECK = ...
 
 ## `lib/pdf/checks/nominations.py` ([source](../../lib/pdf/checks/nominations.py))
 
+Typed: 0 of 1 functions and methods (0%).
+
 ```python
 """Which scans nominated the area and which rules excluded it (the evidence
 record), with the number of independent information types among them.
 """
 
-def run(ctx) -> dict: ...
+def run(ctx) -> dict:
+    # untyped: ctx
+    ...
 
 CHECK = Check('nominations', ('region',), 'record', 0, False, run)
 
@@ -569,6 +629,8 @@ SOURCE_INFO = ...
 <a id="lib-pdf-checks-plausible-py"></a>
 
 ## `lib/pdf/checks/plausible.py` ([source](../../lib/pdf/checks/plausible.py))
+
+Typed: 0 of 6 functions and methods (0%).
 
 ```python
 """Content plausibility: does the reading make sense as data? A meaning-based
@@ -590,22 +652,31 @@ plausibility(rows) -> list of (check, detail) violations; an empty list is
 """
 
 def column_type(rows) -> list:
+    # untyped: rows
     # called by: plausibility
+    ...
 
 def duplication(rows) -> list:
+    # untyped: rows
     # called by: plausibility
+    ...
 
 def plausibility(rows) -> list:
     """Every violation of the content checks for a reading (rows of cell strings)."""
+    # untyped: rows
     # calls: sequence_order, poll_counts, column_type, duplication
     # called by: classify.gate_tables
 
 def poll_counts(rows) -> list:
+    # untyped: rows
     # called by: plausibility
+    ...
 
 def sequence_order(rows) -> list:
+    # untyped: rows
     # calls: _key
     # called by: plausibility
+    ...
 
 # + 1 private module-level name
 ```
@@ -614,12 +685,16 @@ def sequence_order(rows) -> list:
 
 ## `lib/pdf/checks/same_code.py` ([source](../../lib/pdf/checks/same_code.py))
 
+Typed: 0 of 1 functions and methods (0%).
+
 ```python
 """Meaning: the largest code-pair similarity recorded in the area (weighted
 by size where it was computed; one-line blocks abstain upstream).
 """
 
-def run(ctx) -> dict: ...
+def run(ctx) -> dict:
+    # untyped: ctx
+    ...
 
 CHECK = ...
 ```
@@ -628,13 +703,17 @@ CHECK = ...
 
 ## `lib/pdf/checks/text_alignment.py` ([source](../../lib/pdf/checks/text_alignment.py))
 
+Typed: 0 of 1 functions and methods (0%).
+
 ```python
 """Alignment and shape of the text: rows, pieces per row, aligned starts,
 monospace and digit shares, size and position (the classifier's features).
 """
 
 def run(ctx) -> dict:
+    # untyped: ctx
     # calls: _layout.layout_features
+    ...
 
 CHECK = Check('text_alignment', ('region',), 'words', 1, False, run)
 ```
@@ -643,6 +722,8 @@ CHECK = Check('text_alignment', ('region',), 'words', 1, False, run)
 
 ## `lib/pdf/checks/wordgap.py` ([source](../../lib/pdf/checks/wordgap.py))
 
+Typed: 0 of 1 functions and methods (0%).
+
 ```python
 """Words: gaps between neighbouring words in units of the document's normal
 space. Prose has uniform gaps (one space, or uniformly stretched when
@@ -650,8 +731,10 @@ justified); table lines have bimodal gaps that recur at the same x.
 """
 
 def run(ctx) -> dict:
+    # untyped: ctx
     # calls: docmeasure.area_word_features
     # called by: footprint.run
+    ...
 
 CHECK = ...
 ```
@@ -659,6 +742,8 @@ CHECK = ...
 <a id="lib-pdf-classify-py"></a>
 
 ## `lib/pdf/classify.py` ([source](../../lib/pdf/classify.py))
+
+Typed: 6 of 12 functions and methods (50%).
 
 ```python
 """Stage-2 gate: is a selected table really a table, and how is it built?
@@ -697,20 +782,24 @@ def gate_tables(doc, pages, sections: list[Section], paper: str = '') -> dict:
     `pages` are the pages the tables were read from (upright copies of
     rotated pages). Returns a summary for logging and the prompts file.
     """
+    # untyped: doc, pages
     # calls: generator, region_features, jev_table_or_not, jev_enabled, pagecache.words_in, validate.verify_layout, validate.verify_pieces, fullwidth.apply, evidence.reader_error, fit.fit, fit.fit_rows, content.page_hrules, +15 more
     # called by: pdf._build_scan_tables, pdf._run_pipeline
 
 def generator(meta: dict) -> str:
     # called by: pdf._run_pipeline, gate_tables, scan.run_scan
+    ...
 
 def image_share(page, bbox) -> float:
     """The share of bbox covered by images drawn on the page (union approximated by the sum,
     capped at 1; overlapping images are rare inside a table).
     """
+    # untyped: page, bbox
     # called by: gate_tables
 
 def jev_enabled() -> bool:
     # called by: gate_tables, scan._jev_on
+    ...
 
 def jev_table_or_not(paper: str, regions: list) -> tuple[list, str]:
     """[(label, probability)] for every table area, and the Jev version(s).
@@ -723,15 +812,18 @@ def jev_table_or_not(paper: str, regions: list) -> tuple[list, str]:
 
 def predict(tree: dict, x: dict):
     """(label, confidence) from a tree exported by cart.Tree.export()."""
+    # untyped: return
     # called by: gate_tables
 
 def region_features(page, bbox, sources, flags, gen: str, doc_tagged: bool):
     """(features, text lines) of one table area. Shared with the PoC's training."""
+    # untyped: page, bbox, sources, flags, return
     # calls: text_rows
     # called by: _layout.layout_features, gate_tables, scan._jev_tier
 
 def text_rows(page, rect):
     """Text rows in rect: [(top, bottom, [(x0, x1, text, mono)])], pieces split at wide gaps."""
+    # untyped: page, rect, return
     # called by: region_features
 
 FLAGS = ...
@@ -768,6 +860,8 @@ TABLE_TREE = ...
 
 ## `lib/pdf/cleanup.py` ([source](../../lib/pdf/cleanup.py))
 
+Typed: 9 of 10 functions and methods (90%).
+
 ```python
 """Header/footer detection and text cleanup for PDF extraction."""
 
@@ -802,6 +896,7 @@ def find_hidden_regions(page, body_fonts: set[str] | None = None) -> set[tuple[f
     false-positive stripping on Chrome "Save as PDF" output where
     an invisible accessibility overlay covers every page.
     """
+    # untyped: page
     # called by: pdf._run_pipeline
 
 def get_edge_items(blocks: list[Block], page_num: int, page_height: float) -> list[PageEdgeItem]:
@@ -842,6 +937,8 @@ def strip_repeating(blocks: list[Block], repeating: set[tuple[float, str]]) -> l
 
 ## `lib/pdf/codepair.py` ([source](../../lib/pdf/codepair.py))
 
+Typed: 9 of 12 functions and methods (75%).
+
 ```python
 """Side-by-side code comparisons, found from geometry and confirmed by content.
 
@@ -866,6 +963,7 @@ def find_code_pairs(blocks: list[Block], rules_for=None) -> list[TableCandidate]
     page's drawn horizontal rules (y, x0, x1): a rule between two lines
     separates them (rows of a ruled comparison are not one block).
     """
+    # untyped: rules_for
     # calls: _pieces, _mono, _blocks, _box, evidence.current, _comment_share, _code_like, same_code, _label, _spaced
     # called by: pdf._run_pipeline
 
@@ -880,6 +978,8 @@ def same_code(left: list[Line], right: list[Line]) -> float:
 <a id="lib-pdf-content-py"></a>
 
 ## `lib/pdf/content.py` ([source](../../lib/pdf/content.py))
+
+Typed: 0 of 13 functions and methods (0%).
 
 ```python
 """One content-first row/column builder for every table class.
@@ -915,26 +1015,31 @@ def build(words, hrules=(), specialists=None):
     region (a specialist's evidence at the row level: a drawn line between
     two text lines separates rows; no line is not evidence of anything).
     """
+    # untyped: words, hrules, specialists, return
     # calls: visual_lines, pieces_of, gutters, _per_unit_relation
     # called by: build_text, content_candidates
 
 def build_text(words, hrules=(), specialists=None):
     """Rows of cell strings (for measurement)."""
+    # untyped: words, hrules, specialists, return
     # calls: build
 
 def content_candidates(pages, regions, specialists=None, rules_by_page=None) -> list[TableCandidate]:
     """For every located region (page, bbox) - from any reader, kept or not -
     the content-first grid of the words inside it.
     """
+    # untyped: pages, regions, specialists, rules_by_page
     # calls: page_text, page_hrules, build, _region_rules, _rotated_header, _cell_lines, types.TableCandidate
     # called by: pdf._build_scan_tables, pdf._run_pipeline
 
 def gutters(lines_pieces, x_lo, x_hi):
     """x intervals crossed by at most _SPAN_LINES lines' pieces."""
+    # untyped: lines_pieces, x_lo, x_hi, return
     # called by: build
 
 def page_hrules(page, drawings=None) -> list[tuple[float, float, float]]:
     """Drawn horizontal separators on the page: (y, x0, x1)."""
+    # untyped: page, drawings
     # called by: pdf._run_pipeline, classify.gate_tables, content_candidates
 
 def page_text(page) -> tuple[list[tuple], list[tuple]]:
@@ -942,18 +1047,23 @@ def page_text(page) -> tuple[list[tuple], list[tuple]]:
     (x0, y0, x1, y1, text) - labels set at 90 degrees, as table headers often
     are. Rotated text is kept out of line, row and column building.
     """
+    # untyped: page
     # calls: pagecache._dedup_words, codereader.looks_like_cpp
     # called by: content_candidates, page_words, _Page.__init__
 
 def page_words(page) -> list[tuple]:
     """(x0, y0, x1, y1, text, monospace) for every horizontal word on the page."""
+    # untyped: page
     # calls: page_text
 
 def pieces_of(line):
+    # untyped: line, return
     # called by: build
+    ...
 
 def visual_lines(words):
     """words: (x0, y0, x1, y1, text) -> lines of words sorted left to right."""
+    # untyped: words, return
     # called by: _rotated_header, build, extent._row_from
 
 SPECIALISTS = {'code_rows': True, 'separators': True}
@@ -964,6 +1074,8 @@ SPECIALISTS = {'code_rows': True, 'separators': True}
 <a id="lib-pdf-continuation-py"></a>
 
 ## `lib/pdf/continuation.py` ([source](../../lib/pdf/continuation.py))
+
+Typed: 0 of 8 functions and methods (0%).
 
 ```python
 """A note on table pieces that may continue the previous page's table (2026-10-24).
@@ -986,6 +1098,7 @@ def annotate(doc, tables) -> int:
     """Set metadata["continues_from"] = {"page": N, "reasons": [...]} (N 1-based, the previous
     page) on table pieces that may continue the previous page's table. Returns the count.
     """
+    # untyped: doc, tables
     # calls: _extent, _Areas, _text, _number
     # called by: pdf._run_pipeline
 
@@ -997,6 +1110,8 @@ NEAR = 0.06  # within 6% of the page height of the content edge
 <a id="lib-pdf-dimensions-py"></a>
 
 ## `lib/pdf/dimensions.py` ([source](../../lib/pdf/dimensions.py))
+
+Typed: 2 of 2 functions and methods (100%).
 
 ```python
 """Stage 2 (relationship plan): confidence per dimension.
@@ -1040,6 +1155,8 @@ def weak_note(dims: dict) -> str:
 
 ## `lib/pdf/docmeasure.py` ([source](../../lib/pdf/docmeasure.py))
 
+Typed: 3 of 6 functions and methods (50%).
+
 ```python
 """Level 0: what ordinary prose looks like in this document.
 
@@ -1065,11 +1182,13 @@ class DocMeasure:
 
 def area_word_features(words, m: DocMeasure) -> dict:
     """Word-gap and footprint features of the words in one area."""
+    # untyped: words
     # calls: visual_lines, gap_stats
     # called by: wordgap.run
 
 def gap_stats(line, m: DocMeasure) -> dict | None:
     """One visual line's word gaps in units of the document's normal space."""
+    # untyped: line
     # called by: area_word_features
 
 def hyphenates(page_words: list[list]) -> bool:
@@ -1092,6 +1211,7 @@ def measure(page_words: list[list]) -> DocMeasure:
 
 def visual_lines(words):
     """Words (x0, y0, x1, y1, text, ...) sharing a baseline, left to right."""
+    # untyped: words, return
     # called by: area_word_features, measure
 ```
 
@@ -1108,6 +1228,8 @@ MODEL = ...
 <a id="lib-pdf-emit-py"></a>
 
 ## `lib/pdf/emit.py` ([source](../../lib/pdf/emit.py))
+
+Typed: 30 of 35 functions and methods (85%).
 
 ```python
 """Markdown and companion prompts file generation."""
@@ -1138,6 +1260,7 @@ def is_likely(sec: Section) -> bool:
 
 def set_hyphenating(value: bool) -> None:
     # called by: pdf._run_pipeline
+    ...
 
 def table_use(rows) -> str:
     """What a grid is used for, by the user's decisions (2026-10-19):
@@ -1145,6 +1268,7 @@ def table_use(rows) -> str:
     "contents" - a contents page or reference list laid out in a grid (not a table);
     "table" - everything else.
     """
+    # untyped: rows
     # called by: pdf._build_scan_tables, _render_table_inner
 
 HYPHEN_STATS: Counter = Counter()  # which rule decided each hyphen (measurement)
@@ -1155,6 +1279,8 @@ HYPHEN_STATS: Counter = Counter()  # which rule decided each hyphen (measurement
 <a id="lib-pdf-evidence-py"></a>
 
 ## `lib/pdf/evidence.py` ([source](../../lib/pdf/evidence.py))
+
+Typed: 3 of 7 functions and methods (42%).
 
 ```python
 """The evidence record: what every scan saw, nominated and rejected, and why.
@@ -1191,15 +1317,22 @@ class Record:
     # readers, checks and specialists that raised: never swallowed silently
     errors: list[dict] = field(default_factory=list)
     def exclude(self, scan: str, page: int, bbox: Box, rule: str, info: str, value=None) -> None:
+        # untyped: value
         # calls: Entry
+        ...
     def feature(self, scan: str, page: int, bbox: Box, name: str, info: str, value, observed=True) -> None:
+        # untyped: value, observed
         # calls: Entry
+        ...
     def nominate(self, scan: str, page: int, bbox: Box, cue: str, info: str, value=None) -> None:
+        # untyped: value
         # calls: Entry
+        ...
     def on_page(self, page: int, kind: str | None = None) -> list[Entry]: ...
 
 def current() -> Record:
     # called by: codepair.find_code_pairs, extent.extend, flag.flag_possible_tables, llmrepair.repair, ruled._bands_to_table, ruled._column_ruled_tables, ruled.extract_ruled_tables, table._continuation_votes, table.cross_reader_continuation, table.select_tables, table.stitch_pages
+    ...
 
 def reader_error(stage: str, page, exc: BaseException, table=None) -> None:
     """Record a reader, check or specialist that raised (stage, page or None for
@@ -1207,16 +1340,20 @@ def reader_error(stage: str, page, exc: BaseException, table=None) -> None:
     to UNCERTAIN ("reader error"); the prompts note and the paper summary list it.
     TOMD_STRICT=1 re-raises instead (tests).
     """
+    # untyped: page, table
     # called by: pdf._graphic_text_page, pdf._run_pipeline, pdf._upright_page, classify.gate_tables, llmcheck.check, llmrepair.repair, pagecache.hidden_chars, pagecache.remove_covered_text, ruled._mark_icon_cells, tagged.extract_tagged_tables, visibility.check_page, wording.collect_line_drawings
 
 def reset() -> Record:
     # calls: Record
     # called by: pdf._run_pipeline
+    ...
 ```
 
 <a id="lib-pdf-extent-py"></a>
 
 ## `lib/pdf/extent.py` ([source](../../lib/pdf/extent.py))
+
+Typed: 1 of 20 functions and methods (5%).
 
 ```python
 """The extent step: where each reader's table stops, and the rows just outside it.
@@ -1250,6 +1387,7 @@ vocabulary state their own extent).
 def extend(cands: list[TableCandidate], pages: dict) -> None:
     # calls: evidence.current, _Page, _beyond, _row_height, _overlaps, _block, _kind, _pieces, _row_from
     # called by: pdf._run_pipeline
+    ...
 
 EXTENT_RULE = ...
 
@@ -1259,6 +1397,8 @@ EXTENT_RULE = ...
 <a id="lib-pdf-extract-py"></a>
 
 ## `lib/pdf/extract.py` ([source](../../lib/pdf/extract.py))
+
+Typed: 1 of 4 functions and methods (25%).
 
 ```python
 """Dual-path PDF text extraction: MuPDF grouping and spatial rules."""
@@ -1277,6 +1417,7 @@ def collect_links(page) -> list[dict]:
     Returns a list of dicts with 'uri' and 'bbox' keys.
     Only http, https, and mailto schemes are kept.
     """
+    # untyped: page
     # called by: pdf._run_pipeline
 
 def extract_mupdf(page, page_num: int) -> list[Block]:
@@ -1285,6 +1426,7 @@ def extract_mupdf(page, page_num: int) -> list[Block]:
     Uses page.get_text("dict"). Returns MuPDF's interpretation of
     paragraphs, lines, and word groupings with font metadata preserved.
     """
+    # untyped: page
     # calls: types.Span, mono.classify_monospace, types.Line, types.Block
     # called by: pdf._run_pipeline
 
@@ -1300,6 +1442,7 @@ def extract_spatial(page, page_num: int) -> list[Block]:
       dy > WORD_GAP_RATIO    * avg_fs  -> flush line (large vertical gap)
       dx > WORD_GAP_RATIO    * avg_fs  -> flush word + insert space span
     """
+    # untyped: page
     # calls: types.Span, mono.classify_monospace, types.compute_bbox, types.Line, types.Block
     # called by: pdf._run_pipeline
 ```
@@ -1307,6 +1450,8 @@ def extract_spatial(page, page_num: int) -> list[Block]:
 <a id="lib-pdf-figures-py"></a>
 
 ## `lib/pdf/figures.py` ([source](../../lib/pdf/figures.py))
+
+Typed: 0 of 3 functions and methods (0%).
 
 ```python
 """Tables inside figures: label them with the figure they belong to.
@@ -1325,10 +1470,12 @@ table in its own right, never labelled.
 
 def figure_label(blocks, bbox, text_width: float) -> str | None:
     """blocks: (bbox, text) of the page's text blocks; bbox: the table's box."""
+    # untyped: blocks, bbox
     # called by: label_figure_tables
 
 def label_figure_tables(doc, table_sections) -> int:
     """Set metadata["figure_label"] on single-page tables drawn inside a figure."""
+    # untyped: doc, table_sections
     # calls: _blocks, figure_label
     # called by: pdf._run_pipeline
 
@@ -1338,6 +1485,8 @@ def label_figure_tables(doc, table_sections) -> int:
 <a id="lib-pdf-fit-py"></a>
 
 ## `lib/pdf/fit.py` ([source](../../lib/pdf/fit.py))
+
+Typed: 1 of 9 functions and methods (11%).
 
 ```python
 """The fit witness: does the word layout fit the drawn cells evenly?
@@ -1366,6 +1515,7 @@ the fit checks it too).
 
 def fit(page, bbox, words, columns) -> dict:
     """Does the reading `columns` (rows of cells of spans) fit the drawn grid?"""
+    # untyped: page, bbox, words, columns
     # calls: grid_of, _frame_continues, _spread, _squash
     # called by: classify.gate_tables
 
@@ -1378,6 +1528,7 @@ def fit_rows(page, bbox, words, columns) -> dict:
     layer's in its band and column. Measured apart from the grid fit; it never
     counts as a witness unless it separates as well.
     """
+    # untyped: page, bbox, words, columns
     # calls: _segments, _clusters, _squash
     # called by: classify.gate_tables
 
@@ -1385,6 +1536,7 @@ def grid_of(page, bbox):
     """(xs, ys, has_v, has_h) of the drawn grid, or None: at least 3 column
     lines and 3 row lines that span the region.
     """
+    # untyped: page, bbox, return
     # calls: _segments, _clusters, _covers
     # called by: fit
 
@@ -1394,6 +1546,8 @@ def grid_of(page, bbox):
 <a id="lib-pdf-flag-py"></a>
 
 ## `lib/pdf/flag.py` ([source](../../lib/pdf/flag.py))
+
+Typed: 9 of 18 functions and methods (50%).
 
 ```python
 """Mark text that is probably a table but was not extracted as one.
@@ -1478,6 +1632,8 @@ def text_regions(blocks: list[Block]) -> list[Region]:
 
 ## `lib/pdf/fullwidth.py` ([source](../../lib/pdf/fullwidth.py))
 
+Typed: 0 of 4 functions and methods (0%).
+
 ```python
 """Full-width rows in drawn tables: titles and spanning rows read as spans.
 
@@ -1499,12 +1655,15 @@ internal rules are left alone - no rule is not evidence of a span.
 
 def apply(sec, page, bbox) -> list[int]:
     """Move each full-width row's text to its first cell; record the spans."""
+    # untyped: sec, page, bbox
     # calls: full_width_rows
     # called by: classify.gate_tables
 
 def full_width_rows(columns, page, bbox) -> list[int]:
+    # untyped: columns, page, bbox
     # calls: _vertical_rules, _row_band
     # called by: apply
+    ...
 
 # + 2 private module-level names
 ```
@@ -1512,6 +1671,8 @@ def full_width_rows(columns, page, bbox) -> list[int]:
 <a id="lib-pdf-levels-py"></a>
 
 ## `lib/pdf/levels.py` ([source](../../lib/pdf/levels.py))
+
+Typed: 2 of 4 functions and methods (50%).
 
 ```python
 """Graded table levels (L0-L5) and cell markers, from tomd's own evidence.
@@ -1538,16 +1699,19 @@ table's content is unchanged.
 
 def assign(sec) -> dict:
     """{"level", "name", "why", "incomplete", "cells"} for a table section"""
+    # untyped: sec
     # calls: cell_markers
     # called by: pdf._run_pipeline, classify.gate_tables
 
 def cell_markers(sec) -> list[tuple[int, int]]:
     """cells where an alternative reading of the same shape disagrees with the table"""
+    # untyped: sec
     # calls: _rows
     # called by: assign
 
 def comment(info: dict) -> str:
     # called by: emit.emit_markdown
+    ...
 
 NAMES = ...
 
@@ -1557,6 +1721,8 @@ NAMES = ...
 <a id="lib-pdf-llmcheck-py"></a>
 
 ## `lib/pdf/llmcheck.py` ([source](../../lib/pdf/llmcheck.py))
+
+Typed: 4 of 7 functions and methods (57%).
 
 ```python
 """Opt-in LLM second look at questionable tables: a narrow check, asked twice.
@@ -1581,18 +1747,22 @@ def check(client, page, bbox, rows, pdf_hash: str) -> dict | None:
     """{"match", "wrong_rows", "consistent"} from two identical answers, or None (the
     answers differed, an error, or the budget is spent)
     """
+    # untyped: client, page, bbox, rows
     # calls: _cache_path, _budget, llmrepair._image, _ask_once, evidence.reader_error
     # called by: pdf._run_pipeline, llmrepair.repair
 
 def enabled() -> bool:
     # calls: llmrepair._has_credentials
     # called by: pdf._run_pipeline
+    ...
 
 def reset() -> None:
     # called by: pdf._run_pipeline
+    ...
 
 def state() -> dict:
     # called by: pdf._run_pipeline
+    ...
 
 CHECK_MODEL = 'claude-sonnet-5-5'
 
@@ -1604,6 +1774,8 @@ PROMPT_VERSION = 'check-v1'
 <a id="lib-pdf-llmrepair-py"></a>
 
 ## `lib/pdf/llmrepair.py` ([source](../../lib/pdf/llmrepair.py))
+
+Typed: 6 of 14 functions and methods (42%).
 
 ```python
 """Opt-in LLM repair of flagged tables: structure only, never content.
@@ -1629,6 +1801,7 @@ the page image of the table are sent.
 
 def ask(client, page, bbox, words):
     """(rows of index lists, model id, seconds, usage) or None."""
+    # untyped: client, page, bbox, words, return
     # calls: _image, _prompt, _note
     # called by: repair
 
@@ -1636,6 +1809,7 @@ def build_columns(rows, words):
     """Cells of spans from word indices, or (None, reason) if the answer is unusable:
     an index out of range, used twice, or a word left out.
     """
+    # untyped: rows, words, return
     # calls: types.Span
     # called by: repair
 
@@ -1647,11 +1821,13 @@ def code_guard(first, repaired) -> str:
     undid two of the seven fixes (p2329r0-t2, p1985r3-t2), whose first readings had packed
     several rows into one code cell; it is not used.
     """
+    # untyped: first, repaired
     # called by: repair
 
 def llm_enabled() -> bool:
     # calls: _has_credentials, _budget
     # called by: classify.gate_tables
+    ...
 
 def paper_record() -> dict:
     """What LLM repair did for this paper, for the paper summary: whether it
@@ -1664,11 +1840,13 @@ def paper_record() -> dict:
 
 def repair(sec, page, bbox, words, verify, client=None) -> str:
     """Try to repair one flagged table in place. Returns what happened."""
+    # untyped: sec, page, bbox, words, verify, client
     # calls: _note, _paper_budget, _client, ask, build_columns, code_guard, llmcheck.check, evidence.current, evidence.reader_error
     # called by: classify.gate_tables
 
 def reset_paper() -> None:
     # called by: pdf._run_pipeline, _note
+    ...
 
 MODEL = 'claude-opus-5-5'
 
@@ -1678,6 +1856,8 @@ MODEL = 'claude-opus-5-5'
 <a id="lib-pdf-mono-py"></a>
 
 ## `lib/pdf/mono.py` ([source](../../lib/pdf/mono.py))
+
+Typed: 8 of 8 functions and methods (100%).
 
 ```python
 """Triple-signal monospace font detection.
@@ -1736,6 +1916,8 @@ def propagate_monospace(mupdf_blocks: list[Block], spatial_blocks: list[Block], 
 
 ## `lib/pdf/ocrcheck.py` ([source](../../lib/pdf/ocrcheck.py))
 
+Typed: 2 of 5 functions and methods (40%).
+
 ```python
 """Check a HIGH table's text layer against the picture of the page.
 
@@ -1753,6 +1935,7 @@ Opt-in (TOMD_OCR=1) and only when the tesseract command is installed.
 
 def check_table(page, sec) -> str:
     """"" if the header (and a poll's votes) read the same in the picture, else a note."""
+    # untyped: page, sec
     # calls: _row_box, mismatched_tokens, _ocr
     # called by: classify.gate_tables
 
@@ -1762,6 +1945,7 @@ def mismatched_tokens(text_tokens: list[str], ocr_text: str) -> list[str]:
 
 def ocr_enabled() -> bool:
     # called by: classify.gate_tables
+    ...
 
 # + 2 private module-level names
 ```
@@ -1769,6 +1953,8 @@ def ocr_enabled() -> bool:
 <a id="lib-pdf-pagecache-py"></a>
 
 ## `lib/pdf/pagecache.py` ([source](../../lib/pdf/pagecache.py))
+
+Typed: 3 of 7 functions and methods (42%).
 
 ```python
 """One rawdict extraction per page, shared by the readers that need characters
@@ -1785,15 +1971,19 @@ def hidden_chars(page, drawings=None) -> list:
     """bboxes of characters an opaque box drawn after them covers (slide decks hide
     the rows of a build under a white box): text the page does not show
     """
+    # untyped: page, drawings
     # calls: evidence.reader_error
     # called by: remove_covered_text
 
 def rawdict(page):
+    # untyped: page, return
     # calls: _dedup_raw
     # called by: words_in, poll.extract_poll_tables, ruled._grid_tables_in, ruled.extract_ruled_tables
+    ...
 
 def remove_covered_text(pages) -> int:
     """redact (in memory) the characters hidden_chars finds; pages changed"""
+    # untyped: pages
     # calls: hidden_chars, evidence.reader_error
     # called by: pdf._upright_page
 
@@ -1802,6 +1992,7 @@ def words_in(page, bbox):
     whole page: a clipped extraction drops glyphs whose ink falls outside the clip
     (a period on the baseline below a region's edge) and splits the word there.
     """
+    # untyped: page, bbox, return
     # calls: _dedup_words, rawdict
     # called by: classify.gate_tables
 
@@ -1831,6 +2022,8 @@ MODEL = ...
 
 ## `lib/pdf/poll.py` ([source](../../lib/pdf/poll.py))
 
+Typed: 3 of 9 functions and methods (33%).
+
 ```python
 """WG21 poll result tables.
 
@@ -1853,6 +2046,7 @@ def extract_poll_tables(page, page_num: int, words_hint=None) -> list[TableCandi
     """Poll result tables on one page. `words_hint` (the page's words, already
     extracted) lets a page with no vote label skip the character extraction.
     """
+    # untyped: page, words_hint
     # calls: _clean, _split_pipes, pagecache.rawdict, ruled._page_words, _baseline_lines, vote_header, _label_cells, _header_prefix, _row_cells, _strip_zero_width, ruled._chars_to_lines, ruled._word_chars, +1 more
     # called by: pdf._run_pipeline
 
@@ -1871,6 +2065,8 @@ VOTE_LABELS = ...
 <a id="lib-pdf-qa-py"></a>
 
 ## `lib/pdf/qa.py` ([source](../../lib/pdf/qa.py))
+
+Typed: 10 of 10 functions and methods (100%).
 
 ```python
 """Quality assurance metrics and scoring for Markdown conversion output.
@@ -1929,6 +2125,8 @@ def run_qa_report(paths: list[Path], json_path: Path | None = None, workers: int
 
 ## `lib/pdf/records.py` ([source](../../lib/pdf/records.py))
 
+Typed: 4 of 7 functions and methods (57%).
+
 ```python
 """Content record-pattern reader: a table seen as runs of records that share a
 schema of kinds, with no geometry.
@@ -1964,11 +2162,13 @@ def read_region(page, page_num: int, bbox) -> list[TableCandidate]:
     with its header and its own box; none unless together they cover most of
     the region's lines (a region holding two stacked tables reads as two).
     """
+    # untyped: page, bbox
     # calls: _lines_in, line_kind, _text, periodic_runs, types.TableCandidate
     # called by: records_candidates
 
 def records_candidates(pages, regions) -> list[TableCandidate]:
     """The record-pattern reading of every located region (page, bbox)."""
+    # untyped: pages, regions
     # calls: read_region
     # called by: pdf._run_pipeline
 
@@ -1978,6 +2178,8 @@ def records_candidates(pages, regions) -> list[TableCandidate]:
 <a id="lib-pdf-relations-py"></a>
 
 ## `lib/pdf/relations.py` ([source](../../lib/pdf/relations.py))
+
+Typed: 1 of 5 functions and methods (20%).
 
 ```python
 """Stage 1: the relationship record and the relational checker.
@@ -2023,11 +2225,13 @@ def check(rows_boxes: dict, words: list, hrules=(), reader: str = '?', mono=froz
     crossing most of the table are row boundaries (an underline, a strike-through
     or one cell's own rule is not).
     """
+    # untyped: hrules, mono
     # calls: RelationRecord, _cell_of, Violation, _recurs
     # called by: record_for
 
 def record_for(sec, words, hrules=()) -> RelationRecord:
     """The relationship record of an emitted table section (cells from its spans)."""
+    # untyped: sec, words, hrules
     # calls: check
     # called by: classify._repair_stray_words, classify.gate_tables
 
@@ -2037,6 +2241,8 @@ def record_for(sec, words, hrules=()) -> RelationRecord:
 <a id="lib-pdf-repair-py"></a>
 
 ## `lib/pdf/repair.py` ([source](../../lib/pdf/repair.py))
+
+Typed: 1 of 6 functions and methods (16%).
 
 ```python
 """Stage 3 (relationship plan): blind smallest-set repair and inferred cells.
@@ -2063,6 +2269,7 @@ def place_stray_words(columns: list, words: list, nl: Span):
     """(new columns, inferred [(row, col)], stray words) or None when the stray
     words are not explained by the table's own rows and columns.
     """
+    # untyped: return
     # calls: _box, _lines, _place, _span_for, _join
     # called by: classify._repair_stray_words
 
@@ -2072,6 +2279,8 @@ def place_stray_words(columns: list, words: list, nl: Span):
 <a id="lib-pdf-rowbands-py"></a>
 
 ## `lib/pdf/rowbands.py` ([source](../../lib/pdf/rowbands.py))
+
+Typed: 0 of 3 functions and methods (0%).
 
 ```python
 """Rows bounded by drawn rules (2026-10-24).
@@ -2096,6 +2305,7 @@ def merge_rule_bands(sec, rules) -> int:
     """Join empty-key continuation rows into the record above within one rule band; returns the
     number of rows joined. rules: the page's horizontal rule segments (y, x0, x1).
     """
+    # untyped: sec, rules
     # calls: _full_rules, _text, types.Span
     # called by: pdf._run_pipeline
 
@@ -2115,6 +2325,8 @@ MIN_SEGMENT = 15.0  # pt: shorter strokes are not row separators
 <a id="lib-pdf-ruled-py"></a>
 
 ## `lib/pdf/ruled.py` ([source](../../lib/pdf/ruled.py))
+
+Typed: 9 of 42 functions and methods (21%).
 
 ```python
 """Table detection from ruling lines (vector drawings).
@@ -2147,6 +2359,7 @@ def closed_exempt(t) -> bool:
     """a closed grid's own layout explains its empty cells, unless a whole column is
     empty (a doubled rule read as a column of its own)
     """
+    # untyped: t
     # called by: _bad_flags, sparse_mapping, table._is_bad
 
 def drawn_spans(page, columns, spans) -> list[dict]:
@@ -2154,11 +2367,13 @@ def drawn_spans(page, columns, spans) -> list[dict]:
     position is dropped when a drawn line separates the cells it would join (the
     grid draws every cell it has; an empty drawn cell is not part of its neighbour)
     """
+    # untyped: page, columns, spans
     # calls: _segments
     # called by: classify.gate_tables
 
 def extract_ruled_tables(page, page_num: int, drawings=None) -> list[TableCandidate]:
     """All tables on one page that ruling lines reveal."""
+    # untyped: page, drawings
     # calls: _unrotate, pagecache.rawdict, _page_chars, _page_words, _grid_tables, _column_ruled_tables, _bad_flags, evidence.current, table.table_flags, _horizontal_rules, _rule_groups, _overlaps, +2 more
     # called by: pdf._run_pipeline
 
@@ -2167,6 +2382,7 @@ def sparse_mapping(t) -> bool:
     cell with a short label (a mapping where most entries have no counterpart): a table,
     not a framed paragraph under a lead-in line (whose single cells are prose)
     """
+    # untyped: t
     # calls: closed_exempt
     # called by: _bad_flags, table._is_bad
 
@@ -2184,6 +2400,8 @@ CLOSED_GRID_EXEMPT = ...
 <a id="lib-pdf-scan-py"></a>
 
 ## `lib/pdf/scan.py` ([source](../../lib/pdf/scan.py))
+
+Typed: 5 of 12 functions and methods (41%).
 
 ```python
 """The region scan: check every piece that makes a table, then decide.
@@ -2206,19 +2424,23 @@ def area_features(page, a, generator: str, doc_tagged: bool, measure=None, decid
     """Every enabled region-level check's evidence for one area (checks/); the
     last-resort tier only while decided(features) is False.
     """
+    # untyped: page, a, measure, decided
     # calls: checks.run_region_checks, checks.AreaContext
     # called by: run_scan
 
 def areas(record) -> list[dict]:
     """Nominated and excluded places, merged per page (half the smaller one overlapping)."""
+    # untyped: record
     # calls: _inter, _area
     # called by: run_scan
 
 def band(p: float, info_types: int) -> str:
     # called by: run_scan
+    ...
 
 def info_of(name: str) -> str:
     # called by: run_scan
+    ...
 
 def likelihood(x: dict, model: dict) -> tuple[float, list[tuple[str, float]]]:
     """P(table) and the features that pushed it most (signed contributions)."""
@@ -2232,6 +2454,7 @@ def run_scan(path, record, tables, builds: list | None = None) -> list:
     without a table come back as possible-table regions (page, bbox, reason,
     rows) for the build and mark bands; the rest are only recorded.
     """
+    # untyped: path, record, tables
     # calls: classify.generator, areas, _inter, _area, _table_boxes, likelihood, _at_mean, area_features, info_of, band, data_or_format.likelihood_data, _jev_tier, +1 more
     # called by: pdf._run_pipeline
 
@@ -2277,6 +2500,8 @@ MODEL = ...
 
 ## `lib/pdf/spans.py` ([source](../../lib/pdf/spans.py))
 
+Typed: 8 of 8 functions and methods (100%).
+
 ```python
 """Span normalization - snap style boundaries to word edges.
 
@@ -2301,6 +2526,8 @@ def normalize_spans(blocks: list[Block]) -> list[Block]:
 
 ## `lib/pdf/stacked.py` ([source](../../lib/pdf/stacked.py))
 
+Typed: 6 of 6 functions and methods (100%).
+
 ```python
 """Stacked entries are one row each (table convention, "Rows: one row per entry").
 
@@ -2324,10 +2551,12 @@ such as assembly); the header row and all-bold rows are left as they are.
 def apply(cands: list[TableCandidate]) -> list[TableCandidate]:
     # calls: split_stacked
     # called by: table.select_tables
+    ...
 
 def split_stacked(cand: TableCandidate) -> TableCandidate:
     # calls: _code_block, _height, _baseline, types.TableCandidate
     # called by: apply
+    ...
 
 # + 4 private module-level names
 ```
@@ -2335,6 +2564,8 @@ def split_stacked(cand: TableCandidate) -> TableCandidate:
 <a id="lib-pdf-structure-py"></a>
 
 ## `lib/pdf/structure.py` ([source](../../lib/pdf/structure.py))
+
+Typed: 23 of 25 functions and methods (92%).
 
 ```python
 """Dual-path comparison, heading intelligence, and document structuring."""
@@ -2375,6 +2606,8 @@ def structure_sections(sections: list[Section], has_title: bool = False) -> tupl
 
 ## `lib/pdf/summary.py` ([source](../../lib/pdf/summary.py))
 
+Typed: 5 of 6 functions and methods (83%).
+
 ```python
 """Paper-level summary: what tomd did with this paper's tables, how sure it is,
 and how unlike the measured papers this one is.
@@ -2404,8 +2637,10 @@ short header comment in the Markdown, and a section in the prompts file.
 """
 
 def build(result, sections, evidence, generator: str) -> dict:
+    # untyped: result, sections, evidence
     # calls: unfamiliarity, llmrepair.paper_record, confidence
     # called by: pdf._run_pipeline
+    ...
 
 def confidence(s: dict) -> dict | None:
     """The measured chance that this paper's tables hold no silent error: the
@@ -2422,9 +2657,11 @@ def features(s: dict) -> dict:
 
 def header_comment(s: dict) -> str:
     # called by: pdf._run_pipeline
+    ...
 
 def prompts_section(s: dict) -> str:
     # called by: pdf._run_pipeline
+    ...
 
 def unfamiliarity(generator: str, layouts: list[str], undecided: int, areas: int, rotated: bool, measured: bool, skipped: bool) -> tuple[float, list[str]]:
     """0 (like the measured papers) .. 1 (unlike them), with the reasons."""
@@ -2439,6 +2676,8 @@ KNOWN_GENERATORS = ...
 <a id="lib-pdf-table-py"></a>
 
 ## `lib/pdf/table.py` ([source](../../lib/pdf/table.py))
+
+Typed: 44 of 52 functions and methods (84%).
 
 ```python
 """Table detection: the text-position detector, and selection across sources.
@@ -2536,6 +2775,7 @@ def diagram_boxes(page, page_num: int) -> list:
     lines and arrowheads; a table uses horizontal and vertical rules only (tables inside
     figures too). Returned as the drawn shapes' bounding boxes, merged per drawing cluster.
     """
+    # untyped: page
     # called by: pdf._run_pipeline
 
 def join_split_words(cands: list[TableCandidate], blocks: list[Block]) -> None:
@@ -2662,6 +2902,8 @@ NUM_JOIN_REFUSED = [0]  # how often the number rule refused a join (measurement)
 
 ## `lib/pdf/tablemodel.py` ([source](../../lib/pdf/tablemodel.py))
 
+Typed: 0 of 7 functions and methods (0%).
+
 ```python
 """Lossless table model and its semantic flattening to plain Markdown.
 
@@ -2694,20 +2936,24 @@ def detect_spans(columns) -> list[dict]:
       of its row cannot be told from an empty cell below it, so it is left
       alone.
     """
+    # untyped: columns
     # calls: _box, _text
     # called by: classify.gate_tables
 
 def flatten(grid, spans, empty, combine):
     """(new grid, kept spans) with the flattening convention applied."""
+    # untyped: grid, spans, empty, combine, return
     # calls: _two_level
     # called by: emit._render_table_body, flatten_text
 
 def flatten_text(rows, spans):
     """Text grid version (used by the scorer)."""
+    # untyped: rows, spans, return
     # calls: flatten
 
 def marker(spans) -> str:
     """<!-- tomd:merged ... --> for the spans (1-based rows/columns)."""
+    # untyped: spans
     # called by: emit._render_table_body
 
 SEP = ' / '
@@ -2718,6 +2964,8 @@ SEP = ' / '
 <a id="lib-pdf-tagged-py"></a>
 
 ## `lib/pdf/tagged.py` ([source](../../lib/pdf/tagged.py))
+
+Typed: 2 of 6 functions and methods (33%).
 
 ```python
 """Table detection from the PDF's accessibility tags (Tagged PDF).
@@ -2746,6 +2994,7 @@ def extract_tagged_tables(doc) -> list[TableCandidate]:
     Word exports), every candidate gets the "tags-malformed" flag so table
     selection ranks it below the ruling-line version.
     """
+    # untyped: doc
     # calls: _page_tables, evidence.reader_error, _realign, types.TableCandidate
     # called by: pdf._run_pipeline
 
@@ -2755,6 +3004,8 @@ def extract_tagged_tables(doc) -> list[TableCandidate]:
 <a id="lib-pdf-types-py"></a>
 
 ## `lib/pdf/types.py` ([source](../../lib/pdf/types.py))
+
+Typed: 11 of 11 functions and methods (100%).
 
 ```python
 """Shared data types, constants, and precompiled regex patterns for PDF conversion."""
@@ -2860,12 +3111,14 @@ class TableCandidate:
     flags: list[str] = field(default_factory=list)
     def cell_text(self, r: int, c: int) -> str:
         # called by: TableCandidate.text_rows
+        ...
     @property
     def pages(self) -> list[int]: ...
     @property
     def shape(self) -> tuple[int, int]: ...
     def text_rows(self) -> list[list[str]]:
         # calls: TableCandidate.cell_text
+        ...
 
 def compute_bbox(bboxes: list[tuple]) -> tuple[float, float, float, float]:
     """Compute the bounding box enclosing all given bbox tuples.
@@ -2942,6 +3195,8 @@ Y_TOLERANCE = 2.0
 
 ## `lib/pdf/validate.py` ([source](../../lib/pdf/validate.py))
 
+Typed: 3 of 25 functions and methods (12%).
+
 ```python
 """Round-trip self-verification of an extracted table against the page.
 
@@ -2967,6 +3222,7 @@ def add_header_above(sec, words):
     """The line just above the table, aligned with its columns, is its header
     (the region started below it). `words` must include the line above.
     """
+    # untyped: sec, words, return
     # calls: _contrasts, _with_columns, types.Span
 
 def cell_text(cell) -> str:
@@ -2975,10 +3231,12 @@ def cell_text(cell) -> str:
     with a space. Joining spans with spaces broke code into "has_degree < G >"
     and made correct tables fail the word-boundary check.
     """
+    # untyped: cell
     # called by: _contrasts, verify_layout
 
 def escalate(sec, words, reason: str, depth: int = 2):
     """(re-read section, moves) that passes verification, or (None, [])."""
+    # untyped: sec, words, return
     # calls: verify_layout
     # called by: classify.gate_tables
 
@@ -2988,18 +3246,21 @@ def resegment_rows(sec, words):
     where neither holds; otherwise the boundary stays as it was. Code is
     never re-segmented (its lines belong to one listing).
     """
+    # untyped: sec, words, return
     # calls: _code_row, _gap_threshold, _lines_of, _newline_span, _row_baselines, _join_lines, _with_columns
 
 def split_hidden_column(sec, words):
     """A column whose cells have a wide gap at the same x is two columns:
     split every cell of it at that x (spans left and right of the gap).
     """
+    # untyped: sec, words, return
     # calls: _lines_of, _newline_span, _join_lines, _with_columns
 
 def split_stacked_rows(sec, words):
     """Rows whose cells hold several entries on shared baselines become one
     row per baseline (the drawn cell grouped several entries).
     """
+    # untyped: sec, words, return
     # calls: _newline_span, _lines_of, _column_rights, _code_row, _wraps, _yc, _join_lines, _with_columns
 
 def switch_reader(sec, words):
@@ -3011,6 +3272,7 @@ def switch_reader(sec, words):
     columns), never one whose rows and columns come from drawn paths or the
     structure tree (grid, tags) - that would be one witness checking itself.
     """
+    # untyped: sec, words, return
     # calls: _with_columns, verify_layout
 
 def verify_layout(sec: Section, words: list) -> str:
@@ -3026,6 +3288,7 @@ def verify_pieces(sec, words_on) -> str:
     words (words_on(page, bbox)), then the whole by its parts. "" when every
     piece verifies, else "page N: what failed".
     """
+    # untyped: sec, words_on
     # calls: _with_columns, verify_layout
     # called by: classify.gate_tables
 
@@ -3035,6 +3298,8 @@ def verify_pieces(sec, words_on) -> str:
 <a id="lib-pdf-visibility-py"></a>
 
 ## `lib/pdf/visibility.py` ([source](../../lib/pdf/visibility.py))
+
+Typed: 4 of 15 functions and methods (26%).
 
 ```python
 """Text the PDF holds but the page does not show.
@@ -3084,6 +3349,7 @@ def check_page(page) -> list[dict]:
     """classify the page once per document, record the regions on the document,
     and return them (before any redaction: the caller removes them)
     """
+    # untyped: page
     # calls: classify, evidence.reader_error
     # called by: pdf._upright_page
 
@@ -3092,6 +3358,7 @@ def classify(page) -> list[dict]:
     {page, bbox, why, chars, text, action, points}; points are the character
     centres to redact (empty when the text is kept or already gone).
     """
+    # untyped: page
     # calls: _clipped_origins, _image_masks, _inside, _rgb, _centre, _text, _shows
     # called by: check_page
 
@@ -3109,10 +3376,12 @@ def markdown(regions: list[dict]) -> str:
 
 def regions_of(doc) -> list[dict]:
     """every region recorded for the document, in page order"""
+    # untyped: doc
     # called by: pdf._run_pipeline
 
 def remove_hidden_text(page, regions) -> bool:
     """redact (in memory) the characters of the removable regions; True if any"""
+    # untyped: page, regions
     # called by: pdf._upright_page
 
 def summary(regions: list[dict]) -> dict:
@@ -3127,6 +3396,8 @@ WHY_TEXT = ...
 <a id="lib-pdf-wg21-py"></a>
 
 ## `lib/pdf/wg21.py` ([source](../../lib/pdf/wg21.py))
+
+Typed: 5 of 5 functions and methods (100%).
 
 ```python
 """WG21-specific metadata extraction from PDF blocks.
@@ -3168,6 +3439,8 @@ REPLY_TO_CONTINUATION_CAP = 5
 
 ## `lib/pdf/worddict.py` ([source](../../lib/pdf/worddict.py))
 
+Typed: 3 of 3 functions and methods (100%).
+
 ```python
 """A fixed English word list for deciding line-end hyphens in table cells (2026-10-23).
 
@@ -3181,6 +3454,7 @@ it the earlier behaviour stands.
 def available() -> bool:
     # calls: words
     # called by: emit._join_hyphenated
+    ...
 
 def is_word(w: str) -> bool:
     """w, or w with a common inflection removed, is in the word list (False without one)."""
@@ -3190,6 +3464,7 @@ def is_word(w: str) -> bool:
 @lru_cache(maxsize=1)
 def words() -> frozenset | None:
     # called by: available, is_word
+    ...
 
 DICT_PATH = Path('/usr/share/dict/web2')
 
@@ -3199,6 +3474,8 @@ DICT_SHA256 = ...
 <a id="lib-pdf-wording-py"></a>
 
 ## `lib/pdf/wording.py` ([source](../../lib/pdf/wording.py))
+
+Typed: 11 of 15 functions and methods (73%).
 
 ```python
 """Wording section detection via multi-signal HSV color + drawing analysis.
@@ -3242,6 +3519,7 @@ def collect_line_drawings(page) -> list[tuple[float, float, float, tuple]]:
 
     Returns list of (y, x0, x1, color_rgb) for horizontal lines.
     """
+    # untyped: page
     # calls: evidence.reader_error
     # called by: pdf._run_pipeline
 
@@ -3261,6 +3539,8 @@ def is_red_del(color_int: int) -> bool:
 <a id="lib-similarity-py"></a>
 
 ## `lib/similarity.py` ([source](../../lib/similarity.py))
+
+Typed: 3 of 3 functions and methods (100%).
 
 ```python
 """String similarity algorithms for fuzzy matching.
@@ -3290,6 +3570,8 @@ def similar(a: str, b: str) -> bool:
 <a id="lib-toc-py"></a>
 
 ## `lib/toc.py` ([source](../../lib/toc.py))
+
+Typed: 4 of 4 functions and methods (100%).
 
 ```python
 """Table of Contents detection.
@@ -3323,6 +3605,8 @@ def find_toc_indices(texts: list[str], headings: set[str], structural_hints: lis
 
 ## `main.py` ([source](../../main.py))
 
+Typed: 0 of 1 functions and methods (0%).
+
 ```python
 """tomd - Convert PDF and HTML files to Markdown.
 
@@ -3339,6 +3623,7 @@ Also runnable as `python -m tomd.main ...`.
 
 def main():
     """CLI entry point: parse arguments, resolve inputs, and convert files."""
+    # untyped: return
     # calls: qa.run_qa_report, html.convert_html, pdf.convert_pdf_with_summary, llmrepair.paper_record
 
 # fresh7 (70 papers): about 4,400 tokens per paper; 5M tokens covers about 1,100 papers
@@ -3436,8 +3721,8 @@ CORPUS_LLM_PAPER_BUDGET = 51500
 - `detect_repeating`: [`lib/pdf/cleanup.py`](#lib-pdf-cleanup-py)
 - `detect_spans`: [`lib/pdf/tablemodel.py`](#lib-pdf-tablemodel-py)
 - `detect_tables`: [`lib/pdf/table.py`](#lib-pdf-table-py)
-- `DIAGRAM_BOXES`: [`lib/pdf/table.py`](#lib-pdf-table-py)
 - `diagram_boxes`: [`lib/pdf/table.py`](#lib-pdf-table-py)
+- `DIAGRAM_BOXES`: [`lib/pdf/table.py`](#lib-pdf-table-py)
 - `DICT_PATH`: [`lib/pdf/worddict.py`](#lib-pdf-worddict-py)
 - `DICT_SHA256`: [`lib/pdf/worddict.py`](#lib-pdf-worddict-py)
 - `dimensions`: [`lib/pdf/dimensions.py`](#lib-pdf-dimensions-py)
